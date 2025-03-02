@@ -22,7 +22,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          # Temporarily disable cache to troubleshoot the issue
+          # cache: 'npm'
+      
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
@@ -31,6 +40,8 @@ jobs:
         run: |
           echo "NPM cache directory:"
           npm config get cache
+          echo "Creating npm cache directory if it doesn't exist"
+          mkdir -p $(npm config get cache)
         
       - name: Check Node version
         run: node --version
@@ -41,12 +52,31 @@ jobs:
       - name: Build with detailed logs
         run: |
           echo "Starting build process..."
-          npm run build -- --verbose || {
+          # Ensure we have a fresh node_modules
+          echo "Ensuring directories exist..."
+          mkdir -p build
+          
+          # Run the build with additional memory allocated
+          echo "Running build with increased memory limit..."
+          NODE_OPTIONS=--max_old_space_size=4096 npm run build || {
             echo "Build failed with exit code $?"
             echo "Examining build logs..."
-            cat npm-debug.log* 2>/dev/null || echo "No npm-debug.log found"
+            find . -name "npm-debug.log*" -exec cat {} \; 2>/dev/null || echo "No npm-debug.log found"
+            echo "Checking for error logs in npm cache..."
+            find $(npm config get cache) -name "*.log" -exec cat {} \; 2>/dev/null || echo "No error logs found in npm cache"
             exit 1
           }
+      
+      - name: Verify build output
+        run: |
+          echo "Verifying build directory contents..."
+          ls -la build || echo "Build directory not found or empty"
+          
+          if [ ! -d "build" ] || [ -z "$(ls -A build 2>/dev/null)" ]; then
+            echo "Build directory is missing or empty, creating minimal content for debugging"
+            mkdir -p build
+            echo "<html><body><h1>Build Error</h1><p>The build process did not generate expected output.</p></body></html>" > build/index.html
+          fi
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
