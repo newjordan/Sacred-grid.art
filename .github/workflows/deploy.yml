@@ -25,9 +25,15 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+        
+      - name: Check Node version
+        run: node --version
+        
+      - name: List installed packages
+        run: npm list --depth=0
       
-      - name: Build
-        run: npm run build
+      - name: Build with detailed logs
+        run: npm run build -- --verbose
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
