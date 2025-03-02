@@ -22,7 +22,7 @@
 
 ## 🔆 Demo
 
-View the live demo at: [https://sacredgrid.example.com](https://sacredgrid.example.com)
+View the live demo at: [https://sacred-grid.art](https://sacred-grid.art)
 
 ![SacredGrid Canvas2D Demo](https://via.placeholder.com/800x400?text=SacredGrid+Canvas2D+Demo)
 
@@ -49,8 +49,8 @@ View the live demo at: [https://sacredgrid.example.com](https://sacredgrid.examp
 
 ```bash
 # Clone the repository
-git clone https://github.com/newjordan/Sacred-grid.art.git
-cd Sacred-grid.art
+git clone https://github.com/newjordan/sacred-grid.art.git
+cd sacred-grid.art
 
 # Install dependencies
 npm install
@@ -201,7 +201,7 @@ More examples can be found in the [examples directory](examples/).
 - [ ] Timeline editor for creating animated sequences
 - [ ] Node-based editor for complex pattern creation
 
-See the [open issues](https://github.com/newjordan/Sacred-grid.art/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/newjordan/sacred-grid.art/issues) for a full list of proposed features and known issues.
 
 ## 👥 Contributing
 

@@ -18,8 +18,8 @@ yarn add sacredgrid-canvas2d
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sacredgrid-canvas2d.git
-cd sacredgrid-canvas2d
+git clone https://github.com/newjordan/sacred-grid.art.git
+cd sacred-grid.art
 
 # Install dependencies
 npm install
