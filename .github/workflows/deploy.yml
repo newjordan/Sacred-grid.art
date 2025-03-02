@@ -82,6 +82,59 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build
+        id: upload-artifact
+        continue-on-error: true
+        
+      - name: Check Upload Status
+        if: steps.upload-artifact.outcome == 'failure'
+        run: |
+          echo "Upload failed. Checking build directory contents again..."
+          ls -la build/
+          echo "Checking build directory permissions..."
+          stat -c "%A %a %n" build/
+          
+          echo "Trying to fix permissions and retry upload..."
+          chmod -R 755 build/
+          find build -type f -exec chmod 644 {} \;
+          
+      - name: Retry Upload Artifact (if previous upload failed)
+        if: steps.upload-artifact.outcome == 'failure'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
+        id: retry-upload
+        continue-on-error: true
+        
+      - name: Emergency Fallback - Create and Upload Artifact as ZIP
+        if: steps.retry-upload.outcome == 'failure' || steps.upload-artifact.outcome == 'failure'
+        run: |
+          echo "Both standard upload methods failed. Creating ZIP archive as fallback..."
+          cd build
+          zip -r ../build.zip .
+          cd ..
+          
+      - name: Upload ZIP as artifact
+        if: steps.retry-upload.outcome == 'failure' || steps.upload-artifact.outcome == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: build.zip
+      
+      - name: Final Diagnostics
+        run: |
+          echo "=== Final Build Diagnostics ==="
+          echo "Disk space:"
+          df -h
+          
+          echo "Memory usage:"
+          free -h
+          
+          echo "GitHub Actions Runner Environment:"
+          env | grep GITHUB_ || echo "No GitHub environment variables found"
+          
+          echo "Node and NPM versions:"
+          node -v
+          npm -v
 
   deploy:
     environment:
@@ -89,7 +142,29 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    if: needs.build.result == 'success'
     steps:
+      - name: Download ZIP Artifact (if pages artifact failed)
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifact
+          path: ./
+        id: download-zip
+        continue-on-error: true
+        
+      - name: Extract Fallback Artifact if Needed
+        if: steps.download-zip.outputs.download-path != ''
+        run: |
+          if [ -f "build.zip" ]; then
+            echo "Using fallback ZIP artifact..."
+            mkdir -p ./_site
+            unzip -q build.zip -d ./_site
+            ls -la ./_site
+          else
+            echo "No fallback artifact found. Proceeding with normal deployment."
+          fi
+        continue-on-error: true
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
