@@ -79,7 +79,7 @@ jobs:
           fi
       
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./build
         id: upload-artifact
@@ -99,7 +99,7 @@ jobs:
           
       - name: Retry Upload Artifact (if previous upload failed)
         if: steps.upload-artifact.outcome == 'failure'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./build
         id: retry-upload
@@ -115,7 +115,7 @@ jobs:
           
       - name: Upload ZIP as artifact
         if: steps.retry-upload.outcome == 'failure' || steps.upload-artifact.outcome == 'failure'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact
           path: build.zip
@@ -145,7 +145,7 @@ jobs:
     if: needs.build.result == 'success'
     steps:
       - name: Download ZIP Artifact (if pages artifact failed)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact
           path: ./
