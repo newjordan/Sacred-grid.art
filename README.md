@@ -210,6 +210,14 @@ Contributions are what make the open source community such an amazing place to l
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
+### Community
+
+Join our Discord community to connect with other users, share your creations, get help, and contribute to the project:
+
+<p align="center">
+  <a href="https://discord.gg/RHj4mpvBFb" target="_blank"><img src="https://img.shields.io/discord/1234567890?color=5865F2&logo=discord&logoColor=white&label=Join%20Our%20Discord" alt="Join Discord Server" height="40"></a>
+</p>
+
 ## 💝 Sponsor
 
 If you find Sacred Grid useful for your projects or appreciate our work in advancing sacred geometry visualization tools, please consider supporting the project:
