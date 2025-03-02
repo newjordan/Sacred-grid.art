@@ -2,6 +2,12 @@
 
 Thank you for your interest in contributing to SacredGrid Canvas2D! This document outlines the process for contributing to this project.
 
+## Community
+
+Join our Discord community to connect with other contributors, get help with your pull requests, and discuss ideas:
+
+[![Join our Discord server](https://img.shields.io/discord/1234567890?color=5865F2&logo=discord&logoColor=white&label=Discord)](https://discord.gg/RHj4mpvBFb)
+
 ## Code of Conduct
 
 By participating in this project, you agree to maintain a respectful and inclusive environment. Please be considerate of others and open to different viewpoints.
