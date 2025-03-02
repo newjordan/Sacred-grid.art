@@ -1,0 +1,586 @@
+// src/shapes/ShapeDrawers.js
+import { ShapeType, AnimationMode, ShapeTemplate } from '../constants/ShapeTypes';
+import { calculateAnimationParams } from './ShapeUtils';
+import { getMultiEasedColor, getShapeColor } from '../utils/drawingUtils';
+
+// Helper function to draw a shape using the new template system
+function drawShapeTemplate(ctx, params, templateFn, isClosedPath) {
+    const { cx, cy, radius, thickness, strokeColor, dynamicRadius } = params;
+    
+    // Begin path for the shape
+    ctx.beginPath();
+    
+    // Use the shape template function to draw the shape
+    templateFn(ctx, cx, cy, dynamicRadius);
+    
+    // If the shape isn't automatically closed and should be, close it
+    if (!isClosedPath) {
+        ctx.closePath();
+    }
+    
+    // Draw the shape
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = thickness;
+    ctx.stroke();
+}
+
+// Helper function to draw a shape using line factory for each segment
+function drawShapeWithLineFactory(ctx, params, vertices, globalSettings) {
+    const { thickness, strokeColor } = params;
+    const lineFactorySettings = { ...globalSettings.lineFactory };
+    
+    // Ensure the loopLine setting is honored
+    // This is critical for closed shapes like polygons
+    lineFactorySettings.loopLine = true;
+    
+    // Store the original path points for the shape to ensure proper closure
+    const shapePoints = [];
+    
+    // First collect all points (needed to calculate proper frequencies for wave effects)
+    for (let i = 0; i < vertices.length; i++) {
+        shapePoints.push({
+            x: vertices[i].x,
+            y: vertices[i].y
+        });
+    }
+    
+    // Add the first point again to create a complete loop
+    if (vertices.length > 0) {
+        shapePoints.push({
+            x: vertices[0].x, 
+            y: vertices[0].y
+        });
+    }
+    
+    // Calculate total perimeter length (needed for wave frequency calculation)
+    let totalLength = 0;
+    for (let i = 0; i < shapePoints.length - 1; i++) {
+        const dx = shapePoints[i+1].x - shapePoints[i].x;
+        const dy = shapePoints[i+1].y - shapePoints[i].y;
+        totalLength += Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    // Draw each line segment using the line factory
+    for (let i = 0; i < vertices.length; i++) {
+        const startIdx = i;
+        const endIdx = (i + 1) % vertices.length;
+        
+        // Calculate segment length as proportion of total perimeter
+        // This helps adjust wave frequencies to maintain continuity
+        const dx = vertices[endIdx].x - vertices[startIdx].x;
+        const dy = vertices[endIdx].y - vertices[startIdx].y;
+        const segmentLength = Math.sqrt(dx * dx + dy * dy);
+        const segmentProportion = segmentLength / totalLength;
+        
+        // Create segment-specific line settings to ensure proper wave sync
+        const segmentSettings = { ...lineFactorySettings };
+        
+        // If using sine wave, adjust phase based on progress along perimeter
+        if (segmentSettings.sineWave && segmentSettings.sineWave.type !== 'none') {
+            // Calculate accumulated phase up to this segment
+            let accumulatedPhase = 0;
+            for (let j = 0; j < i; j++) {
+                const prevDx = vertices[(j+1) % vertices.length].x - vertices[j].x;
+                const prevDy = vertices[(j+1) % vertices.length].y - vertices[j].y;
+                const prevLength = Math.sqrt(prevDx * prevDx + prevDy * prevDy);
+                const prevProportion = prevLength / totalLength;
+                accumulatedPhase += prevProportion * Math.PI * 2;
+            }
+            
+            // Use the accumulated phase to align wave patterns between segments
+            segmentSettings.sineWave = {
+                ...segmentSettings.sineWave,
+                phaseOffset: accumulatedPhase
+            };
+        }
+        
+        // Use Canvas2DRenderer's enhanced drawLine method with line factory settings
+        ctx.drawLine(
+            vertices[startIdx].x,
+            vertices[startIdx].y,
+            vertices[endIdx].x,
+            vertices[endIdx].y,
+            strokeColor,
+            thickness,
+            segmentSettings
+        );
+    }
+}
+
+export function drawPolygon(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Get the number of vertices (sides) and rotation angle
+    const sides = shapeSettings.vertices || 3;
+    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
+
+    // Generate vertices for the polygon
+    const vertices = [];
+    for (let i = 0; i < sides; i++) {
+        const angle = (i * 2 * Math.PI) / sides + rotation;
+        vertices.push({
+            x: cx + dynamicRadius * Math.cos(angle),
+            y: cy + dynamicRadius * Math.sin(angle),
+        });
+    }
+
+    // Check if we should use enhanced line factory drawing
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
+    } else {
+        // Standard basic drawing using closed path
+        ctx.beginPath();
+        ctx.moveTo(vertices[0].x, vertices[0].y);
+        for (let i = 1; i < vertices.length; i++) {
+            ctx.lineTo(vertices[i].x, vertices[i].y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness;
+        ctx.stroke();
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawFlowerOfLife(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Integrate rotation for the surrounding circles
+    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
+
+    // Check if we should use Line Factory settings
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        // Draw using shape template with line factory
+        const segments = 36; // Number of segments to approximate the circle
+        
+        // Draw the central circle
+        const centralCircleVertices = [];
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            centralCircleVertices.push({
+                x: cx + dynamicRadius * Math.cos(angle),
+                y: cy + dynamicRadius * Math.sin(angle)
+            });
+        }
+        // Close the circle by connecting back to first point
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, centralCircleVertices, globalSettings);
+        
+        // Draw six surrounding circles arranged in a hexagon
+        for (let i = 0; i < 6; i++) {
+            const centerAngle = rotation + (i * 2 * Math.PI) / 6;
+            const centerX = cx + dynamicRadius * Math.cos(centerAngle);
+            const centerY = cy + dynamicRadius * Math.sin(centerAngle);
+            
+            // Generate vertices for each surrounding circle
+            const circleVertices = [];
+            for (let j = 0; j <= segments; j++) {
+                const angle = (j / segments) * Math.PI * 2;
+                circleVertices.push({
+                    x: centerX + dynamicRadius * Math.cos(angle),
+                    y: centerY + dynamicRadius * Math.sin(angle)
+                });
+            }
+            // Draw the circle
+            drawShapeWithLineFactory(ctx, { thickness, strokeColor }, circleVertices, globalSettings);
+        }
+    } else {
+        // Use the new shape template system for standard drawing
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness;
+        
+        // Draw the central circle
+        drawShapeTemplate(ctx, 
+            { cx, cy, radius, thickness, strokeColor, dynamicRadius }, 
+            ShapeTemplate.CIRCLE, 
+            true
+        );
+        
+        // Draw six surrounding circles arranged in a hexagon
+        for (let i = 0; i < 6; i++) {
+            const angle = rotation + (i * 2 * Math.PI) / 6;
+            const x = cx + dynamicRadius * Math.cos(angle);
+            const y = cy + dynamicRadius * Math.sin(angle);
+            
+            drawShapeTemplate(ctx, 
+                { cx: x, cy: y, radius, thickness, strokeColor, dynamicRadius: dynamicRadius }, 
+                ShapeTemplate.CIRCLE, 
+                true
+            );
+        }
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawMerkaba(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Integrate rotation for the triangles
+    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
+
+    // First triangle: oriented upwards
+    const vertices1 = [];
+    for (let i = 0; i < 3; i++) {
+        const angle = rotation + (i * 2 * Math.PI) / 3 + Math.PI / 6;
+        vertices1.push({
+            x: cx + dynamicRadius * Math.cos(angle),
+            y: cy + dynamicRadius * Math.sin(angle),
+        });
+    }
+
+    // Second triangle: rotated 60° relative to the first (inverted)
+    const vertices2 = [];
+    for (let i = 0; i < 3; i++) {
+        const angle = rotation + (i * 2 * Math.PI) / 3 + Math.PI / 6 + Math.PI;
+        vertices2.push({
+            x: cx + dynamicRadius * Math.cos(angle),
+            y: cy + dynamicRadius * Math.sin(angle),
+        });
+    }
+
+    // Check if we should use Line Factory settings
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        // Draw the first triangle with line factory settings
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices1, globalSettings);
+        
+        // Draw the second triangle with line factory settings
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices2, globalSettings);
+    } else {
+        // Standard drawing with closed paths
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness;
+        
+        // Draw the first triangle
+        ctx.beginPath();
+        ctx.moveTo(vertices1[0].x, vertices1[0].y);
+        for (let i = 1; i < vertices1.length; i++) {
+            ctx.lineTo(vertices1[i].x, vertices1[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Draw the second triangle
+        ctx.beginPath();
+        ctx.moveTo(vertices2[0].x, vertices2[0].y);
+        for (let i = 1; i < vertices2.length; i++) {
+            ctx.lineTo(vertices2[i].x, vertices2[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+// New shape drawing functions using the template system
+
+export function drawCircle(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Check if we should use enhanced line factory drawing
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        // Draw circle using line segments for line factory effects
+        const segments = 36; // Number of segments to approximate the circle
+        const vertices = [];
+        
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            vertices.push({
+                x: cx + dynamicRadius * Math.cos(angle),
+                y: cy + dynamicRadius * Math.sin(angle)
+            });
+        }
+        
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
+    } else {
+        // Use the shape template for standard drawing
+        drawShapeTemplate(ctx, 
+            { cx, cy, radius, thickness, strokeColor, dynamicRadius }, 
+            ShapeTemplate.CIRCLE, 
+            true
+        );
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawStar(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Get number of points and inner radius ratio
+    const points = shapeSettings.vertices || 5;
+    const innerRadius = 0.4; // Could be made configurable
+    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
+
+    // Generate vertices for the star
+    const vertices = [];
+    for (let i = 0; i < points * 2; i++) {
+        const angle = rotation + i * Math.PI / points - Math.PI / 2;
+        const r = i % 2 === 0 ? dynamicRadius : dynamicRadius * innerRadius;
+        vertices.push({
+            x: cx + r * Math.cos(angle),
+            y: cy + r * Math.sin(angle)
+        });
+    }
+
+    // Check if we should use enhanced line factory drawing
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
+    } else {
+        // Use the template for standard drawing
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rotation); // Apply rotation
+        ctx.translate(-cx, -cy);
+        
+        drawShapeTemplate(ctx, 
+            { cx, cy, radius, thickness, strokeColor, dynamicRadius },
+            (ctx, x, y, r) => ShapeTemplate.STAR(ctx, x, y, r, points, innerRadius),
+            true
+        );
+        
+        ctx.restore();
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawLissajous(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Lissajous parameters (could be made configurable)
+    const a = 3;
+    const b = 2;
+    const delta = (shapeSettings.rotation * Math.PI) / 180; // Use rotation as phase shift
+    const segments = 100;
+
+    // Generate vertices for the Lissajous curve
+    const vertices = [];
+    for (let i = 0; i <= segments; i++) {
+        const t = (i / segments) * Math.PI * 2;
+        vertices.push({
+            x: cx + dynamicRadius * Math.sin(a * t + delta),
+            y: cy + dynamicRadius * Math.sin(b * t)
+        });
+    }
+
+    // Check if we should use enhanced line factory drawing
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        // For line factory, we need to draw segment by segment
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
+    } else {
+        // Use the template for standard drawing
+        drawShapeTemplate(ctx, 
+            { cx, cy, radius, thickness, strokeColor, dynamicRadius },
+            (ctx, x, y, r) => ShapeTemplate.LISSAJOUS(ctx, x, y, r, a, b, delta, segments),
+            false // Lissajous may not be a closed path
+        );
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawSpiral(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        strokeColor = getShapeColor(finalOpacity, globalSettings.colors.scheme);
+        ctx.globalAlpha = 1;
+    }
+
+    // Spiral parameters (could be made configurable)
+    const turns = 3;
+    const decay = 0.15;
+    const segments = 100;
+    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Apply as initial angle offset
+
+    // Generate vertices for the spiral
+    const vertices = [];
+    for (let i = 0; i <= segments; i++) {
+        const angle = rotation + (i / segments) * Math.PI * 2 * turns;
+        const r = dynamicRadius * (1 - (i / segments) * decay);
+        vertices.push({
+            x: cx + r * Math.cos(angle),
+            y: cy + r * Math.sin(angle)
+        });
+    }
+
+    // Check if we should use enhanced line factory drawing
+    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+        // For line factory, treat as a shape for better looping
+        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
+    } else {
+        // Use the template for standard drawing
+        drawShapeTemplate(ctx, 
+            { cx, cy, radius, thickness, strokeColor, dynamicRadius },
+            (ctx, x, y, r) => ShapeTemplate.SPIRAL(ctx, x, y, r, turns, decay, segments),
+            false // Spiral is not a closed path
+        );
+    }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}

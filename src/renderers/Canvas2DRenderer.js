@@ -1,0 +1,1100 @@
+// src/renderers/Canvas2DRenderer.js
+import BaseRenderer from './BaseRenderer';
+
+/**
+ * Canvas2DRenderer - Implementation of the BaseRenderer for Canvas 2D rendering
+ */
+class Canvas2DRenderer extends BaseRenderer {
+    /**
+     * Initialize the Canvas2D renderer
+     * @param {HTMLElement} container - DOM element to attach the canvas to
+     * @param {Object} options - Canvas-specific initialization options
+     */
+    constructor(container, options = {}) {
+        super(container, options);
+        this.canvas = null;
+        this.ctx = null;
+        this.initialized = false;
+        this.time = 0; // Add time tracking for animations
+    }
+
+    /**
+     * Set up the canvas element and context
+     * @returns {HTMLCanvasElement} The created canvas element
+     */
+    initialize() {
+        if (this.initialized) return this.canvas;
+
+        // Create canvas element
+        this.canvas = document.createElement('canvas');
+        this.canvas.className = 'sacred-grid-canvas';
+
+        // Set canvas styles to ensure it fills container properly
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.display = 'block'; // Remove default inline display which can cause gaps
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+
+        // Get 2D context
+        this.ctx = this.canvas.getContext('2d');
+
+        // Add event listeners
+        this._setupEventListeners();
+
+        // Add to container
+        this.container.appendChild(this.canvas);
+
+        // Initial resize
+        this._handleResize();
+
+        this.initialized = true;
+        console.log("Canvas2DRenderer initialized, canvas:", this.canvas);
+        return this.canvas;
+    }
+
+    /**
+     * Set up event listeners for the canvas
+     * @private
+     */
+    _setupEventListeners() {
+        // Mouse move handler
+        const handleMouseMove = (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            this.updateMousePosition(x, y);
+
+            // Trigger any registered mousemove listeners
+            if (this._listeners['mousemove']) {
+                this._listeners['mousemove'].forEach(callback => callback(x, y));
+            }
+        };
+
+        // Mouse leave handler
+        const handleMouseLeave = () => {
+            this.updateMousePosition(-1000, -1000);
+
+            // Trigger any registered mouseleave listeners
+            if (this._listeners['mouseleave']) {
+                this._listeners['mouseleave'].forEach(callback => callback());
+            }
+        };
+
+        // Resize handler
+        const handleResize = () => {
+            this._handleResize();
+
+            // Trigger any registered resize listeners
+            if (this._listeners['resize']) {
+                this._listeners['resize'].forEach(callback =>
+                    callback(this.width, this.height));
+            }
+        };
+
+        // Attach event listeners
+        this.canvas.addEventListener('mousemove', handleMouseMove);
+        this.canvas.addEventListener('mouseleave', handleMouseLeave);
+        window.addEventListener('resize', handleResize);
+
+        // Store cleanup function
+        this._cleanup = () => {
+            this.canvas.removeEventListener('mousemove', handleMouseMove);
+            this.canvas.removeEventListener('mouseleave', handleMouseLeave);
+            window.removeEventListener('resize', handleResize);
+        };
+    }
+
+    /**
+     * Handle canvas resizing, maintaining proper DPI scaling
+     * @private
+     */
+    _handleResize() {
+        if (!this.canvas) {
+            console.error('_handleResize: Canvas is null');
+            return;
+        }
+
+        if (!this.container || !this.container.parentNode) {
+            console.error('_handleResize: Container or parent is null');
+            return;
+        }
+
+        // Get the display size of the canvas
+        const rect = this.container.getBoundingClientRect();
+
+        // Make sure we have valid dimensions
+        if (rect.width === 0 || rect.height === 0) {
+            console.warn('_handleResize: Container has zero width or height:', rect);
+            
+            // Try to get dimensions from parent element if container dimensions are zero
+            if (this.container.parentNode) {
+                const parentRect = this.container.parentNode.getBoundingClientRect();
+                if (parentRect.width > 0 && parentRect.height > 0) {
+                    console.log('Using parent dimensions instead:', parentRect);
+                    rect.width = parentRect.width;
+                    rect.height = parentRect.height;
+                } else {
+                    // Last resort: use viewport dimensions
+                    rect.width = window.innerWidth;
+                    rect.height = window.innerHeight;
+                    console.log('Using viewport dimensions as fallback:', rect);
+                }
+            }
+        }
+
+        // Resize canvas with proper DPI scaling
+        const pixelRatio = window.devicePixelRatio || 1;
+        const displayWidth = Math.max(10, Math.floor(rect.width));  // Ensure minimum size of 10px
+        const displayHeight = Math.max(10, Math.floor(rect.height)); // Ensure minimum size of 10px
+        
+        console.log('Canvas resizing with dimensions:', {
+            displayWidth, 
+            displayHeight, 
+            pixelRatio,
+            currentWidth: this.canvas.width,
+            currentHeight: this.canvas.height,
+            containerRect: {
+                width: rect.width,
+                height: rect.height
+            }
+        });
+        
+        // Always save context state before resizing
+        if (this.ctx) {
+            try {
+                this.ctx.save();
+            } catch (e) {
+                console.error('Error saving context state:', e);
+            }
+        }
+        
+        try {
+            // Set new dimensions
+            this.canvas.width = displayWidth * pixelRatio;
+            this.canvas.height = displayHeight * pixelRatio;
+            
+            // Store logical dimensions
+            this.width = displayWidth;
+            this.height = displayHeight;
+            
+            // Also set style dimensions explicitly to match container
+            this.canvas.style.width = `${displayWidth}px`;
+            this.canvas.style.height = `${displayHeight}px`;
+            
+            if (this.ctx) {
+                // Clear previous transformations
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                
+                // Scale all drawing operations by the device pixel ratio for crisp rendering
+                this.ctx.scale(pixelRatio, pixelRatio);
+                
+                // Restore saved state
+                this.ctx.restore();
+            }
+            
+            console.log('Canvas resized successfully to:', {
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height,
+                logicalWidth: this.width,
+                logicalHeight: this.height,
+                styleWidth: this.canvas.style.width,
+                styleHeight: this.canvas.style.height
+            });
+        } catch (e) {
+            console.error('Error during canvas resize:', e);
+        }
+    }
+
+    /**
+     * Begin a new frame - called at the start of each animation frame
+     */
+    beginFrame() {
+        // Update time for animations
+        this.time = performance.now();
+    }
+
+    /**
+     * End a frame - called at the end of each animation frame
+     */
+    endFrame() {
+        // Any per-frame cleanup could go here
+    }
+
+    /**
+     * Clear the canvas with a background color
+     * @param {string} color - CSS color string (e.g. '#000000', 'rgba(0,0,0,0.5)')
+     */
+    clear(color = 'black') {
+        if (!this.ctx) return;
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+    /**
+     * Set global alpha value
+     * @param {number} alpha - Alpha value between 0 and 1
+     */
+    setGlobalAlpha(alpha) {
+        if (!this.ctx) return;
+        this.ctx.globalAlpha = alpha;
+    }
+
+    /**
+     * Reset global alpha to 1
+     */
+    resetGlobalAlpha() {
+        if (!this.ctx) return;
+        this.ctx.globalAlpha = 1;
+    }
+
+    /**
+     * Draw a circle
+     * @param {number} x - Center X coordinate
+     * @param {number} y - Center Y coordinate
+     * @param {number} radius - Circle radius
+     * @param {string} color - Fill color
+     * @param {string} strokeColor - Stroke color (optional)
+     * @param {number} lineWidth - Line width for stroke (optional)
+     */
+    drawCircle(x, y, radius, color, strokeColor = null, lineWidth = 1) {
+        if (!this.ctx) return;
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+        
+        if (color) {
+            this.ctx.fillStyle = color;
+            this.ctx.fill();
+        }
+        
+        if (strokeColor) {
+            this.ctx.strokeStyle = strokeColor;
+            this.ctx.lineWidth = lineWidth;
+            this.ctx.stroke();
+        }
+    }
+    
+    /**
+     * Draw a polygon
+     * @param {Array} vertices - Array of {x, y} points
+     * @param {string} fillColor - Fill color (optional)
+     * @param {string} strokeColor - Stroke color (optional)
+     * @param {number} lineWidth - Line width for stroke (optional)
+     */
+    drawPolygon(vertices, fillColor = null, strokeColor = null, lineWidth = 1) {
+        if (!this.ctx || !vertices || vertices.length < 3) return;
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(vertices[0].x, vertices[0].y);
+        
+        for (let i = 1; i < vertices.length; i++) {
+            this.ctx.lineTo(vertices[i].x, vertices[i].y);
+        }
+        
+        this.ctx.closePath();
+        
+        if (fillColor) {
+            this.ctx.fillStyle = fillColor;
+            this.ctx.fill();
+        }
+        
+        if (strokeColor) {
+            this.ctx.strokeStyle = strokeColor;
+            this.ctx.lineWidth = lineWidth;
+            this.ctx.stroke();
+        }
+    }
+    
+    /**
+     * Draw text at a specified position
+     * @param {string} text - The text to draw
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @param {string} color - Text color
+     * @param {string} font - Font specification (e.g. "12px Arial")
+     */
+    drawText(text, x, y, color, font = "12px Arial") {
+        if (!this.ctx) return;
+        this.ctx.font = font;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(text, x, y);
+    }
+
+    /**
+     * Draw a line with optional line factory effects
+     * @param {number} x1 - Start X coordinate
+     * @param {number} y1 - Start Y coordinate
+     * @param {number} x2 - End X coordinate
+     * @param {number} y2 - End Y coordinate
+     * @param {string} color - Line color
+     * @param {number} lineWidth - Line width
+     * @param {Object} lineSettings - Optional line factory settings
+     */
+    drawLine(x1, y1, x2, y2, color, lineWidth = 1, lineSettings) {
+        if (!this.ctx) return;
+        
+        // If no line factory settings provided, draw a standard line
+        if (!lineSettings) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x1, y1);
+            this.ctx.lineTo(x2, y2);
+            this.ctx.strokeStyle = color;
+            this.ctx.lineWidth = lineWidth;
+            this.ctx.stroke();
+            return;
+        }
+        
+        // Save context state
+        this.ctx.save();
+        
+        // Apply glow effect if needed
+        if (lineSettings.glow && lineSettings.glow.intensity > 0) {
+            this.ctx.shadowBlur = lineSettings.glow.intensity;
+            this.ctx.shadowColor = lineSettings.glow.color || color;
+        }
+        
+        // Draw outline if enabled
+        if (lineSettings.outline && lineSettings.outline.enabled) {
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = lineSettings.outline.color || '#000000';
+            this.ctx.lineWidth = lineWidth + (lineSettings.outline.width || 1) * 2;
+            
+            // Handle sine waves for outline
+            if (lineSettings.sineWave && lineSettings.sineWave.type !== 'none') {
+                // Create a copy of settings with phase offset applied if it exists
+                const adjustedSettings = {...lineSettings};
+                if (lineSettings.sineWave.phaseOffset !== undefined) {
+                    adjustedSettings.sineWave = {
+                        ...lineSettings.sineWave,
+                        phase: (lineSettings.sineWave.phase || 0) + lineSettings.sineWave.phaseOffset
+                    };
+                }
+                this._drawSineWaveLine(x1, y1, x2, y2, lineWidth + (lineSettings.outline.width || 1) * 2, adjustedSettings);
+            } else {
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+            }
+            
+            // Apply dash pattern if needed
+            if (lineSettings.style === 'dashed' && lineSettings.dash) {
+                this.ctx.setLineDash(lineSettings.dash.pattern || [5, 5]);
+                this.ctx.lineDashOffset = lineSettings.dash.offset || 0;
+            } else if (lineSettings.style === 'dotted') {
+                this.ctx.setLineDash([2, 4]);
+            } else {
+                this.ctx.setLineDash([]);
+            }
+            
+            this.ctx.stroke();
+        }
+        
+        // Reset shadow for main line
+        this.ctx.shadowBlur = 0;
+        
+        // Draw the main line
+        this.ctx.strokeStyle = color;
+        
+        // Apply any phase offset from shape drawing
+        const adjustedSettings = {...lineSettings};
+        if (lineSettings.sineWave && lineSettings.sineWave.phaseOffset !== undefined) {
+            adjustedSettings.sineWave = {
+                ...lineSettings.sineWave,
+                phase: (lineSettings.sineWave.phase || 0) + lineSettings.sineWave.phaseOffset
+            };
+        }
+        
+        // Handle different line styles
+        if (adjustedSettings.sineWave && adjustedSettings.sineWave.type !== 'none') {
+            // Draw sine wave line
+            this._drawSineWaveLine(x1, y1, x2, y2, lineWidth, adjustedSettings);
+        } else if (adjustedSettings.style === 'wavy') {
+            // Create a wavy line using sine wave
+            const tempSineSettings = { 
+                type: 'sine', 
+                amplitude: 5, 
+                frequency: 0.1,
+                phase: 0,
+                ...adjustedSettings.sineWave 
+            };
+            this._drawSineWaveLine(x1, y1, x2, y2, lineWidth, { ...adjustedSettings, sineWave: tempSineSettings });
+        } else if (adjustedSettings.style === 'zigzag') {
+            // Create a zigzag line using a square wave
+            const tempSineSettings = { 
+                type: 'square', 
+                amplitude: 5, 
+                frequency: 0.1,
+                phase: 0,
+                ...adjustedSettings.sineWave 
+            };
+            this._drawSineWaveLine(x1, y1, x2, y2, lineWidth, { ...adjustedSettings, sineWave: tempSineSettings });
+        } else if (adjustedSettings.style === 'spiral') {
+            // Draw spiral line
+            this._drawSpiralLine(x1, y1, x2, y2, lineWidth, adjustedSettings);
+        } else if (adjustedSettings.style === 'ribbon') {
+            // Draw ribbon line
+            this._drawRibbonLine(x1, y1, x2, y2, lineWidth, adjustedSettings);
+        } else if (adjustedSettings.style === 'double') {
+            // Draw double line
+            this._drawDoubleLine(x1, y1, x2, y2, lineWidth, adjustedSettings);
+        } else if (adjustedSettings.style === 'complex') {
+            // Draw complex dotted/dashed pattern
+            this._drawComplexLine(x1, y1, x2, y2, lineWidth, adjustedSettings);
+        } else {
+            // Handle tapered lines
+            if (adjustedSettings.taper && adjustedSettings.taper.type !== 'none') {
+                this._drawTaperedLine(x1, y1, x2, y2, lineWidth, color, adjustedSettings);
+            } else {
+                // Standard straight line
+                this.ctx.beginPath();
+                this.ctx.lineWidth = lineWidth;
+                
+                // Apply dash pattern if needed
+                if (adjustedSettings.style === 'dashed' && adjustedSettings.dash) {
+                    this.ctx.setLineDash(adjustedSettings.dash.pattern || [5, 5]);
+                    this.ctx.lineDashOffset = adjustedSettings.dash.offset || 0;
+                } else if (adjustedSettings.style === 'dotted') {
+                    this.ctx.setLineDash([2, 4]);
+                } else {
+                    this.ctx.setLineDash([]);
+                }
+                
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+            }
+        }
+        
+        // Restore context state
+        this.ctx.restore();
+    }
+    
+    /**
+     * Helper method to draw a tapered line
+     * @private
+     */
+    _drawTaperedLine(x1, y1, x2, y2, baseWidth, color, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const segments = 40; // Number of segments to draw
+        
+        // Get taper settings with defaults
+        const taperType = lineSettings.taper.type || 'none';
+        const startWidth = lineSettings.taper.startWidth !== undefined ? lineSettings.taper.startWidth : 1;
+        const endWidth = lineSettings.taper.endWidth !== undefined ? lineSettings.taper.endWidth : 1;
+        
+        for (let i = 0; i < segments; i++) {
+            const progress = i / segments;
+            const nextProgress = (i + 1) / segments;
+            
+            // Calculate width based on taper type
+            let width = baseWidth;
+            
+            if (taperType === 'start') {
+                width = baseWidth * (startWidth + progress * (1 - startWidth));
+            } else if (taperType === 'end') {
+                width = baseWidth * (1 - (1 - endWidth) * progress);
+            } else if (taperType === 'both') {
+                if (progress < 0.5) {
+                    width = baseWidth * (startWidth + progress * 2 * (1 - startWidth));
+                } else {
+                    width = baseWidth * (1 - (1 - endWidth) * (progress - 0.5) * 2);
+                }
+            } else if (taperType === 'middle') {
+                if (progress < 0.5) {
+                    width = baseWidth * (1 - (1 - startWidth) * ((0.5 - progress) * 2));
+                } else {
+                    width = baseWidth * (1 - (1 - endWidth) * ((progress - 0.5) * 2));
+                }
+            }
+            
+            // Calculate segment points
+            const segX1 = x1 + dx * progress;
+            const segY1 = y1 + dy * progress;
+            const segX2 = x1 + dx * nextProgress;
+            const segY2 = y1 + dy * nextProgress;
+            
+            // Draw segment
+            this.ctx.beginPath();
+            this.ctx.lineWidth = width;
+            this.ctx.moveTo(segX1, segY1);
+            this.ctx.lineTo(segX2, segY2);
+            this.ctx.stroke();
+        }
+    }
+    
+    /**
+     * Helper method to draw a sine wave line
+     * @private
+     */
+    _drawSineWaveLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const segments = 40; // Number of segments to draw
+        
+        // Get sine wave settings with defaults
+        const waveType = lineSettings.sineWave.type || 'sine';
+        const amplitude = lineSettings.sineWave.amplitude || 5;
+        const frequency = lineSettings.sineWave.frequency || 0.1;
+        let phase = lineSettings.sineWave.phase || 0;
+        
+        // Apply animation if enabled
+        if (lineSettings.sineWave.animated) {
+            // Use the current time to animate the phase
+            phase += this.time * 0.001 * lineSettings.sineWave.speed;
+        }
+        
+        // Check if line should be looped (connect visually from end to start)
+        const shouldLoop = lineSettings.loopLine !== undefined ? lineSettings.loopLine : true;
+        
+        // Check if bidirectional wave mode is enabled (creates perfect loop connections)
+        const useBidirectionalWaves = shouldLoop && lineSettings.bidirectionalWaves === true;
+        
+        // Check if we need to handle tapering
+        if (lineSettings.taper && lineSettings.taper.type !== 'none') {
+            // Draw segments with varying widths
+            for (let i = 0; i < segments; i++) {
+                const progress = i / segments;
+                const nextProgress = (i + 1) / segments;
+                
+                // Calculate width based on taper type
+                let width = baseWidth;
+                const taperType = lineSettings.taper.type;
+                const startWidth = lineSettings.taper.startWidth !== undefined ? lineSettings.taper.startWidth : 1;
+                const endWidth = lineSettings.taper.endWidth !== undefined ? lineSettings.taper.endWidth : 1;
+                
+                if (taperType === 'start') {
+                    width = baseWidth * (startWidth + progress * (1 - startWidth));
+                } else if (taperType === 'end') {
+                    width = baseWidth * (1 - (1 - endWidth) * progress);
+                } else if (taperType === 'both') {
+                    if (progress < 0.5) {
+                        width = baseWidth * (startWidth + progress * 2 * (1 - startWidth));
+                    } else {
+                        width = baseWidth * (1 - (1 - endWidth) * (progress - 0.5) * 2);
+                    }
+                } else if (taperType === 'middle') {
+                    if (progress < 0.5) {
+                        width = baseWidth * (1 - (1 - startWidth) * ((0.5 - progress) * 2));
+                    } else {
+                        width = baseWidth * (1 - (1 - endWidth) * ((progress - 0.5) * 2));
+                    }
+                }
+                
+                // Calculate positions along the original line
+                const xPos = x1 + dx * progress;
+                const yPos = y1 + dy * progress;
+                const nextXPos = x1 + dx * nextProgress;
+                const nextYPos = y1 + dy * nextProgress;
+                
+                // Calculate wave offset
+                let waveAngle, nextWaveAngle;
+                
+                if (shouldLoop) {
+                    // Force whole number of cycles for proper loop closure
+                    const exactCycles = Math.max(1, Math.round(frequency * length / 30));
+                    
+                    if (useBidirectionalWaves) {
+                        // Create a forward-flowing wave
+                        const forwardAngle = progress * Math.PI * 2 * exactCycles + phase;
+                        const forwardNextAngle = nextProgress * Math.PI * 2 * exactCycles + phase;
+                        
+                        // Create a reverse-flowing wave
+                        const reversePhase = phase + Math.PI; // Offset for visual distinction
+                        const reverseAngle = (1 - progress) * Math.PI * 2 * exactCycles + reversePhase;
+                        const reverseNextAngle = (1 - nextProgress) * Math.PI * 2 * exactCycles + reversePhase;
+                        
+                        // Blend factor varies from 0->1->0 to create smooth transitions
+                        const blendFactor = Math.sin(progress * Math.PI);
+                        
+                        // Blend the forward and reverse waves for perfect loop closure
+                        waveAngle = forwardAngle * blendFactor + reverseAngle * (1 - blendFactor);
+                        nextWaveAngle = forwardNextAngle * blendFactor + reverseNextAngle * (1 - blendFactor);
+                    } else {
+                        // Standard single-direction wave
+                        waveAngle = progress * Math.PI * 2 * exactCycles + phase;
+                        nextWaveAngle = nextProgress * Math.PI * 2 * exactCycles + phase;
+                    }
+                } else {
+                    // Standard calculation when looping is not needed
+                    waveAngle = progress * Math.PI * 2 * frequency + phase;
+                    nextWaveAngle = nextProgress * Math.PI * 2 * frequency + phase;
+                }
+                
+                let waveOffset, nextWaveOffset;
+                
+                // Calculate offsets based on wave type
+                switch (waveType) {
+                    case 'sine':
+                        waveOffset = Math.sin(waveAngle) * amplitude;
+                        nextWaveOffset = Math.sin(nextWaveAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        waveOffset = Math.cos(waveAngle) * amplitude;
+                        nextWaveOffset = Math.cos(nextWaveAngle) * amplitude;
+                        break;
+                    case 'square':
+                        waveOffset = (Math.sin(waveAngle) > 0 ? 1 : -1) * amplitude;
+                        nextWaveOffset = (Math.sin(nextWaveAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        waveOffset = (Math.asin(Math.sin(waveAngle)) * 2 / Math.PI) * amplitude;
+                        nextWaveOffset = (Math.asin(Math.sin(nextWaveAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        waveOffset = 0;
+                        nextWaveOffset = 0;
+                }
+                
+                // Calculate perpendicular offsets
+                const perpX = Math.sin(angle);
+                const perpY = -Math.cos(angle);
+                
+                // Apply perpendicular offsets to get wave points
+                const waveX = xPos + perpX * waveOffset;
+                const waveY = yPos + perpY * waveOffset;
+                const nextWaveX = nextXPos + perpX * nextWaveOffset;
+                const nextWaveY = nextYPos + perpY * nextWaveOffset;
+                
+                // Draw the segment
+                this.ctx.beginPath();
+                this.ctx.lineWidth = width;
+                this.ctx.moveTo(waveX, waveY);
+                this.ctx.lineTo(nextWaveX, nextWaveY);
+                this.ctx.stroke();
+            }
+        } else {
+            // For non-tapered waves, generate the complete path first
+            this.ctx.lineWidth = baseWidth;
+            this.ctx.beginPath();
+            
+            // Start at the beginning
+            const perpX = Math.sin(angle);
+            const perpY = -Math.cos(angle);
+            
+            // Calculate wave parameters
+            let exactCycles;
+            if (shouldLoop) {
+                // Force whole number of cycles for proper loop closure
+                exactCycles = Math.max(1, Math.round(frequency * length / 30));
+            } else {
+                exactCycles = frequency;
+            }
+            
+            // Calculate initial wave offset
+            let initialOffset;
+            const initialAngle = phase;
+            
+            // If using bidirectional waves for perfect loops
+            if (shouldLoop && useBidirectionalWaves) {
+                // For bidirectional waves, need special handling of the initial point
+                const forwardInitialAngle = initialAngle;
+                const reversePhase = phase + Math.PI;
+                const reverseInitialAngle = Math.PI * 2 * exactCycles + reversePhase;
+                const blendFactor = Math.sin(0); // At the start, sin(0) = 0
+                
+                // Calculate blended initial angle
+                const blendedInitialAngle = forwardInitialAngle * blendFactor + reverseInitialAngle * (1 - blendFactor);
+                
+                // Calculate initial offset based on wave type and blended angle
+                switch (waveType) {
+                    case 'sine':
+                        initialOffset = Math.sin(blendedInitialAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        initialOffset = Math.cos(blendedInitialAngle) * amplitude;
+                        break;
+                    case 'square':
+                        initialOffset = (Math.sin(blendedInitialAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        initialOffset = (Math.asin(Math.sin(blendedInitialAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        initialOffset = 0;
+                }
+            } else {
+                // Standard single-direction wave
+                switch (waveType) {
+                    case 'sine':
+                        initialOffset = Math.sin(initialAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        initialOffset = Math.cos(initialAngle) * amplitude;
+                        break;
+                    case 'square':
+                        initialOffset = (Math.sin(initialAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        initialOffset = (Math.asin(Math.sin(initialAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        initialOffset = 0;
+                }
+            }
+            
+            // Move to starting point with wave offset
+            this.ctx.moveTo(x1 + perpX * initialOffset, y1 + perpY * initialOffset);
+            
+            // Draw the wave points
+            if (shouldLoop && useBidirectionalWaves) {
+                // Use bidirectional blending for perfect loop closure
+                for (let i = 1; i <= segments; i++) {
+                    const progress = i / segments;
+                    const xPos = x1 + dx * progress;
+                    const yPos = y1 + dy * progress;
+                    
+                    // Create forward and reverse waves
+                    const forwardAngle = progress * Math.PI * 2 * exactCycles + phase;
+                    const reversePhase = phase + Math.PI;
+                    const reverseAngle = (1 - progress) * Math.PI * 2 * exactCycles + reversePhase;
+                    
+                    // Create blend factor with smooth sine curve (0 -> 1 -> 0)
+                    const blendFactor = Math.sin(progress * Math.PI);
+                    
+                    // Blend the forward and reverse angles
+                    const blendedAngle = forwardAngle * blendFactor + reverseAngle * (1 - blendFactor);
+                    
+                    // Calculate wave offset for the blended angle
+                    let waveOffset;
+                    switch (waveType) {
+                        case 'sine':
+                            waveOffset = Math.sin(blendedAngle) * amplitude;
+                            break;
+                        case 'cosine':
+                            waveOffset = Math.cos(blendedAngle) * amplitude;
+                            break;
+                        case 'square':
+                            waveOffset = (Math.sin(blendedAngle) > 0 ? 1 : -1) * amplitude;
+                            break;
+                        case 'triangle':
+                            waveOffset = (Math.asin(Math.sin(blendedAngle)) * 2 / Math.PI) * amplitude;
+                            break;
+                        default:
+                            waveOffset = 0;
+                    }
+                    
+                    // Apply perpendicular offset to get wave point
+                    const waveX = xPos + perpX * waveOffset;
+                    const waveY = yPos + perpY * waveOffset;
+                    
+                    // Add point to path
+                    this.ctx.lineTo(waveX, waveY);
+                }
+            } else {
+                // Standard single-direction wave
+                for (let i = 1; i <= segments; i++) {
+                    const progress = i / segments;
+                    const xPos = x1 + dx * progress;
+                    const yPos = y1 + dy * progress;
+                    
+                    // Calculate wave offset
+                    const waveAngle = progress * Math.PI * 2 * exactCycles + phase;
+                    let waveOffset;
+                    
+                    switch (waveType) {
+                        case 'sine':
+                            waveOffset = Math.sin(waveAngle) * amplitude;
+                            break;
+                        case 'cosine':
+                            waveOffset = Math.cos(waveAngle) * amplitude;
+                            break;
+                        case 'square':
+                            waveOffset = (Math.sin(waveAngle) > 0 ? 1 : -1) * amplitude;
+                            break;
+                        case 'triangle':
+                            waveOffset = (Math.asin(Math.sin(waveAngle)) * 2 / Math.PI) * amplitude;
+                            break;
+                        default:
+                            waveOffset = 0;
+                    }
+                    
+                    // Apply perpendicular offset to get wave point
+                    const waveX = xPos + perpX * waveOffset;
+                    const waveY = yPos + perpY * waveOffset;
+                    
+                    // Add point to path
+                    this.ctx.lineTo(waveX, waveY);
+                }
+            }
+            
+            // Stroke the complete path
+            this.ctx.stroke();
+        }
+    }
+    
+    /**
+     * Helper method to draw a spiral/vortex line
+     * @private
+     */
+    _drawSpiralLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const segments = Math.max(20, Math.floor(length / 5)); // Adjust segment count based on length
+        
+        // Check if line should be looped
+        const shouldLoop = lineSettings.loopLine !== undefined ? lineSettings.loopLine : true;
+        
+        // Spiral parameters
+        const spiralTightness = lineSettings.spiral?.tightness || 0.1;
+        const spiralGrowth = lineSettings.spiral?.growth || 1.5;
+        const maxRadius = lineSettings.spiral?.maxRadius || baseWidth * 2;
+        
+        this.ctx.beginPath();
+        
+        // Adjust spiral cycles for looping if needed
+        const revolutions = shouldLoop ? Math.round(5 * length / 100) : 5;
+        
+        for (let i = 0; i <= segments; i++) {
+            const progress = i / segments;
+            const xPos = x1 + dx * progress;
+            const yPos = y1 + dy * progress;
+            
+            // Calculate spiral effect
+            const spiralRadius = Math.min(maxRadius, progress * spiralGrowth * baseWidth);
+            const spiralAngle = progress * Math.PI * 2 * revolutions + this.time * 0.001; // Time dependent for animation
+            
+            // Calculate perpendicular vector 
+            const perpX = Math.sin(angle);
+            const perpY = -Math.cos(angle);
+            
+            // Calculate spiral offset
+            const offsetX = (Math.cos(spiralAngle) * spiralRadius) * perpX;
+            const offsetY = (Math.cos(spiralAngle) * spiralRadius) * perpY;
+            
+            // Apply offset
+            const spiralX = xPos + offsetX;
+            const spiralY = yPos + offsetY;
+            
+            // Draw point on spiral
+            if (i === 0) {
+                this.ctx.moveTo(spiralX, spiralY);
+            } else {
+                this.ctx.lineTo(spiralX, spiralY);
+            }
+        }
+        
+        this.ctx.lineWidth = baseWidth * 0.5; // Thinner line for spiral effect
+        this.ctx.stroke();
+    }
+    
+    /**
+     * Helper method to draw a ribbon line
+     * @private
+     */
+    _drawRibbonLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const segments = Math.max(20, Math.floor(length / 5));
+        
+        // Check if line should be looped
+        const shouldLoop = lineSettings.loopLine !== undefined ? lineSettings.loopLine : true;
+        
+        // Ribbon parameters
+        const ribbonWidth = lineSettings.ribbon?.width || baseWidth * 3;
+        let twistRate = lineSettings.ribbon?.twist || 2;
+        
+        // Adjust twist rate for looping if needed
+        if (shouldLoop) {
+            // Calculate how many complete twists should fit in the line
+            const twists = Math.round(twistRate * length / 100);
+            twistRate = twists / (length / 100);
+        }
+        
+        // Get perpendicular vectors
+        const perpX = Math.sin(angle);
+        const perpY = -Math.cos(angle);
+        
+        // Create two paths for the ribbon edges
+        const topPoints = [];
+        const bottomPoints = [];
+        
+        for (let i = 0; i <= segments; i++) {
+            const progress = i / segments;
+            const xPos = x1 + dx * progress;
+            const yPos = y1 + dy * progress;
+            
+            // Calculate twist angle
+            const twistAngle = progress * Math.PI * 2 * twistRate + (this.time * 0.001);
+            const ribbonOffset = Math.sin(twistAngle) * (ribbonWidth / 2);
+            
+            // Calculate edge points
+            topPoints.push({
+                x: xPos + perpX * ribbonOffset,
+                y: yPos + perpY * ribbonOffset
+            });
+            
+            bottomPoints.push({
+                x: xPos - perpX * ribbonOffset,
+                y: yPos - perpY * ribbonOffset
+            });
+        }
+        
+        // Draw filled ribbon
+        this.ctx.beginPath();
+        
+        // Top edge
+        this.ctx.moveTo(topPoints[0].x, topPoints[0].y);
+        for (let i = 1; i < topPoints.length; i++) {
+            this.ctx.lineTo(topPoints[i].x, topPoints[i].y);
+        }
+        
+        // Bottom edge (reverse)
+        for (let i = bottomPoints.length - 1; i >= 0; i--) {
+            this.ctx.lineTo(bottomPoints[i].x, bottomPoints[i].y);
+        }
+        
+        this.ctx.closePath();
+        
+        // Use a gradient fill for ribbon effect
+        const gradient = this.ctx.createLinearGradient(x1, y1, x2, y2);
+        gradient.addColorStop(0, this.ctx.strokeStyle);
+        gradient.addColorStop(0.5, this.ctx.strokeStyle + "44"); // Semi-transparent
+        gradient.addColorStop(1, this.ctx.strokeStyle);
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fill();
+        
+        // Outline
+        this.ctx.lineWidth = baseWidth * 0.3;
+        this.ctx.stroke();
+    }
+    
+    /**
+     * Helper method to draw a double line
+     * @private
+     */
+    _drawDoubleLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const angle = Math.atan2(dy, dx);
+        
+        // Double line parameters
+        const spacing = lineSettings.double?.spacing || baseWidth * 1.5;
+        const secondLineWidth = lineSettings.double?.secondLineWidth || baseWidth * 0.7;
+        
+        // Calculate perpendicular offset
+        const perpX = Math.sin(angle) * spacing;
+        const perpY = -Math.cos(angle) * spacing;
+        
+        // Draw first line
+        this.ctx.beginPath();
+        this.ctx.lineWidth = baseWidth;
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.stroke();
+        
+        // Draw second line
+        this.ctx.beginPath();
+        this.ctx.lineWidth = secondLineWidth;
+        this.ctx.moveTo(x1 + perpX, y1 + perpY);
+        this.ctx.lineTo(x2 + perpX, y2 + perpY);
+        this.ctx.stroke();
+    }
+    
+    /**
+     * Helper method to draw a complex dotted/dashed line
+     * @private
+     */
+    _drawComplexLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        
+        // Check if line should be looped (connect endpoints)
+        const shouldLoop = lineSettings.loopLine !== undefined ? lineSettings.loopLine : true;
+        
+        // Get complex pattern settings or use defaults
+        const pattern = lineSettings.complex?.pattern || [5, 2, 2, 2, 10, 2];
+        let dashOffset = lineSettings.complex?.offset || 0;
+        
+        // Adjust dash pattern for looping if needed
+        let adjustedPattern = [...pattern];
+        if (shouldLoop) {
+            // Calculate total pattern length
+            const patternLength = pattern.reduce((sum, val) => sum + val, 0);
+            // How many patterns fit in the line
+            const patternCount = Math.round(length / patternLength);
+            // Adjust dash offset to ensure pattern connects
+            const adjustedLength = patternCount * patternLength;
+            const scale = length / adjustedLength;
+            adjustedPattern = pattern.map(val => val * scale);
+        }
+        
+        // Animate dash offset
+        dashOffset += (this.time * 0.01);
+        if (shouldLoop) {
+            // Make dash offset wrap around for smooth animation
+            const patternLength = adjustedPattern.reduce((sum, val) => sum + val, 0);
+            dashOffset = dashOffset % patternLength;
+        }
+        
+        // Set complex dash pattern
+        this.ctx.beginPath();
+        this.ctx.lineWidth = baseWidth;
+        this.ctx.setLineDash(adjustedPattern);
+        this.ctx.lineDashOffset = dashOffset;
+        
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.stroke();
+        
+        // Reset dash pattern
+        this.ctx.setLineDash([]);
+    }
+
+    /**
+     * Draw a custom shape using a drawing function
+     * @param {Function} drawFunction - Function that will perform the actual drawing
+     * @param {Object} params - Parameters for the drawing function
+     */
+    drawCustomShape(drawFunction, params) {
+        if (typeof drawFunction === 'function') {
+            // Add drawLine method to the context so shape drawers can use line factory features
+            if (!this.ctx.drawLine) {
+                this.ctx.drawLine = (x1, y1, x2, y2, color, width, lineSettings) => {
+                    this.drawLine(x1, y1, x2, y2, color, width, lineSettings);
+                };
+            }
+            
+            // Pass the context and params to the custom drawing function
+            drawFunction(this.ctx, params);
+            
+            // Clean up afterwards to avoid memory leaks
+            delete this.ctx.drawLine;
+        }
+    }
+
+    /**
+     * Get the current 2D context (Canvas2D specific)
+     * @returns {CanvasRenderingContext2D}
+     */
+    getContext() {
+        return this.ctx;
+    }
+
+    /**
+     * Remove all event listeners and clean up resources
+     */
+    dispose() {
+        super.dispose();
+        if (this._cleanup) {
+            this._cleanup();
+        }
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
+        }
+        this.canvas = null;
+        this.ctx = null;
+    }
+}
+
+export default Canvas2DRenderer;

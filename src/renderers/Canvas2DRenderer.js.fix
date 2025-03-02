@@ -1,0 +1,329 @@
+// src/renderers/Canvas2DRenderer.js - Bidirectional Wave Extension
+// This file contains code changes to implement bidirectional waves for perfect loop closure
+
+// Import the original file
+import BaseRenderer from './BaseRenderer';
+
+/**
+ * Canvas2DRenderer - Implementation of the BaseRenderer for Canvas 2D rendering
+ * This version has enhanced support for perfect looping of sine waves using
+ * a bidirectional wave system that creates two opposing flows that blend together
+ */
+class Canvas2DRenderer extends BaseRenderer {
+    constructor(container, options = {}) {
+        super(container, options);
+        this.canvas = null;
+        this.ctx = null;
+        this.initialized = false;
+        this.time = 0; // Add time tracking for animations
+    }
+
+    // [All other methods remain the same]
+
+    // Modified _drawSineWaveLine method with bidirectional wave support
+    _drawSineWaveLine(x1, y1, x2, y2, baseWidth, lineSettings) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const segments = 40; // Number of segments to draw
+        
+        // Get sine wave settings with defaults
+        const waveType = lineSettings.sineWave.type || 'sine';
+        const amplitude = lineSettings.sineWave.amplitude || 5;
+        const frequency = lineSettings.sineWave.frequency || 0.1;
+        let phase = lineSettings.sineWave.phase || 0;
+        
+        // Apply animation if enabled
+        if (lineSettings.sineWave.animated) {
+            // Use the current time to animate the phase
+            phase += this.time * 0.001 * lineSettings.sineWave.speed;
+        }
+        
+        // Check if line should be looped (connect visually from end to start)
+        const shouldLoop = lineSettings.loopLine !== undefined ? lineSettings.loopLine : true;
+        
+        // Check if bidirectional wave mode is enabled (helps with perfect loop closure)
+        const useBidirectionalWaves = shouldLoop && lineSettings.bidirectionalWaves === true;
+        
+        // Check if we need to handle tapering
+        if (lineSettings.taper && lineSettings.taper.type !== 'none') {
+            // Draw segments with varying widths
+            for (let i = 0; i < segments; i++) {
+                const progress = i / segments;
+                const nextProgress = (i + 1) / segments;
+                
+                // Calculate width based on taper type
+                let width = baseWidth;
+                const taperType = lineSettings.taper.type;
+                const startWidth = lineSettings.taper.startWidth !== undefined ? lineSettings.taper.startWidth : 1;
+                const endWidth = lineSettings.taper.endWidth !== undefined ? lineSettings.taper.endWidth : 1;
+                
+                if (taperType === 'start') {
+                    width = baseWidth * (startWidth + progress * (1 - startWidth));
+                } else if (taperType === 'end') {
+                    width = baseWidth * (1 - (1 - endWidth) * progress);
+                } else if (taperType === 'both') {
+                    if (progress < 0.5) {
+                        width = baseWidth * (startWidth + progress * 2 * (1 - startWidth));
+                    } else {
+                        width = baseWidth * (1 - (1 - endWidth) * (progress - 0.5) * 2);
+                    }
+                } else if (taperType === 'middle') {
+                    if (progress < 0.5) {
+                        width = baseWidth * (1 - (1 - startWidth) * ((0.5 - progress) * 2));
+                    } else {
+                        width = baseWidth * (1 - (1 - endWidth) * ((progress - 0.5) * 2));
+                    }
+                }
+                
+                // Calculate positions along the original line
+                const xPos = x1 + dx * progress;
+                const yPos = y1 + dy * progress;
+                const nextXPos = x1 + dx * nextProgress;
+                const nextYPos = y1 + dy * nextProgress;
+                
+                // Calculate wave offset
+                let waveAngle, nextWaveAngle;
+                
+                if (shouldLoop) {
+                    // Force whole number of cycles for proper loop closure
+                    const exactCycles = Math.max(1, Math.round(frequency * length / 30));
+                    
+                    if (useBidirectionalWaves) {
+                        // Create a forward-flowing wave
+                        const forwardAngle = progress * Math.PI * 2 * exactCycles + phase;
+                        const forwardNextAngle = nextProgress * Math.PI * 2 * exactCycles + phase;
+                        
+                        // Create a reverse-flowing wave
+                        const reversePhase = phase + Math.PI; // Offset for visual distinction
+                        const reverseAngle = (1 - progress) * Math.PI * 2 * exactCycles + reversePhase;
+                        const reverseNextAngle = (1 - nextProgress) * Math.PI * 2 * exactCycles + reversePhase;
+                        
+                        // Blend factor varies from 0->1->0 to create smooth transitions
+                        const blendFactor = Math.sin(progress * Math.PI);
+                        
+                        // Blend the forward and reverse waves for perfect loop closure
+                        waveAngle = forwardAngle * blendFactor + reverseAngle * (1 - blendFactor);
+                        nextWaveAngle = forwardNextAngle * blendFactor + reverseNextAngle * (1 - blendFactor);
+                    } else {
+                        // Standard single-direction wave calculation
+                        waveAngle = progress * Math.PI * 2 * exactCycles + phase;
+                        nextWaveAngle = nextProgress * Math.PI * 2 * exactCycles + phase;
+                    }
+                } else {
+                    // Standard calculation when looping is not needed
+                    waveAngle = progress * Math.PI * 2 * frequency + phase;
+                    nextWaveAngle = nextProgress * Math.PI * 2 * frequency + phase;
+                }
+                
+                let waveOffset, nextWaveOffset;
+                
+                // Calculate offsets based on wave type
+                switch (waveType) {
+                    case 'sine':
+                        waveOffset = Math.sin(waveAngle) * amplitude;
+                        nextWaveOffset = Math.sin(nextWaveAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        waveOffset = Math.cos(waveAngle) * amplitude;
+                        nextWaveOffset = Math.cos(nextWaveAngle) * amplitude;
+                        break;
+                    case 'square':
+                        waveOffset = (Math.sin(waveAngle) > 0 ? 1 : -1) * amplitude;
+                        nextWaveOffset = (Math.sin(nextWaveAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        waveOffset = (Math.asin(Math.sin(waveAngle)) * 2 / Math.PI) * amplitude;
+                        nextWaveOffset = (Math.asin(Math.sin(nextWaveAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        waveOffset = 0;
+                        nextWaveOffset = 0;
+                }
+                
+                // Calculate perpendicular offsets
+                const perpX = Math.sin(angle);
+                const perpY = -Math.cos(angle);
+                
+                // Apply perpendicular offsets to get wave points
+                const waveX = xPos + perpX * waveOffset;
+                const waveY = yPos + perpY * waveOffset;
+                const nextWaveX = nextXPos + perpX * nextWaveOffset;
+                const nextWaveY = nextYPos + perpY * nextWaveOffset;
+                
+                // Draw the segment
+                this.ctx.beginPath();
+                this.ctx.lineWidth = width;
+                this.ctx.moveTo(waveX, waveY);
+                this.ctx.lineTo(nextWaveX, nextWaveY);
+                this.ctx.stroke();
+            }
+        } else {
+            // For non-tapered waves, generate the complete path first
+            this.ctx.lineWidth = baseWidth;
+            this.ctx.beginPath();
+            
+            // Start at the beginning
+            const perpX = Math.sin(angle);
+            const perpY = -Math.cos(angle);
+            
+            // Calculate wave parameters
+            let exactCycles;
+            if (shouldLoop) {
+                // Force whole number of cycles for proper loop closure
+                exactCycles = Math.max(1, Math.round(frequency * length / 30));
+            } else {
+                exactCycles = frequency;
+            }
+            
+            // Calculate initial offset for the wave
+            let initialOffset;
+            const initialAngle = phase;
+            
+            // If bidirectional waves are enabled, adjust the initial offset
+            if (shouldLoop && useBidirectionalWaves) {
+                // For bidirectional waves, we need to blend the forward and reverse waves
+                // at the starting point as well
+                const forwardAngle = 0 * Math.PI * 2 * exactCycles + phase;
+                const reversePhase = phase + Math.PI;
+                const reverseAngle = (1 - 0) * Math.PI * 2 * exactCycles + reversePhase;
+                
+                // At the start, blend factor is 0 (full reverse wave contribution)
+                const blendFactor = Math.sin(0);
+                const blendedAngle = forwardAngle * blendFactor + reverseAngle * (1 - blendFactor);
+                
+                // Calculate initial offset based on the blended angle
+                switch (waveType) {
+                    case 'sine':
+                        initialOffset = Math.sin(blendedAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        initialOffset = Math.cos(blendedAngle) * amplitude;
+                        break;
+                    case 'square':
+                        initialOffset = (Math.sin(blendedAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        initialOffset = (Math.asin(Math.sin(blendedAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        initialOffset = 0;
+                }
+            } else {
+                // Standard single-direction wave initial offset
+                switch (waveType) {
+                    case 'sine':
+                        initialOffset = Math.sin(initialAngle) * amplitude;
+                        break;
+                    case 'cosine':
+                        initialOffset = Math.cos(initialAngle) * amplitude;
+                        break;
+                    case 'square':
+                        initialOffset = (Math.sin(initialAngle) > 0 ? 1 : -1) * amplitude;
+                        break;
+                    case 'triangle':
+                        initialOffset = (Math.asin(Math.sin(initialAngle)) * 2 / Math.PI) * amplitude;
+                        break;
+                    default:
+                        initialOffset = 0;
+                }
+            }
+            
+            // Move to starting point with wave offset
+            this.ctx.moveTo(x1 + perpX * initialOffset, y1 + perpY * initialOffset);
+            
+            // Draw the wave points
+            if (shouldLoop && useBidirectionalWaves) {
+                // Draw points using bidirectional wave blending for perfect loop closure
+                for (let i = 1; i <= segments; i++) {
+                    const progress = i / segments;
+                    const xPos = x1 + dx * progress;
+                    const yPos = y1 + dy * progress;
+                    
+                    // Calculate forward-flowing wave
+                    const forwardAngle = progress * Math.PI * 2 * exactCycles + phase;
+                    
+                    // Calculate reverse-flowing wave (flows in opposite direction)
+                    const reversePhase = phase + Math.PI; // Add phase offset for distinction
+                    const reverseAngle = (1 - progress) * Math.PI * 2 * exactCycles + reversePhase;
+                    
+                    // Blend factor varies smoothly from 0->1->0 across the line
+                    // This creates perfect transitions at segment boundaries
+                    const blendFactor = Math.sin(progress * Math.PI);
+                    
+                    // Blend the two wave angles for a seamless combined wave
+                    const blendedAngle = forwardAngle * blendFactor + reverseAngle * (1 - blendFactor);
+                    
+                    // Calculate wave offset based on the blended angle
+                    let waveOffset;
+                    switch (waveType) {
+                        case 'sine':
+                            waveOffset = Math.sin(blendedAngle) * amplitude;
+                            break;
+                        case 'cosine':
+                            waveOffset = Math.cos(blendedAngle) * amplitude;
+                            break;
+                        case 'square':
+                            waveOffset = (Math.sin(blendedAngle) > 0 ? 1 : -1) * amplitude;
+                            break;
+                        case 'triangle':
+                            waveOffset = (Math.asin(Math.sin(blendedAngle)) * 2 / Math.PI) * amplitude;
+                            break;
+                        default:
+                            waveOffset = 0;
+                    }
+                    
+                    // Apply perpendicular offset to get wave point
+                    const waveX = xPos + perpX * waveOffset;
+                    const waveY = yPos + perpY * waveOffset;
+                    
+                    // Add point to path
+                    this.ctx.lineTo(waveX, waveY);
+                }
+            } else {
+                // Standard single-direction wave drawing
+                for (let i = 1; i <= segments; i++) {
+                    const progress = i / segments;
+                    const xPos = x1 + dx * progress;
+                    const yPos = y1 + dy * progress;
+                    
+                    // Calculate wave offset
+                    const waveAngle = progress * Math.PI * 2 * exactCycles + phase;
+                    let waveOffset;
+                    
+                    switch (waveType) {
+                        case 'sine':
+                            waveOffset = Math.sin(waveAngle) * amplitude;
+                            break;
+                        case 'cosine':
+                            waveOffset = Math.cos(waveAngle) * amplitude;
+                            break;
+                        case 'square':
+                            waveOffset = (Math.sin(waveAngle) > 0 ? 1 : -1) * amplitude;
+                            break;
+                        case 'triangle':
+                            waveOffset = (Math.asin(Math.sin(waveAngle)) * 2 / Math.PI) * amplitude;
+                            break;
+                        default:
+                            waveOffset = 0;
+                    }
+                    
+                    // Apply perpendicular offset to get wave point
+                    const waveX = xPos + perpX * waveOffset;
+                    const waveY = yPos + perpY * waveOffset;
+                    
+                    // Add point to path
+                    this.ctx.lineTo(waveX, waveY);
+                }
+            }
+            
+            // Stroke the complete path
+            this.ctx.stroke();
+        }
+    }
+    
+    // [All other methods would be copied here from the original file]
+}
+
+export default Canvas2DRenderer;
