@@ -652,6 +652,11 @@ class SacredGridRenderer {
         // Draw primary shape
         this.drawPrimaryShape(centerX, centerY);
         
+        // Draw secondary shape if enabled
+        if (shapes.secondary && shapes.secondary.enabled) {
+            this.drawSecondaryShape(centerX, centerY);
+        }
+        
         // Apply WebGL sacred geometry effects if available and enabled
         if (this.rendererType === RendererType.WEBGL && 
             this.renderer && 
@@ -720,6 +725,56 @@ class SacredGridRenderer {
                     primary.stacking.timeOffset +
                     i * primary.stacking.interval,
                     primary
+                );
+            }
+        }
+    }
+
+    drawSecondaryShape(centerX, centerY) {
+        const { shapes } = this.settings;
+        const { secondary } = shapes;
+
+        // Standard shape rendering
+
+        // Calculate position with offset
+        const shapeCenterX = centerX + secondary.position.offsetX;
+        const shapeCenterY = centerY + secondary.position.offsetY;
+
+        // Reset WebGL framebuffers before drawing different shape types
+        // This helps prevent artifacts between shape renders
+        if (this.renderer && this.rendererType === RendererType.WEBGL && 
+            typeof this.renderer.resetFramebuffers === "function") {
+            this.renderer.resetFramebuffers();
+        }
+        
+        // Use the regular shape drawing method
+        this.drawShape(
+            secondary.type,
+            shapeCenterX,
+            shapeCenterY,
+            secondary.size,
+            secondary.thickness,
+            secondary.opacity,
+            secondary.fractal.depth,
+            this.time,
+            secondary
+        );
+
+        // Draw stacked secondary shapes if enabled
+        if (secondary.stacking.enabled) {
+            for (let i = 0; i < secondary.stacking.count; i++) {
+                this.drawShape(
+                    secondary.type,
+                    shapeCenterX,
+                    shapeCenterY,
+                    secondary.size,
+                    secondary.thickness,
+                    secondary.opacity,
+                    secondary.fractal.depth,
+                    this.time +
+                    secondary.stacking.timeOffset +
+                    i * secondary.stacking.interval,
+                    secondary
                 );
             }
         }

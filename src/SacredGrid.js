@@ -129,6 +129,35 @@ const SacredGrid = () => {
     const [primaryStackingTimeOffset, setPrimaryStackingTimeOffset] = useState(-3000);
     const [primaryStackingInterval, setPrimaryStackingInterval] = useState(1000);
 
+    // Secondary Shape settings
+    const [secondaryEnabled, setSecondaryEnabled] = useState(false);
+    const [secondaryType, setSecondaryType] = useState(ShapeType.STAR);
+    const [secondarySize, setSecondarySize] = useState(250);
+    const [secondaryOpacity, setSecondaryOpacity] = useState(0.8);
+    const [secondaryThickness, setSecondaryThickness] = useState(4);
+    const [secondaryFractalDepth, setSecondaryFractalDepth] = useState(1);
+    const [secondaryFractalScale, setSecondaryFractalScale] = useState(0.5);
+    const [secondaryFractalThicknessFalloff, setSecondaryFractalThicknessFalloff] = useState(0.8);
+    const [secondaryFractalChildCount, setSecondaryFractalChildCount] = useState(3);
+    const [secondaryOffsetX, setSecondaryOffsetX] = useState(0);
+    const [secondaryOffsetY, setSecondaryOffsetY] = useState(0);
+    const [secondaryVertices, setSecondaryVertices] = useState(5);
+    const [secondaryRotation, setSecondaryRotation] = useState(36);
+    const [useSecondaryLineFactory, setUseSecondaryLineFactory] = useState(false);
+    const [secondaryAnimationMode, setSecondaryAnimationMode] = useState(AnimationMode.PULSE);
+    const [secondaryAnimationReverse, setSecondaryAnimationReverse] = useState(true);
+    const [secondaryAnimationSpeed, setSecondaryAnimationSpeed] = useState(0.0006);
+    const [secondaryAnimationIntensity, setSecondaryAnimationIntensity] = useState(0.3);
+    const [secondaryAnimationFadeIn, setSecondaryAnimationFadeIn] = useState(0.2);
+    const [secondaryAnimationFadeOut, setSecondaryAnimationFadeOut] = useState(0.2);
+
+    // Secondary stacking settings
+    const [secondaryStackingEnabled, setSecondaryStackingEnabled] = useState(true);
+    const [secondaryStackingCount, setSecondaryStackingCount] = useState(2);
+    const [secondaryStackingTimeOffset, setSecondaryStackingTimeOffset] = useState(1500);
+    const [secondaryStackingInterval, setSecondaryStackingInterval] = useState(1500);
+
+
     // Control panel visibility
     const [showControls, setShowControls] = useState(true);
     const toggleControls = () => setShowControls(prev => !prev);
@@ -261,6 +290,41 @@ const SacredGrid = () => {
                     interval: primaryStackingInterval,
                 },
             }
+            ,
+            secondary: {
+                enabled: secondaryEnabled,
+                type: secondaryType,
+                size: secondarySize,
+                opacity: secondaryOpacity,
+                thickness: secondaryThickness,
+                vertices: secondaryVertices,
+                rotation: secondaryRotation,
+                useLineFactory: useSecondaryLineFactory,
+                position: {
+                    offsetX: secondaryOffsetX,
+                    offsetY: secondaryOffsetY,
+                },
+                fractal: {
+                    depth: secondaryFractalDepth,
+                    scale: secondaryFractalScale,
+                    thicknessFalloff: secondaryFractalThicknessFalloff,
+                    childCount: secondaryFractalChildCount,
+                },
+                animation: {
+                    mode: secondaryAnimationMode,
+                    reverse: secondaryAnimationReverse,
+                    speed: secondaryAnimationSpeed,
+                    intensity: secondaryAnimationIntensity,
+                    fadeIn: secondaryAnimationFadeIn,
+                    fadeOut: secondaryAnimationFadeOut,
+                },
+                stacking: {
+                    enabled: secondaryStackingEnabled,
+                    count: secondaryStackingCount,
+                    timeOffset: secondaryStackingTimeOffset,
+                    interval: secondaryStackingInterval,
+                },
+            }
         },
     };
 
@@ -347,6 +411,32 @@ const SacredGrid = () => {
         setPrimaryStackingCount,
         setPrimaryStackingTimeOffset,
         setPrimaryStackingInterval,
+
+        // Secondary Shape setters
+        setSecondaryEnabled,
+        setSecondaryType,
+        setSecondarySize,
+        setSecondaryOpacity,
+        setSecondaryThickness,
+        setSecondaryVertices,
+        setSecondaryRotation,
+        setUseSecondaryLineFactory,
+        setSecondaryOffsetX,
+        setSecondaryOffsetY,
+        setSecondaryFractalDepth,
+        setSecondaryFractalScale,
+        setSecondaryFractalThicknessFalloff,
+        setSecondaryFractalChildCount,
+        setSecondaryAnimationMode,
+        setSecondaryAnimationReverse,
+        setSecondaryAnimationSpeed,
+        setSecondaryAnimationIntensity,
+        setSecondaryAnimationFadeIn,
+        setSecondaryAnimationFadeOut,
+        setSecondaryStackingEnabled,
+        setSecondaryStackingCount,
+        setSecondaryStackingTimeOffset,
+        setSecondaryStackingInterval,
     };
 
     // Handle exporting the canvas as an image

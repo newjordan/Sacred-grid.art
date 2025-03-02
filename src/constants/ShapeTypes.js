@@ -9,6 +9,7 @@ export const ShapeType = {
     LISSAJOUS: 'lissajous',
     HEXAGON: 'hexagon',
     PENTAGON: 'pentagon',
+    SECONDARY: 'secondary', // Added for secondary shape option
     // Add more as needed
 };
 
