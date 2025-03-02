@@ -17,6 +17,7 @@
   <a href="#examples">Examples</a> •
   <a href="#roadmap">Roadmap</a> •
   <a href="#contributing">Contributing</a> •
+  <a href="#sponsor">Sponsor</a> •
   <a href="#license">License</a>
 </p>
 
@@ -24,7 +25,7 @@
 
 View the live demo at: [https://sacred-grid.art](https://sacred-grid.art)
 
-![SacredGrid Canvas2D Demo](https://via.placeholder.com/800x400?text=SacredGrid+Canvas2D+Demo)
+![SacredGrid Canvas2D Demo](public/logo512.png)
 
 ## ✨ Features
 
@@ -138,7 +139,7 @@ For complete API documentation, see the [full documentation](docs/API.md).
 
 ### Basic Grid
 
-![Basic Grid](https://via.placeholder.com/400x200?text=Basic+Grid)
+<!-- Example visualization of a basic grid -->
 
 ```jsx
 <SacredGrid 
@@ -151,7 +152,7 @@ For complete API documentation, see the [full documentation](docs/API.md).
 
 ### Flower of Life
 
-![Flower of Life](https://via.placeholder.com/400x200?text=Flower+of+Life)
+<!-- Example visualization of the Flower of Life pattern -->
 
 ```jsx
 <SacredGrid 
@@ -169,7 +170,7 @@ For complete API documentation, see the [full documentation](docs/API.md).
 
 ### Fractal Star
 
-![Fractal Star](https://via.placeholder.com/400x200?text=Fractal+Star)
+<!-- Example visualization of a fractal star pattern -->
 
 ```jsx
 <SacredGrid 
@@ -208,6 +209,31 @@ See the [open issues](https://github.com/newjordan/sacred-grid.art/issues) for a
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 💝 Sponsor
+
+If you find Sacred Grid useful for your projects or appreciate our work in advancing sacred geometry visualization tools, please consider supporting the project:
+
+<p align="center">
+  <a href="https://www.patreon.com/Frosty40" target="_blank"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a Patron" height="45"></a>
+  &nbsp;&nbsp;
+  <a href="https://ko-fi.com/frosty40" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Buy Me A Coffee" height="45" width="180"></a>
+</p>
+
+Your support will help us:
+- Expand the library with more sacred geometry patterns
+- Maintain and improve performance
+- Create more examples and documentation
+- Support integrations with other frameworks
+- Respond to community requests
+
+If you're representing a company that would like to sponsor Sacred Grid, please reach out to Frosty40 on Patreon or Ko-fi for corporate sponsorship options.
+
+### Corporate Sponsors
+
+<p align="center">
+  <em>Become our first corporate sponsor! Contact Frosty40 on Patreon or Ko-fi for details.</em>
+</p>
 
 ## 📜 License
 
