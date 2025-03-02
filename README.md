@@ -217,6 +217,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Inspired by sacred geometry principles from various traditions
 - Built with React and modern JavaScript
+- Special thanks to Claude-Code and ChatGPT for AI assistance in development and documentation
 - Special thanks to all contributors and the open-source community
 
 ---
