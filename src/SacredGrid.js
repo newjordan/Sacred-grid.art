@@ -349,6 +349,21 @@ const SacredGrid = () => {
         setPrimaryStackingInterval,
     };
 
+    // Handle exporting the canvas as an image
+    const handleExportImage = () => {
+        if (rendererRef.current) {
+            const dataURL = rendererRef.current.exportAsImage();
+            if (dataURL) {
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = 'sacred-grid-' + new Date().toISOString().slice(0, 10) + '.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    };
+
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <SacredGridCanvas 
@@ -357,6 +372,7 @@ const SacredGrid = () => {
                 rendererType={rendererType}
                 showControls={showControls}
                 toggleControls={toggleControls}
+                onExport={handleExportImage}
             />
             
             {showControls && 
