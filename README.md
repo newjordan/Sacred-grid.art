@@ -1,11 +1,11 @@
-# SacredGrid Canvas2D
+# Sacred-grid.art
 
 <p align="center">
   <img src="public/logo512.png" alt="SacredGrid Canvas2D Logo" width="150" />
 </p>
 
 <p align="center">
-  An open-source Canvas2D implementation for creating and exploring sacred geometry patterns and visualizations in real-time.
+  A high-performance Canvas2D library for creating interactive sacred geometry visualizations. Render beautiful patterns like Flower of Life with real-time animations, custom shapes, and responsive design. Perfect for meditation apps and creative coding.
 </p>
 
 <p align="center">
@@ -49,8 +49,8 @@ View the live demo at: [https://sacredgrid.example.com](https://sacredgrid.examp
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sacredgrid-canvas2d.git
-cd sacredgrid-canvas2d
+git clone https://github.com/newjordan/Sacred-grid.art.git
+cd Sacred-grid.art
 
 # Install dependencies
 npm install
@@ -201,7 +201,7 @@ More examples can be found in the [examples directory](examples/).
 - [ ] Timeline editor for creating animated sequences
 - [ ] Node-based editor for complex pattern creation
 
-See the [open issues](https://github.com/yourusername/sacredgrid-canvas2d/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/newjordan/Sacred-grid.art/issues) for a full list of proposed features and known issues.
 
 ## 👥 Contributing
 
