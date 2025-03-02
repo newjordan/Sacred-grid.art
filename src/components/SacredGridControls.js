@@ -7,6 +7,7 @@ import MouseInteractionSection from './sections/MouseInteractionSection';
 import VisualSettingsSection from './sections/VisualSettingsSection';
 import LineFactorySection from './sections/LineFactorySection';
 import GradientSettingsSection from './sections/GradientSettingsSection';
+import SecondaryShapeSection from './sections/SecondaryShapeSection';
 import PrimaryShapeSection from './sections/PrimaryShapeSection';
 
 const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType }) => {
@@ -91,6 +92,14 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                 <PrimaryShapeSection 
                     settings={settings} 
                     setSettings={setSettings} 
+                />
+            </CollapsibleSection>
+            
+            {/* Secondary Shape Settings */}
+            <CollapsibleSection title="Secondary Shape Settings" initiallyOpen={false}>
+                <SecondaryShapeSection
+                    settings={settings}
+                    setSettings={setSettings}
                 />
             </CollapsibleSection>
         </div>
