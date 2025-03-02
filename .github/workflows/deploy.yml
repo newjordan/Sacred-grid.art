@@ -25,7 +25,12 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
+        
+      - name: Debug npm cache
+        run: |
+          echo "NPM cache directory:"
+          npm config get cache
         
       - name: Check Node version
         run: node --version
@@ -34,7 +39,14 @@ jobs:
         run: npm list --depth=0
       
       - name: Build with detailed logs
-        run: npm run build -- --verbose
+        run: |
+          echo "Starting build process..."
+          npm run build -- --verbose || {
+            echo "Build failed with exit code $?"
+            echo "Examining build logs..."
+            cat npm-debug.log* 2>/dev/null || echo "No npm-debug.log found"
+            exit 1
+          }
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
