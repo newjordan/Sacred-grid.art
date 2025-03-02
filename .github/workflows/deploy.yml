@@ -105,7 +105,8 @@ jobs:
           if [ ! -d "build" ] || [ -z "$(ls -A build 2>/dev/null)" ]; then
             echo "Build directory is missing or empty, creating minimal content for debugging"
             mkdir -p build
-            echo '<!DOCTYPE html>
+            cat > build/index.html << 'EOL'
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -146,7 +147,8 @@ jobs:
     </div>
   </main>
 </body>
-</html>' > build/index.html
+</html>
+EOL
           fi
       
       - name: Upload artifact
