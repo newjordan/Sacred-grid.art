@@ -34,7 +34,9 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
     
     const animationModeOptions = [
         { value: AnimationMode.GROW, label: 'Grow' },
-        { value: AnimationMode.PULSE, label: 'Pulse' }
+        { value: AnimationMode.PULSE, label: 'Pulse' },
+        { value: AnimationMode.ORBIT, label: 'Orbit' },
+        { value: AnimationMode.WAVEFORM, label: 'Waveform' }
     ];
     
     return (
@@ -297,6 +299,21 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                     value={settings.shapes.primary.fractal.childCount}
                     onChange={(e) => setSettings.setPrimaryFractalChildCount(parseInt(e.target.value))}
                 />
+                <ToggleSwitch
+                    label="Sacred Geometric Positioning"
+                    value={settings.shapes.primary.fractal.sacredPositioning}
+                    onChange={setSettings.setPrimaryFractalSacredPositioning}
+                    tooltip="Position fractals according to sacred geometry principles"
+                />
+                <RangeSlider
+                    label="Sacred Pattern Intensity"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={settings.shapes.primary.fractal.sacredIntensity}
+                    onChange={(e) => setSettings.setPrimaryFractalSacredIntensity(parseFloat(e.target.value))}
+                    tooltip="Controls the strength of the sacred geometric positioning"
+                />
             </FieldSet>
 
             <FieldSet legend="Primary Shape Animation">
@@ -342,6 +359,21 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                     step={0.01}
                     value={settings.shapes.primary.animation.fadeOut}
                     onChange={(e) => setSettings.setPrimaryAnimationFadeOut(parseFloat(e.target.value))}
+                />
+                <ToggleSwitch
+                    label="Variable Timing"
+                    value={settings.shapes.primary.animation.variableTiming}
+                    onChange={setSettings.setPrimaryVariableTiming}
+                    tooltip="Adds natural variation to animation timing"
+                />
+                <RangeSlider
+                    label="Stagger Delay"
+                    min={0}
+                    max={1000}
+                    step={10}
+                    value={settings.shapes.primary.animation.staggerDelay}
+                    onChange={(e) => setSettings.setPrimaryStaggerDelay(parseInt(e.target.value))}
+                    tooltip="Creates staggered initialization for a more organic feel"
                 />
             </FieldSet>
 
