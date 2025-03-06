@@ -566,6 +566,11 @@ class SacredGridRenderer {
     drawGridDots() {
         const { grid, colors, mouse } = this.settings;
         
+        // Check if vertices should be shown
+        if (grid.showVertices === false) {
+            return; // Exit early if vertices should not be displayed
+        }
+        
         // Performance optimization: Pre-calculate shared computations
         // and batch similar rendering operations
         const dotsToRender = [];

@@ -3,6 +3,7 @@ import FieldSet from '../controls/FieldSet';
 import RangeSlider from '../controls/RangeSlider';
 import ColorPicker from '../controls/ColorPicker';
 import SelectDropdown from '../controls/SelectDropdown';
+import ToggleSwitch from '../controls/ToggleSwitch';
 
 const VisualSettingsSection = ({ settings, setSettings, rendererType }) => {
     const colorSchemeOptions = [
