@@ -6,7 +6,65 @@ import ToggleSwitch from '../controls/ToggleSwitch';
 import { ShapeType, AnimationMode } from '../../constants/ShapeTypes';
 import PolygonEditorControl from '../PolygonEditorControl';
 
+// Test component for debugging toggle issues
+const TestToggle = () => {
+    const [testValue, setTestValue] = useState(false);
+    
+    return (
+        <div style={{ marginBottom: '10px', padding: '5px', border: '1px solid red' }}>
+            <p>Debug Toggle Test:</p>
+            <ToggleSwitch
+                label="Test Toggle"
+                value={testValue}
+                onChange={(val) => {
+                    console.log("Test toggle changed to:", val);
+                    setTestValue(val);
+                }}
+            />
+            <p>Current value: {testValue ? 'true' : 'false'}</p>
+        </div>
+    );
+};
+
 const SecondaryShapeSection = ({ settings, setSettings }) => {
+    // Local state for math settings that will be independent of the main settings object
+    const [useHarmonicRatio, setUseHarmonicRatio] = useState(false);
+    const [harmonicRatio, setHarmonicRatio] = useState("1:1");
+    const [useSymmetryGroup, setUseSymmetryGroup] = useState(false);
+    const [symmetryOperation, setSymmetryOperation] = useState("rotation");
+    
+    // Local state for randomizer settings
+    const [useRandomizer, setUseRandomizer] = useState(true);
+    const [randomizerScale, setRandomizerScale] = useState(0.15);
+    const [randomSeedOffset, setRandomSeedOffset] = useState(0);
+
+    // Apply local changes to the global settings when they change
+    React.useEffect(() => {
+        if (setSettings.setSecondaryUseHarmonicRatios) {
+            setSettings.setSecondaryUseHarmonicRatios(useHarmonicRatio);
+        }
+        if (setSettings.setSecondaryHarmonicRatio) {
+            setSettings.setSecondaryHarmonicRatio(harmonicRatio);
+        }
+        if (setSettings.setSecondaryUseSymmetryGroup) {
+            setSettings.setSecondaryUseSymmetryGroup(useSymmetryGroup);
+        }
+        if (setSettings.setSecondarySymmetryOperation) {
+            setSettings.setSecondarySymmetryOperation(symmetryOperation);
+        }
+        // Apply randomizer settings
+        if (setSettings.setUseRandomizer) {
+            setSettings.setUseRandomizer(useRandomizer);
+        }
+        if (setSettings.setRandomizerScale) {
+            setSettings.setRandomizerScale(randomizerScale);
+        }
+        if (setSettings.setRandomSeedOffset) {
+            setSettings.setRandomSeedOffset(randomSeedOffset);
+        }
+    }, [useHarmonicRatio, harmonicRatio, useSymmetryGroup, symmetryOperation, 
+        useRandomizer, randomizerScale, randomSeedOffset]);
+    
     // Local state for centering toggles
     const [centerSecondaryOffset, setCenterSecondaryOffset] = useState(false);
 
@@ -47,7 +105,9 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
     
     const animationModeOptions = [
         { value: AnimationMode.GROW, label: 'Grow' },
-        { value: AnimationMode.PULSE, label: 'Pulse' }
+        { value: AnimationMode.PULSE, label: 'Pulse' },
+        { value: AnimationMode.ORBIT, label: 'Orbit' },
+        { value: AnimationMode.WAVEFORM, label: 'Waveform' }
     ];
     
     return (
@@ -283,6 +343,21 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                             value={settings.shapes.secondary.fractal.childCount}
                             onChange={(e) => setSettings.setSecondaryFractalChildCount(parseInt(e.target.value))}
                         />
+                        <ToggleSwitch
+                            label="Sacred Geometric Positioning"
+                            value={settings.shapes.secondary.fractal.sacredPositioning}
+                            onChange={setSettings.setSecondaryFractalSacredPositioning}
+                            tooltip="Position fractals according to sacred geometry principles"
+                        />
+                        <RangeSlider
+                            label="Sacred Pattern Intensity"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={settings.shapes.secondary.fractal.sacredIntensity}
+                            onChange={(e) => setSettings.setSecondaryFractalSacredIntensity(parseFloat(e.target.value))}
+                            tooltip="Controls the strength of the sacred geometric positioning"
+                        />
                     </FieldSet>
 
                     <FieldSet legend="Secondary Shape Animation">
@@ -329,6 +404,21 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                             value={settings.shapes.secondary.animation.fadeOut}
                             onChange={(e) => setSettings.setSecondaryAnimationFadeOut(parseFloat(e.target.value))}
                         />
+                        <ToggleSwitch
+                            label="Variable Timing"
+                            value={settings.shapes.secondary.animation.variableTiming}
+                            onChange={setSettings.setSecondaryVariableTiming}
+                            tooltip="Adds natural variation to animation timing"
+                        />
+                        <RangeSlider
+                            label="Stagger Delay"
+                            min={0}
+                            max={1000}
+                            step={10}
+                            value={settings.shapes.secondary.animation.staggerDelay}
+                            onChange={(e) => setSettings.setSecondaryStaggerDelay(parseInt(e.target.value))}
+                            tooltip="Creates staggered initialization for a more organic feel"
+                        />
                     </FieldSet>
 
                     <FieldSet legend="Secondary Shape Stacking">
@@ -358,6 +448,91 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                             value={settings.shapes.secondary.stacking.interval}
                             onChange={(e) => setSettings.setSecondaryStackingInterval(parseInt(e.target.value))}
                         />
+                    </FieldSet>
+                    
+                    <FieldSet legend="Mathematical Relationships">
+                        <ToggleSwitch
+                            label="Use Harmonic Ratios"
+                            value={useHarmonicRatio}
+                            onChange={(value) => {
+                                console.log("Setting harmonic ratio to:", value);
+                                setUseHarmonicRatio(value);
+                            }}
+                        />
+                        {useHarmonicRatio && (
+                            <SelectDropdown
+                                label="Harmonic Ratio"
+                                value={harmonicRatio}
+                                onChange={(e) => {
+                                    setHarmonicRatio(e.target.value);
+                                }}
+                                options={[
+                                    { value: "1:1", label: "1:1 (Unison)" },
+                                    { value: "1:2", label: "1:2 (Octave)" },
+                                    { value: "2:3", label: "2:3 (Perfect Fifth)" },
+                                    { value: "3:4", label: "3:4 (Perfect Fourth)" },
+                                    { value: "3:5", label: "3:5 (Major Sixth)" },
+                                    { value: "4:5", label: "4:5 (Major Third)" },
+                                    { value: "5:8", label: "5:8 (Minor Sixth)" },
+                                    { value: "1:1.618", label: "1:φ (Golden Ratio)" }
+                                ]}
+                            />
+                        )}
+                        
+                        <ToggleSwitch
+                            label="Use Symmetry Group"
+                            value={useSymmetryGroup}
+                            onChange={(value) => {
+                                console.log("Setting symmetry group to:", value);
+                                setUseSymmetryGroup(value);
+                            }}
+                        />
+                        {useSymmetryGroup && (
+                            <SelectDropdown
+                                label="Symmetry Operation"
+                                value={symmetryOperation}
+                                onChange={(e) => {
+                                    setSymmetryOperation(e.target.value);
+                                }}
+                                options={[
+                                    { value: "rotation", label: "Rotation (Cn)" },
+                                    { value: "reflection", label: "Reflection" },
+                                    { value: "glideReflection", label: "Glide Reflection" },
+                                    { value: "rotation180", label: "180° Rotation" },
+                                    { value: "dihedral", label: "Dihedral (Dn)" }
+                                ]}
+                            />
+                        )}
+                        
+                        <div style={{ marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
+                            <ToggleSwitch
+                                label="Use Position Randomizer"
+                                value={useRandomizer}
+                                onChange={(value) => {
+                                    setUseRandomizer(value);
+                                }}
+                            />
+                            {useRandomizer && (
+                                <>
+                                    <RangeSlider
+                                        label="Randomizer Scale"
+                                        min={0}
+                                        max={0.5}
+                                        step={0.01}
+                                        value={randomizerScale}
+                                        onChange={(e) => setRandomizerScale(parseFloat(e.target.value))}
+                                    />
+                                    <RangeSlider
+                                        label="Random Seed"
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        value={randomSeedOffset}
+                                        onChange={(e) => setRandomSeedOffset(parseInt(e.target.value))}
+                                    />
+                                </>
+                            )}
+                        </div>
                     </FieldSet>
                 </>
             )}

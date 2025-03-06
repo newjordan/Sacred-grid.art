@@ -112,6 +112,8 @@ const SacredGrid = () => {
     const [primaryFractalScale, setPrimaryFractalScale] = useState(0.5);
     const [primaryFractalThicknessFalloff, setPrimaryFractalThicknessFalloff] = useState(0.8);
     const [primaryFractalChildCount, setPrimaryFractalChildCount] = useState(3);
+    const [primaryFractalSacredPositioning, setPrimaryFractalSacredPositioning] = useState(true);
+    const [primaryFractalSacredIntensity, setPrimaryFractalSacredIntensity] = useState(0.5);
     const [primaryOffsetX, setPrimaryOffsetX] = useState(0);
     const [primaryOffsetY, setPrimaryOffsetY] = useState(0);
     const [primaryVertices, setPrimaryVertices] = useState(3);
@@ -123,6 +125,8 @@ const SacredGrid = () => {
     const [primaryAnimationIntensity, setPrimaryAnimationIntensity] = useState(0.2);
     const [primaryAnimationFadeIn, setPrimaryAnimationFadeIn] = useState(0.2);
     const [primaryAnimationFadeOut, setPrimaryAnimationFadeOut] = useState(0.2);
+    const [primaryVariableTiming, setPrimaryVariableTiming] = useState(true);
+    const [primaryStaggerDelay, setPrimaryStaggerDelay] = useState(100);
 
     // Primary stacking settings
     const [primaryStackingEnabled, setPrimaryStackingEnabled] = useState(true);
@@ -140,6 +144,8 @@ const SacredGrid = () => {
     const [secondaryFractalScale, setSecondaryFractalScale] = useState(0.5);
     const [secondaryFractalThicknessFalloff, setSecondaryFractalThicknessFalloff] = useState(0.8);
     const [secondaryFractalChildCount, setSecondaryFractalChildCount] = useState(3);
+    const [secondaryFractalSacredPositioning, setSecondaryFractalSacredPositioning] = useState(true);
+    const [secondaryFractalSacredIntensity, setSecondaryFractalSacredIntensity] = useState(0.5);
     const [secondaryOffsetX, setSecondaryOffsetX] = useState(0);
     const [secondaryOffsetY, setSecondaryOffsetY] = useState(0);
     const [secondaryVertices, setSecondaryVertices] = useState(5);
@@ -151,12 +157,24 @@ const SacredGrid = () => {
     const [secondaryAnimationIntensity, setSecondaryAnimationIntensity] = useState(0.3);
     const [secondaryAnimationFadeIn, setSecondaryAnimationFadeIn] = useState(0.2);
     const [secondaryAnimationFadeOut, setSecondaryAnimationFadeOut] = useState(0.2);
+    const [secondaryVariableTiming, setSecondaryVariableTiming] = useState(true);
+    const [secondaryStaggerDelay, setSecondaryStaggerDelay] = useState(150);
 
     // Secondary stacking settings
     const [secondaryStackingEnabled, setSecondaryStackingEnabled] = useState(true);
     const [secondaryStackingCount, setSecondaryStackingCount] = useState(2);
     const [secondaryStackingTimeOffset, setSecondaryStackingTimeOffset] = useState(1500);
     const [secondaryStackingInterval, setSecondaryStackingInterval] = useState(1500);
+    
+    // Secondary mathematical relationships
+    const [secondaryUseHarmonicRatios, setSecondaryUseHarmonicRatios] = useState(false);
+    const [secondaryHarmonicRatio, setSecondaryHarmonicRatio] = useState("1:1");
+    const [secondaryUseSymmetryGroup, setSecondaryUseSymmetryGroup] = useState(false);
+    const [secondarySymmetryOperation, setSecondarySymmetryOperation] = useState("rotation");
+    // Randomizer settings
+    const [useRandomizer, setUseRandomizer] = useState(true);
+    const [randomizerScale, setRandomizerScale] = useState(0.15); // Default 15% of primary size
+    const [randomSeedOffset, setRandomSeedOffset] = useState(0); // Allows changing the seed pattern
 
 
     // Control panel visibility
@@ -276,6 +294,8 @@ const SacredGrid = () => {
                     scale: primaryFractalScale,
                     thicknessFalloff: primaryFractalThicknessFalloff,
                     childCount: primaryFractalChildCount,
+                    sacredPositioning: primaryFractalSacredPositioning,
+                    sacredIntensity: primaryFractalSacredIntensity
                 },
                 animation: {
                     mode: primaryAnimationMode,
@@ -284,6 +304,8 @@ const SacredGrid = () => {
                     intensity: primaryAnimationIntensity,
                     fadeIn: primaryAnimationFadeIn,
                     fadeOut: primaryAnimationFadeOut,
+                    variableTiming: primaryVariableTiming,
+                    staggerDelay: primaryStaggerDelay,
                 },
                 stacking: {
                     enabled: primaryStackingEnabled,
@@ -311,6 +333,8 @@ const SacredGrid = () => {
                     scale: secondaryFractalScale,
                     thicknessFalloff: secondaryFractalThicknessFalloff,
                     childCount: secondaryFractalChildCount,
+                    sacredPositioning: secondaryFractalSacredPositioning,
+                    sacredIntensity: secondaryFractalSacredIntensity
                 },
                 animation: {
                     mode: secondaryAnimationMode,
@@ -319,12 +343,23 @@ const SacredGrid = () => {
                     intensity: secondaryAnimationIntensity,
                     fadeIn: secondaryAnimationFadeIn,
                     fadeOut: secondaryAnimationFadeOut,
+                    variableTiming: secondaryVariableTiming,
+                    staggerDelay: secondaryStaggerDelay,
                 },
                 stacking: {
                     enabled: secondaryStackingEnabled,
                     count: secondaryStackingCount,
                     timeOffset: secondaryStackingTimeOffset,
                     interval: secondaryStackingInterval,
+                    mathRelationships: {
+                        useRandomizer: useRandomizer,
+                        randomizerScale: randomizerScale,
+                        randomSeedOffset: randomSeedOffset,
+                        useHarmonicRatios: secondaryUseHarmonicRatios,
+                        harmonicRatio: secondaryHarmonicRatio,
+                        useSymmetryGroup: secondaryUseSymmetryGroup,
+                        symmetryOperation: secondarySymmetryOperation,
+                    },
                 },
             }
         },
@@ -404,12 +439,16 @@ const SacredGrid = () => {
         setPrimaryFractalScale,
         setPrimaryFractalThicknessFalloff,
         setPrimaryFractalChildCount,
+        setPrimaryFractalSacredPositioning,
+        setPrimaryFractalSacredIntensity,
         setPrimaryAnimationMode,
         setPrimaryAnimationReverse,
         setPrimaryAnimationSpeed,
         setPrimaryAnimationIntensity,
         setPrimaryAnimationFadeIn,
         setPrimaryAnimationFadeOut,
+        setPrimaryVariableTiming,
+        setPrimaryStaggerDelay,
         setPrimaryStackingEnabled,
         setPrimaryStackingCount,
         setPrimaryStackingTimeOffset,
@@ -430,16 +469,31 @@ const SacredGrid = () => {
         setSecondaryFractalScale,
         setSecondaryFractalThicknessFalloff,
         setSecondaryFractalChildCount,
+        setSecondaryFractalSacredPositioning,
+        setSecondaryFractalSacredIntensity,
         setSecondaryAnimationMode,
         setSecondaryAnimationReverse,
         setSecondaryAnimationSpeed,
         setSecondaryAnimationIntensity,
         setSecondaryAnimationFadeIn,
         setSecondaryAnimationFadeOut,
+        setSecondaryVariableTiming,
+        setSecondaryStaggerDelay,
         setSecondaryStackingEnabled,
         setSecondaryStackingCount,
         setSecondaryStackingTimeOffset,
         setSecondaryStackingInterval,
+        
+        // Secondary math relationship setters
+        setSecondaryUseHarmonicRatios,
+        setSecondaryHarmonicRatio,
+        setSecondaryUseSymmetryGroup,
+        setSecondarySymmetryOperation,
+        
+        // Randomizer setters
+        setUseRandomizer,
+        setRandomizerScale,
+        setRandomSeedOffset,
     };
 
     // Handle exporting the canvas as an image
