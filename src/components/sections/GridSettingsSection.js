@@ -27,6 +27,11 @@ const GridSettingsSection = ({ settings, setSettings }) => {
                 value={settings.grid.baseDotSize}
                 onChange={(e) => setSettings.setBaseDotSize(parseInt(e.target.value))}
             />
+            <ToggleSwitch
+                label="Show Vertices"
+                value={settings.grid.showVertices}
+                onChange={setSettings.setShowVertices}
+            />
             <RangeSlider
                 label="Connection Opacity"
                 min={0}
