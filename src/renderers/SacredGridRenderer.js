@@ -15,6 +15,7 @@ import {
 } from '../shapes/ShapeDrawers';
 import RendererFactory, { RendererType } from './RendererFactory';
 import { getMultiEasedColor, getShapeColor } from '../utils/drawingUtils';
+import { calculateAnimationParams } from '../shapes/ShapeUtils';
 
 class SacredGridRenderer {
     constructor(container, settings, rendererType = RendererType.CANVAS_2D) {
@@ -211,14 +212,35 @@ class SacredGridRenderer {
             console.warn(`Shape type '${shapeType}' not found`);
             return;
         }
+        
+        // Calculate animation parameters including the new movement parameters
+        const { offsetX = 0, offsetY = 0, rotationOffset = 0 } = shapeSettings.animation ? 
+            calculateAnimationParams(time, shapeSettings, this.settings) : 
+            { offsetX: 0, offsetY: 0, rotationOffset: 0 };
+            
+        // Apply position offsets from animation
+        const adjustedCx = cx + offsetX;
+        const adjustedCy = cy + offsetY;
+        
+        // Apply rotation offset if needed
+        let adjustedRotation = shapeSettings.rotation || 0;
+        if (rotationOffset) {
+            adjustedRotation += rotationOffset;
+        }
+        
+        // Create a modified shape settings object with the adjusted rotation
+        const adjustedSettings = {
+            ...shapeSettings,
+            rotation: adjustedRotation
+        };
 
-        // Draw the shape
+        // Draw the shape with adjusted position
         this.renderer.drawCustomShape(drawFunc, {
-            cx,
-            cy,
+            cx: adjustedCx,
+            cy: adjustedCy,
             radius,
             thickness,
-            shapeSettings,
+            shapeSettings: adjustedSettings,
             time,
             globalSettings: this.settings,
         });
@@ -227,16 +249,47 @@ class SacredGridRenderer {
         if (fractalDepth > 1 && shapeSettings.fractal) {
             this.drawRecursiveShapes(
                 shapeType,
-                cx,
-                cy,
+                adjustedCx, // Use the adjusted position for fractals too
+                adjustedCy,
                 radius,
                 thickness,
                 opacity,
                 fractalDepth,
                 time,
-                shapeSettings
+                adjustedSettings // Use the adjusted settings for fractals
             );
         }
+    }
+
+    // Store pattern type selection for each shape to ensure consistency
+    _shapePatternTypes = new Map();
+    
+    // Generate unique key for a shape
+    _getShapeKey(shapeType, shapeSettings) {
+        return `${shapeType}_${shapeSettings.vertices || 3}_${shapeSettings.position?.offsetX || 0}_${shapeSettings.position?.offsetY || 0}`;
+    }
+    
+    // Get a stable pattern type for a shape
+    _getStablePatternType(shapeType, shapeSettings) {
+        const shapeKey = this._getShapeKey(shapeType, shapeSettings);
+        
+        if (!this._shapePatternTypes.has(shapeKey)) {
+            // Create a deterministic but unique pattern selection for this shape
+            const seed = (shapeType.charCodeAt(0) || 0) + 
+                        (shapeSettings.vertices || 3) * 10;
+                        
+            // Function to get a seeded random number (0-1)
+            const seededRandom = (n) => {
+                const x = Math.sin(n * 9999) * 10000;
+                return x - Math.floor(x);
+            };
+            
+            // Select pattern type (0-4) deterministically
+            const patternType = Math.floor(seededRandom(seed) * 5);
+            this._shapePatternTypes.set(shapeKey, patternType);
+        }
+        
+        return this._shapePatternTypes.get(shapeKey);
     }
 
     drawRecursiveShapes(shapeType, cx, cy, radius, thickness, opacity, fractalDepth, time, shapeSettings) {
@@ -250,13 +303,207 @@ class SacredGridRenderer {
         // Child count from fractal settings or default to 3
         const childCount = fractal.childCount || 3;
         const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
-
+        
+        // Mathematical constants for sacred geometry
+        const PHI = 1.618033988749895; // Golden ratio
+        const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5)); // ≈ 137.5° in radians
+        const SQRT3 = Math.sqrt(3);
+        const SQRT5 = Math.sqrt(5);
+        
+        // Determine if we should use sacred positioning
+        const useSacredPositioning = fractal.sacredPositioning;
+        const sacredIntensity = fractal.sacredIntensity || 0.5;
+        
+        // Create a stable seed based on shape properties (exclude time to avoid jitter)
+        const seed = (shapeType.charCodeAt(0) || 0) + 
+                    (shapeSettings.vertices || 3) * 10 +
+                    Math.round(fractalDepth * 100);
+                    
+        // Function to get a seeded random number (0-1)
+        const seededRandom = (n) => {
+            const x = Math.sin(n * 9999) * 10000;
+            return x - Math.floor(x);
+        };
+        
+        // Get a consistent pattern type for this shape (independent of time)
+        const patternType = this._getStablePatternType(shapeType, shapeSettings);
+        
+        // Calculate a stable rotation offset for the pattern
+        // This ensures consistency across fractal levels
+        const patternRotationOffset = seededRandom(seed) * Math.PI * 2;
+        
+        // Pre-calculate any fixed pattern parameters to ensure consistency
+        const fixedPatternParams = {};
+        
+        // Setup fixed parameters based on pattern type
+        switch(patternType) {
+            case 1: // Fibonacci grid
+                fixedPatternParams.fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55];
+                fixedPatternParams.maxFib = fixedPatternParams.fib[fixedPatternParams.fib.length-1];
+                break;
+                
+            case 3: // Metatron's Cube
+                fixedPatternParams.slice = 2 * Math.PI / 6; // Hexagonal symmetry
+                break;
+        }
+        
         for (let i = 0; i < childCount; i++) {
-            const childAngle = (i * 2 * Math.PI) / childCount + rotation;
-            const offsetX = radius * Math.cos(childAngle);
-            const offsetY = radius * Math.sin(childAngle);
+            let offsetX, offsetY;
+            
+            if (useSacredPositioning) {
+                // Calculate base angle for equal spacing - use stable pattern rotation
+                const baseAngle = (i * 2 * Math.PI) / childCount + rotation + patternRotationOffset;
+                
+                switch(patternType) {
+                    case 0: // Golden ratio spiral positions
+                        // Each point is placed at golden ratio intervals along a spiral
+                        // Use a consistent angle progression for stability
+                        const spiralAngle = baseAngle + (GOLDEN_ANGLE * i * (fractalDepth + 1));
+                        // Normalize the spiral radius to ensure it stays within bounds
+                        const spiralProgress = i / Math.max(childCount - 1, 1);
+                        const spiralRadius = radius * (0.6 + 0.4 * Math.pow(PHI, -spiralProgress));
+                        offsetX = spiralRadius * Math.cos(spiralAngle);
+                        offsetY = spiralRadius * Math.sin(spiralAngle);
+                        break;
+                        
+                    case 1: // Fibonacci grid positions
+                        // Position based on Fibonacci sequence numbers as coordinates
+                        // Using deterministic index selection based on child index and fractal depth
+                        const { fib, maxFib } = fixedPatternParams;
+                        // Create stable indices based on child position in pattern
+                        const stableIdx1 = (i * (fractalDepth + 1)) % fib.length;
+                        const stableIdx2 = ((i * 3) + fractalDepth) % fib.length;
+                        
+                        // Normalize to keep within radius - maintain consistency across levels
+                        const normX = (fib[stableIdx1] / maxFib) * 2 - 1; // -1 to 1 range
+                        const normY = (fib[stableIdx2] / maxFib) * 2 - 1;
+                        
+                        // Apply rotation to maintain the overall pattern structure
+                        // Use stable angle calculations
+                        const fibAngle = baseAngle * 0.5; // gentler rotation
+                        const rotatedX = normX * Math.cos(fibAngle) - normY * Math.sin(fibAngle);
+                        const rotatedY = normX * Math.sin(fibAngle) + normY * Math.cos(fibAngle);
+                        
+                        offsetX = radius * rotatedX * 0.75; // Scale down slightly for better containment
+                        offsetY = radius * rotatedY * 0.75;
+                        break;
+                        
+                    case 2: // Platonic solid vertex positions
+                        // Use vertices of platonic solids projected onto a sphere
+                        // These create fundamental sacred geometry forms
+                        
+                        if (childCount <= 4) {
+                            // Tetrahedron vertices (simplex) - stable across fractal levels
+                            const tetrahedronVerts = [
+                                [1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]
+                            ];
+                            // Use consistent index calculation
+                            const vertIndex = (i + fractalDepth) % 4;
+                            const vert = tetrahedronVerts[vertIndex];
+                            
+                            // Project 3D point onto 2D circle with consistent scaling
+                            const len = Math.sqrt(vert[0]*vert[0] + vert[1]*vert[1] + vert[2]*vert[2]);
+                            offsetX = radius * (vert[0] / len) * 0.7; // Slightly reduced scale for better appearance
+                            offsetY = radius * (vert[1] / len) * 0.7;
+                        }
+                        else if (childCount <= 6) {
+                            // Octahedron vertices - use stable angle calculation
+                            const octAngle = patternRotationOffset + i * (Math.PI / 3);
+                            // Use a consistent alternation pattern
+                            const altFactor = ((i + fractalDepth) % 2) ? 0.7 : -0.7;
+                            offsetX = radius * Math.cos(octAngle) * 0.8;
+                            offsetY = radius * Math.sin(octAngle) * altFactor;
+                        }
+                        else {
+                            // Icosahedron-inspired vertices (more vertices)
+                            // Use stable angle calculations
+                            const icoAngle1 = patternRotationOffset + (i * GOLDEN_ANGLE);
+                            const icoAngle2 = patternRotationOffset + ((i+1) * GOLDEN_ANGLE);
+                            // Create stable blend factor
+                            const blend = ((i + fractalDepth) % 3) / 2; // 0, 0.5, or 1
+                            
+                            offsetX = radius * (Math.cos(icoAngle1) * (1-blend) + Math.cos(icoAngle2) * blend) * 0.8;
+                            offsetY = radius * (Math.sin(icoAngle1) * (1-blend) + Math.sin(icoAngle2) * blend) * 0.8;
+                        }
+                        break;
+                        
+                    case 3: // Metatron's Cube point positions
+                        // Based on the Flower of Life and Metatron's Cube geometry
+                        // These points create a powerful sacred geometry framework
+                        
+                        const { slice } = fixedPatternParams;
+                        // Use stable ring and segment calculations
+                        const ring = 1 + ((i + fractalDepth) % 3); // 1, 2, or 3 rings
+                        const segment = i % 6; // 0-5 (six segments)
+                        
+                        // Calculate polar coordinates based on Metatron's Cube structure
+                        const metaAngle = segment * slice + patternRotationOffset;
+                        // Use normalized radius to ensure consistent spacing
+                        const metaRadiusFactor = 0.3 + (0.2 * ring);
+                        
+                        offsetX = radius * metaRadiusFactor * Math.cos(metaAngle);
+                        offsetY = radius * metaRadiusFactor * Math.sin(metaAngle);
+                        break;
+                        
+                    case 4: // Sri Yantra pattern (interlocking triangles)
+                        // Triangular patterns that form the Sri Yantra
+                        // Use stable index calculations
+                        const triIndex = (i + fractalDepth) % 3;
+                        // Alternate triangles in a consistent way
+                        const isUpward = ((i + fractalDepth) % 2 === 0);
+                        
+                        // Triangle angle - use pattern rotation for consistency
+                        const triAngle = patternRotationOffset + (triIndex * 2 * Math.PI / 3) + (isUpward ? 0 : Math.PI/3);
+                        
+                        // Use consistent radius calculations
+                        const radiusFactor = 0.5 + (isUpward ? 0.2 : 0);
+                        
+                        offsetX = radius * radiusFactor * Math.cos(triAngle);
+                        offsetY = radius * radiusFactor * Math.sin(triAngle);
+                        break;
+                        
+                    default: // Fallback to standard positioning
+                        const defaultAngle = (i * 2 * Math.PI) / childCount + rotation;
+                        offsetX = radius * Math.cos(defaultAngle);
+                        offsetY = radius * Math.sin(defaultAngle);
+                }
+                
+                // Apply smooth damping to avoid extreme positions
+                // This helps limit any jitter or extreme positioning
+                const maxOffset = radius * 0.9; // Maximum 90% of radius
+                offsetX = Math.max(-maxOffset, Math.min(maxOffset, offsetX));
+                offsetY = Math.max(-maxOffset, Math.min(maxOffset, offsetY));
+                
+                // If the sacred intensity is less than 1, blend with the standard circular arrangement
+                if (sacredIntensity < 1) {
+                    const standardAngle = (i * 2 * Math.PI) / childCount + rotation;
+                    const standardX = radius * Math.cos(standardAngle);
+                    const standardY = radius * Math.sin(standardAngle);
+                    
+                    // Blend sacred and standard positions based on intensity
+                    offsetX = offsetX * sacredIntensity + standardX * (1 - sacredIntensity);
+                    offsetY = offsetY * sacredIntensity + standardY * (1 - sacredIntensity);
+                }
+            } else {
+                // Standard circular arrangement if sacred positioning is disabled
+                const childAngle = (i * 2 * Math.PI) / childCount + rotation;
+                offsetX = radius * Math.cos(childAngle);
+                offsetY = radius * Math.sin(childAngle);
+            }
 
             // Draw child shape (recursive call)
+            // Create child-specific animation parameters for more variation
+            const childShapeSettings = {
+                ...shapeSettings,
+                // Add a slight phase shift for each child to create more varied movement
+                animation: shapeSettings.animation ? {
+                    ...shapeSettings.animation,
+                    // Add a child-specific delay factor for more organic movement
+                    childPhaseShift: i / childCount // Varies from 0 to almost 1
+                } : shapeSettings.animation
+            };
+            
+            // Recursive call with enhanced child settings
             this.drawShape(
                 shapeType,
                 cx + offsetX,
@@ -266,7 +513,7 @@ class SacredGridRenderer {
                 newOpacity,
                 fractalDepth - 1,
                 time,
-                shapeSettings
+                childShapeSettings
             );
         }
     }
@@ -737,14 +984,161 @@ class SacredGridRenderer {
 
     drawSecondaryShape(centerX, centerY) {
         const { shapes } = this.settings;
-        const { secondary } = shapes;
-
-        // Standard shape rendering
+        const { primary, secondary } = shapes;
 
         // Calculate position with offset
-        const shapeCenterX = centerX + secondary.position.offsetX;
-        const shapeCenterY = centerY + secondary.position.offsetY;
-
+        let shapeCenterX = centerX + secondary.position.offsetX;
+        let shapeCenterY = centerY + secondary.position.offsetY;
+        
+        // Get the primary shape center for reference if needed
+        const primaryCenterX = centerX + primary.position.offsetX;
+        const primaryCenterY = centerY + primary.position.offsetY;
+        
+        // Processed values that might be modified by mathematical relationships
+        let shapeType = secondary.type;
+        let shapeSize = secondary.size;
+        let shapeThickness = secondary.thickness;
+        let shapeOpacity = secondary.opacity;
+        let shapeFractalDepth = secondary.fractal.depth;
+        let shapeRotation = secondary.rotation;
+        
+        // Apply harmonic ratio relationships if enabled
+        if (secondary.mathRelationships && secondary.mathRelationships.useHarmonicRatios === true) {
+            const harmonicRatio = secondary.mathRelationships.harmonicRatio || "1:1";
+            
+            // Parse the ratio into numerator and denominator
+            let ratio = 1;
+            if (harmonicRatio === "1:1.618") {
+                // Special case for golden ratio
+                ratio = 1 / 1.618;
+            } else {
+                const [numerator, denominator] = harmonicRatio.split(':').map(Number);
+                if (numerator && denominator) {
+                    ratio = numerator / denominator;
+                }
+            }
+            
+            // Apply ratio to size
+            shapeSize = primary.size * ratio;
+            
+            // Apply ratio to thickness with a balanced approach
+            // Square root provides a more pleasing relationship for thickness
+            shapeThickness = primary.thickness * Math.sqrt(ratio);
+            
+            // Enhanced motion: Add orbit-like movement based on the time and harmonic ratio
+            // This creates a circular motion with radius proportional to the ratio
+            const orbitSpeed = 0.0005; // Controls how fast the shape orbits
+            const orbitRadius = primary.size * 0.2 * ratio; // Radius scales with the harmonic ratio
+            const orbitPhase = this.time * orbitSpeed;
+            
+            // Apply orbital motion to the shape position
+            shapeCenterX += Math.cos(orbitPhase) * orbitRadius;
+            shapeCenterY += Math.sin(orbitPhase) * orbitRadius;
+        }
+        
+        // Apply symmetry operations if enabled
+        if (secondary.mathRelationships && secondary.mathRelationships.useSymmetryGroup === true) {
+            const operation = secondary.mathRelationships.symmetryOperation || "rotation";
+            
+            // Add time-dependent animation for more dynamic motion
+            const animTime = this.time * 0.001; // Slow down time for animation
+            
+            switch (operation) {
+                case "rotation":
+                    // Apply a time-varying rotation around the primary shape center
+                    // Instead of fixed 90 degrees, we animate the rotation angle
+                    const rotAngle = Math.PI/2 + Math.sin(animTime * 0.5) * Math.PI/4; // Varies between 45° and 135°
+                    const dx = shapeCenterX - primaryCenterX;
+                    const dy = shapeCenterY - primaryCenterY;
+                    
+                    const cosRot = Math.cos(rotAngle);
+                    const sinRot = Math.sin(rotAngle);
+                    
+                    shapeCenterX = primaryCenterX + dx * cosRot - dy * sinRot;
+                    shapeCenterY = primaryCenterY + dx * sinRot + dy * cosRot;
+                    
+                    // Also animate the rotation of the shape itself
+                    shapeRotation = (secondary.rotation + Math.sin(animTime) * 30) % 360;
+                    break;
+                    
+                case "reflection":
+                    // Reflect across a moving axis that oscillates around the Y-axis
+                    const axisAngle = Math.sin(animTime * 0.7) * Math.PI/6; // Varies by ±30 degrees
+                    const dist = Math.hypot(shapeCenterX - primaryCenterX, shapeCenterY - primaryCenterY);
+                    const curAngle = Math.atan2(shapeCenterY - primaryCenterY, shapeCenterX - primaryCenterX);
+                    const reflectedAngle = Math.PI - curAngle + 2 * axisAngle;
+                    
+                    shapeCenterX = primaryCenterX + dist * Math.cos(reflectedAngle);
+                    shapeCenterY = primaryCenterY + dist * Math.sin(reflectedAngle);
+                    break;
+                    
+                case "glideReflection":
+                    // Reflect across the Y-axis and add oscillating translation
+                    shapeCenterX = primaryCenterX - (shapeCenterX - primaryCenterX);
+                    shapeCenterY = shapeCenterY + 50 * Math.sin(animTime); // Oscillating glide component
+                    break;
+                    
+                case "rotation180":
+                    // 180 degree rotation with pulsing distance
+                    const pulseFactor = 0.8 + 0.2 * Math.sin(animTime * 1.5); // Varies between 0.6 and 1.0
+                    shapeCenterX = primaryCenterX - (shapeCenterX - primaryCenterX) * pulseFactor;
+                    shapeCenterY = primaryCenterY - (shapeCenterY - primaryCenterY) * pulseFactor;
+                    break;
+                    
+                case "dihedral":
+                    // Dihedral symmetry with spinning animation
+                    const angle = Math.PI/3 + animTime % (Math.PI * 2); // Continuously rotating angle
+                    const cosAngle = Math.cos(angle);
+                    const sinAngle = Math.sin(angle);
+                    
+                    const dxD = shapeCenterX - primaryCenterX;
+                    const dyD = shapeCenterY - primaryCenterY;
+                    
+                    const rotatedX = primaryCenterX + dxD * cosAngle - dyD * sinAngle;
+                    const rotatedY = primaryCenterY + dxD * sinAngle + dyD * cosAngle;
+                    
+                    // Apply reflection that changes over time
+                    const reflectAxis = animTime % Math.PI;
+                    const cosReflect = Math.cos(2 * reflectAxis);
+                    const sinReflect = Math.sin(2 * reflectAxis);
+                    
+                    const rxD = rotatedX - primaryCenterX;
+                    const ryD = rotatedY - primaryCenterY;
+                    
+                    shapeCenterX = primaryCenterX + rxD * cosReflect + ryD * sinReflect;
+                    shapeCenterY = primaryCenterY + rxD * sinReflect - ryD * cosReflect;
+                    
+                    // Animate rotation as well
+                    shapeRotation = (secondary.rotation + animTime * 30) % 360;
+                    break;
+            }
+        }
+        
+        // Add randomizer for spawn point if enabled
+        if (secondary.mathRelationships && secondary.mathRelationships.useRandomizer) {
+            // Get the randomizer settings from the UI controls
+            const randomizerScale = secondary.mathRelationships.randomizerScale || 0.15;
+            const seedOffset = secondary.mathRelationships.randomSeedOffset || 0;
+            
+            // We'll use a seeded random function based on the shape type and time
+            // This creates a stable random effect that changes with each shape but is consistent
+            const generateRandomOffset = (seed) => {
+                // Simple seeded random function
+                const x = Math.sin((seed + seedOffset) * 0.1) * 10000;
+                return (x - Math.floor(x)) * 2 - 1; // Range from -1 to 1
+            };
+            
+            // Create random seeds based on shape properties to ensure consistent behavior
+            const randomSeedX = (shapeType.charCodeAt(0) || 0) + (primary.size * 0.1);
+            const randomSeedY = (shapeType.charCodeAt(1) || 0) + (primary.thickness * 0.5);
+            
+            // Apply random offset to position
+            // Scale by primary shape size for proportional randomness
+            const randomOffsetScale = primary.size * randomizerScale;
+            shapeCenterX += generateRandomOffset(randomSeedX) * randomOffsetScale;
+            shapeCenterY += generateRandomOffset(randomSeedY) * randomOffsetScale;
+        }
+        
         // Reset WebGL framebuffers before drawing different shape types
         // This helps prevent artifacts between shape renders
         if (this.renderer && this.rendererType === RendererType.WEBGL && 
@@ -752,34 +1146,43 @@ class SacredGridRenderer {
             this.renderer.resetFramebuffers();
         }
         
-        // Use the regular shape drawing method
+        // Create a modified secondary settings object with the processed values
+        const modifiedSecondary = {
+            ...secondary,
+            size: shapeSize,
+            thickness: shapeThickness,
+            opacity: shapeOpacity,
+            rotation: shapeRotation
+        };
+        
+        // Use the regular shape drawing method with potentially modified values
         this.drawShape(
-            secondary.type,
+            shapeType,
             shapeCenterX,
             shapeCenterY,
-            secondary.size,
-            secondary.thickness,
-            secondary.opacity,
-            secondary.fractal.depth,
+            shapeSize,
+            shapeThickness,
+            shapeOpacity,
+            shapeFractalDepth,
             this.time,
-            secondary
+            modifiedSecondary
         );
 
         // Draw stacked secondary shapes if enabled
         if (secondary.stacking.enabled) {
             for (let i = 0; i < secondary.stacking.count; i++) {
                 this.drawShape(
-                    secondary.type,
+                    shapeType,
                     shapeCenterX,
                     shapeCenterY,
-                    secondary.size,
-                    secondary.thickness,
-                    secondary.opacity,
-                    secondary.fractal.depth,
+                    shapeSize,
+                    shapeThickness,
+                    shapeOpacity,
+                    shapeFractalDepth,
                     this.time +
                     secondary.stacking.timeOffset +
                     i * secondary.stacking.interval,
-                    secondary
+                    modifiedSecondary
                 );
             }
         }

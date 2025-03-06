@@ -18,6 +18,10 @@ export const AnimationMode = {
     PULSE: 'pulse',
     ORBIT: 'orbit',
     WAVEFORM: 'waveform',
+    SPIRAL: 'spiral',
+    HARMONIC: 'harmonic',
+    SWARM: 'swarm',
+    BREATHE: 'breathe',
     // Add more as needed
 };
 
