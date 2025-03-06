@@ -46,6 +46,7 @@ const SacredGrid = () => {
     const [lineWidthMultiplier, setLineWidthMultiplier] = useState(1);
     const [gridBreathingSpeed, setGridBreathingSpeed] = useState(0.0008);
     const [gridBreathingIntensity, setGridBreathingIntensity] = useState(0.2);
+    const [showVertices, setShowVertices] = useState(true);
     
     // XY Grid settings
     const [showXYGrid, setShowXYGrid] = useState(true);
@@ -174,6 +175,7 @@ const SacredGrid = () => {
             lineWidthMultiplier: lineWidthMultiplier,
             breathingSpeed: gridBreathingSpeed,
             breathingIntensity: gridBreathingIntensity,
+            showVertices: showVertices,
             useLineFactorySettings: useLineFactoryForGrid
         },
 
@@ -338,6 +340,7 @@ const SacredGrid = () => {
         setNoiseIntensity,
         setLineWidthMultiplier,
         setGridBreathingSpeed,
+        setShowVertices,
         setGridBreathingIntensity,
         setUseLineFactoryForGrid,
 
