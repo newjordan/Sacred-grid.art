@@ -5,7 +5,7 @@ import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
 import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
-import { deepMerge } from './utils/deepMerge'; // Assuming you have or will create this utility
+// import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
 
 // Add a small CSS snippet to ensure full-screen display
 const fullscreenStyles = `
