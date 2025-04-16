@@ -5,6 +5,7 @@ import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
 import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
+import { deepMerge } from './utils/deepMerge'; // Assuming you have or will create this utility
 
 // Add a small CSS snippet to ensure full-screen display
 const fullscreenStyles = `
@@ -496,6 +497,209 @@ const SacredGrid = () => {
         setRandomSeedOffset,
     };
 
+    // Handle importing settings from a JSON file
+    const handleImportSettings = (jsonContent) => {
+        try {
+            const importedSettings = JSON.parse(jsonContent);
+
+            // Basic validation (check for top-level keys)
+            if (!importedSettings || typeof importedSettings !== 'object' ||
+                !importedSettings.grid || !importedSettings.colors || !importedSettings.shapes) {
+                throw new Error("Invalid settings file format. Missing essential keys.");
+            }
+
+            // --- Update State ---
+            // Use a helper or manually set each state variable.
+            // This is verbose but ensures each piece of state is updated.
+            // It's crucial that the structure here matches the 'settings' object structure.
+
+            // Grid settings
+            if (importedSettings.grid) {
+                setGridSize(importedSettings.grid.size ?? gridSize);
+                setGridSpacing(importedSettings.grid.spacing ?? gridSpacing);
+                setBaseDotSize(importedSettings.grid.baseDotSize ?? baseDotSize);
+                setConnectionOpacity(importedSettings.grid.connectionOpacity ?? connectionOpacity);
+                setNoiseIntensity(importedSettings.grid.noiseIntensity ?? noiseIntensity);
+                setLineWidthMultiplier(importedSettings.grid.lineWidthMultiplier ?? lineWidthMultiplier);
+                setGridBreathingSpeed(importedSettings.grid.breathingSpeed ?? gridBreathingSpeed);
+                setGridBreathingIntensity(importedSettings.grid.breathingIntensity ?? gridBreathingIntensity);
+                setShowVertices(importedSettings.grid.showVertices ?? showVertices);
+                setUseLineFactoryForGrid(importedSettings.grid.useLineFactorySettings ?? useLineFactoryForGrid);
+            }
+
+            // Mouse settings (position is handled internally, only update influence/scale)
+            if (importedSettings.mouse) {
+                setMouseInfluenceRadius(importedSettings.mouse.influenceRadius ?? mouseInfluenceRadius);
+                setMaxMouseScale(importedSettings.mouse.maxScale ?? maxMouseScale);
+            }
+
+            // Color settings
+            if (importedSettings.colors) {
+                setBackgroundColor(importedSettings.colors.background ?? backgroundColor);
+                setColorScheme(importedSettings.colors.scheme ?? colorScheme);
+                setLineColor(importedSettings.colors.lineColor ?? lineColor);
+                if (importedSettings.colors.gradient) {
+                    if (importedSettings.colors.gradient.lines) {
+                        setUseGradientLines(importedSettings.colors.gradient.lines.enabled ?? useGradientLines);
+                        setGradientColorsLines(importedSettings.colors.gradient.lines.colors ?? gradientColorsLines);
+                    }
+                    if (importedSettings.colors.gradient.dots) {
+                        setUseGradientDots(importedSettings.colors.gradient.dots.enabled ?? useGradientDots);
+                        setGradientColorsDots(importedSettings.colors.gradient.dots.colors ?? gradientColorsDots);
+                    }
+                    if (importedSettings.colors.gradient.shapes) {
+                        setUseGradientShapes(importedSettings.colors.gradient.shapes.enabled ?? useGradientShapes);
+                        setGradientColorsShapes(importedSettings.colors.gradient.shapes.colors ?? gradientColorsShapes);
+                    }
+                    setColorEasingType(importedSettings.colors.gradient.easing ?? colorEasingType);
+                    setColorCycleDuration(importedSettings.colors.gradient.cycleDuration ?? colorCycleDuration);
+                }
+            }
+
+            // Animation settings
+            if (importedSettings.animation) {
+                setAnimationSpeed(importedSettings.animation.speed ?? animationSpeed);
+            }
+
+            // XY Grid settings
+            if (importedSettings.xyGrid) {
+                setShowXYGrid(importedSettings.xyGrid.show ?? showXYGrid);
+                setXYGridSize(importedSettings.xyGrid.size ?? xyGridSize);
+                setXYGridSpacing(importedSettings.xyGrid.spacing ?? xyGridSpacing);
+                setXYGridOpacity(importedSettings.xyGrid.opacity ?? xyGridOpacity);
+                setXYGridLineWidth(importedSettings.xyGrid.lineWidth ?? xyGridLineWidth);
+                setXYGridColor(importedSettings.xyGrid.color ?? xyGridColor);
+                setShowXYGridLabels(importedSettings.xyGrid.showLabels ?? showXYGridLabels);
+            }
+
+            // Line Factory settings
+            if (importedSettings.lineFactory) {
+                setLineStyle(importedSettings.lineFactory.style ?? lineStyle);
+                if (importedSettings.lineFactory.taper) {
+                    setLineTaper(importedSettings.lineFactory.taper.type ?? lineTaper);
+                    setTaperStart(importedSettings.lineFactory.taper.startWidth ?? taperStart);
+                    setTaperEnd(importedSettings.lineFactory.taper.endWidth ?? taperEnd);
+                }
+                 if (importedSettings.lineFactory.glow) {
+                    setLineGlow(importedSettings.lineFactory.glow.intensity ?? lineGlow);
+                    setLineGlowColor(importedSettings.lineFactory.glow.color ?? lineGlowColor);
+                }
+                if (importedSettings.lineFactory.outline) {
+                    setLineOutline(importedSettings.lineFactory.outline.enabled ?? lineOutline);
+                    setLineOutlineColor(importedSettings.lineFactory.outline.color ?? lineOutlineColor);
+                    setLineOutlineWidth(importedSettings.lineFactory.outline.width ?? lineOutlineWidth);
+                }
+                if (importedSettings.lineFactory.dash) {
+                    setDashPattern(importedSettings.lineFactory.dash.pattern ?? dashPattern);
+                    setDashOffset(importedSettings.lineFactory.dash.offset ?? dashOffset);
+                }
+                if (importedSettings.lineFactory.sineWave) {
+                    setSineWaveType(importedSettings.lineFactory.sineWave.type ?? sineWaveType);
+                    setSineAmplitude(importedSettings.lineFactory.sineWave.amplitude ?? sineAmplitude);
+                    setSineFrequency(importedSettings.lineFactory.sineWave.frequency ?? sineFrequency);
+                    setSinePhase(importedSettings.lineFactory.sineWave.phase ?? sinePhase);
+                }
+            }
+
+            // Primary Shape settings
+            if (importedSettings.shapes && importedSettings.shapes.primary) {
+                const primary = importedSettings.shapes.primary;
+                setPrimaryType(primary.type ?? primaryType);
+                setPrimarySize(primary.size ?? primarySize);
+                setPrimaryOpacity(primary.opacity ?? primaryOpacity);
+                setPrimaryThickness(primary.thickness ?? primaryThickness);
+                setPrimaryVertices(primary.vertices ?? primaryVertices);
+                setPrimaryRotation(primary.rotation ?? primaryRotation);
+                setUsePrimaryLineFactory(primary.useLineFactory ?? usePrimaryLineFactory);
+                if (primary.position) {
+                    setPrimaryOffsetX(primary.position.offsetX ?? primaryOffsetX);
+                    setPrimaryOffsetY(primary.position.offsetY ?? primaryOffsetY);
+                }
+                if (primary.fractal) {
+                    setPrimaryFractalDepth(primary.fractal.depth ?? primaryFractalDepth);
+                    setPrimaryFractalScale(primary.fractal.scale ?? primaryFractalScale);
+                    setPrimaryFractalThicknessFalloff(primary.fractal.thicknessFalloff ?? primaryFractalThicknessFalloff);
+                    setPrimaryFractalChildCount(primary.fractal.childCount ?? primaryFractalChildCount);
+                    setPrimaryFractalSacredPositioning(primary.fractal.sacredPositioning ?? primaryFractalSacredPositioning);
+                    setPrimaryFractalSacredIntensity(primary.fractal.sacredIntensity ?? primaryFractalSacredIntensity);
+                }
+                if (primary.animation) {
+                    setPrimaryAnimationMode(primary.animation.mode ?? primaryAnimationMode);
+                    setPrimaryAnimationReverse(primary.animation.reverse ?? primaryAnimationReverse);
+                    setPrimaryAnimationSpeed(primary.animation.speed ?? primaryAnimationSpeed);
+                    setPrimaryAnimationIntensity(primary.animation.intensity ?? primaryAnimationIntensity);
+                    setPrimaryAnimationFadeIn(primary.animation.fadeIn ?? primaryAnimationFadeIn);
+                    setPrimaryAnimationFadeOut(primary.animation.fadeOut ?? primaryAnimationFadeOut);
+                    setPrimaryVariableTiming(primary.animation.variableTiming ?? primaryVariableTiming);
+                    setPrimaryStaggerDelay(primary.animation.staggerDelay ?? primaryStaggerDelay);
+                }
+                if (primary.stacking) {
+                    setPrimaryStackingEnabled(primary.stacking.enabled ?? primaryStackingEnabled);
+                    setPrimaryStackingCount(primary.stacking.count ?? primaryStackingCount);
+                    setPrimaryStackingTimeOffset(primary.stacking.timeOffset ?? primaryStackingTimeOffset);
+                    setPrimaryStackingInterval(primary.stacking.interval ?? primaryStackingInterval);
+                }
+            }
+
+            // Secondary Shape settings
+            if (importedSettings.shapes && importedSettings.shapes.secondary) {
+                const secondary = importedSettings.shapes.secondary;
+                setSecondaryEnabled(secondary.enabled ?? secondaryEnabled);
+                setSecondaryType(secondary.type ?? secondaryType);
+                setSecondarySize(secondary.size ?? secondarySize);
+                setSecondaryOpacity(secondary.opacity ?? secondaryOpacity);
+                setSecondaryThickness(secondary.thickness ?? secondaryThickness);
+                setSecondaryVertices(secondary.vertices ?? secondaryVertices);
+                setSecondaryRotation(secondary.rotation ?? secondaryRotation);
+                setUseSecondaryLineFactory(secondary.useLineFactory ?? useSecondaryLineFactory);
+                if (secondary.position) {
+                    setSecondaryOffsetX(secondary.position.offsetX ?? secondaryOffsetX);
+                    setSecondaryOffsetY(secondary.position.offsetY ?? secondaryOffsetY);
+                }
+                if (secondary.fractal) {
+                    setSecondaryFractalDepth(secondary.fractal.depth ?? secondaryFractalDepth);
+                    setSecondaryFractalScale(secondary.fractal.scale ?? secondaryFractalScale);
+                    setSecondaryFractalThicknessFalloff(secondary.fractal.thicknessFalloff ?? secondaryFractalThicknessFalloff);
+                    setSecondaryFractalChildCount(secondary.fractal.childCount ?? secondaryFractalChildCount);
+                    setSecondaryFractalSacredPositioning(secondary.fractal.sacredPositioning ?? secondaryFractalSacredPositioning);
+                    setSecondaryFractalSacredIntensity(secondary.fractal.sacredIntensity ?? secondaryFractalSacredIntensity);
+                }
+                if (secondary.animation) {
+                    setSecondaryAnimationMode(secondary.animation.mode ?? secondaryAnimationMode);
+                    setSecondaryAnimationReverse(secondary.animation.reverse ?? secondaryAnimationReverse);
+                    setSecondaryAnimationSpeed(secondary.animation.speed ?? secondaryAnimationSpeed);
+                    setSecondaryAnimationIntensity(secondary.animation.intensity ?? secondaryAnimationIntensity);
+                    setSecondaryAnimationFadeIn(secondary.animation.fadeIn ?? secondaryAnimationFadeIn);
+                    setSecondaryAnimationFadeOut(secondary.animation.fadeOut ?? secondaryAnimationFadeOut);
+                    setSecondaryVariableTiming(secondary.animation.variableTiming ?? secondaryVariableTiming);
+                    setSecondaryStaggerDelay(secondary.animation.staggerDelay ?? secondaryStaggerDelay);
+                }
+                if (secondary.stacking) {
+                    setSecondaryStackingEnabled(secondary.stacking.enabled ?? secondaryStackingEnabled);
+                    setSecondaryStackingCount(secondary.stacking.count ?? secondaryStackingCount);
+                    setSecondaryStackingTimeOffset(secondary.stacking.timeOffset ?? secondaryStackingTimeOffset);
+                    setSecondaryStackingInterval(secondary.stacking.interval ?? secondaryStackingInterval);
+                    if (secondary.stacking.mathRelationships) {
+                        const mathRel = secondary.stacking.mathRelationships;
+                        setUseRandomizer(mathRel.useRandomizer ?? useRandomizer);
+                        setRandomizerScale(mathRel.randomizerScale ?? randomizerScale);
+                        setRandomSeedOffset(mathRel.randomSeedOffset ?? randomSeedOffset);
+                        setSecondaryUseHarmonicRatios(mathRel.useHarmonicRatios ?? secondaryUseHarmonicRatios);
+                        setSecondaryHarmonicRatio(mathRel.harmonicRatio ?? secondaryHarmonicRatio);
+                        setSecondaryUseSymmetryGroup(mathRel.useSymmetryGroup ?? secondaryUseSymmetryGroup);
+                        setSecondarySymmetryOperation(mathRel.symmetryOperation ?? secondarySymmetryOperation);
+                    }
+                }
+            }
+
+            alert("Settings imported successfully!");
+
+        } catch (error) {
+            console.error("Error importing settings:", error);
+            alert(`Failed to import settings: ${error.message}`);
+        }
+    };
+
     // Handle exporting the canvas as an image
     const handleExportImage = () => {
         if (rendererRef.current) {
@@ -511,39 +715,10 @@ const SacredGrid = () => {
         }
     };
 
-    // --- TEMPORARY FUNCTION TO LOG SETTINGS ---
-    const logCurrentSettings = () => {
-        console.log("Current SacredGrid Settings:");
-        // Use JSON.stringify for clean, copyable output
-        console.log(JSON.stringify(settings, null, 2)); 
-    };
-    // --- END TEMPORARY FUNCTION ---
-
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            
-            {/* --- TEMPORARY BUTTON --- */}
-            <button 
-                onClick={logCurrentSettings}
-                style={{ 
-                    position: 'absolute', 
-                    top: '50px', // Adjust position as needed
-                    left: '10px', 
-                    zIndex: 200, // Ensure it's above other elements
-                    padding: '8px 12px',
-                    background: 'rgba(255, 100, 0, 0.7)', // Make it visible
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                Log Current Settings
-            </button>
-            {/* --- END TEMPORARY BUTTON --- */}
-
-            <SacredGridCanvas 
-                settings={settings} 
+            <SacredGridCanvas
+                settings={settings}
                 ref={rendererRef}
                 rendererType={rendererType}
                 showControls={showControls}
@@ -557,9 +732,9 @@ const SacredGrid = () => {
                     setSettings={setSettings}
                     toggleControls={toggleControls}
                     rendererType={rendererType}
+                    onImportSettings={handleImportSettings} // Pass down the import handler
                 />
             }
-            
             {!showControls && (
                 <button
                     onClick={toggleControls}
