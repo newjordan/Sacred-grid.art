@@ -1,5 +1,5 @@
 // src/components/SacredGridControls.js
-import React from 'react';
+import React, { useRef } from 'react'; // Import useRef
 import CollapsibleSection from './CollapsibleSection';
 import GridSettingsSection from './sections/GridSettingsSection';
 import XYGridSection from './sections/XYGridSection';
@@ -10,7 +10,11 @@ import GradientSettingsSection from './sections/GradientSettingsSection';
 import SecondaryShapeSection from './sections/SecondaryShapeSection';
 import PrimaryShapeSection from './sections/PrimaryShapeSection';
 
-const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType }) => {
+// Accept onImportSettings prop
+const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType, onImportSettings }) => {
+
+    // Ref for the hidden file input
+    const fileInputRef = useRef(null);
 
     // Function to handle exporting settings to a JSON file
     const handleExportSettings = () => {
@@ -46,6 +50,46 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
         }
     };
 
+    // Function to trigger the hidden file input
+    const handleImportClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    // Function to handle file selection and reading
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return; // No file selected
+        }
+
+        if (file.type !== 'application/json') {
+            alert('Invalid file type. Please select a .json file.');
+            // Reset the input value so the user can select the same file again if needed
+            if (fileInputRef.current) fileInputRef.current.value = null;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            if (onImportSettings) {
+                onImportSettings(content); // Pass content to the handler in SacredGrid.js
+            }
+            // Reset the input value after processing
+             if (fileInputRef.current) fileInputRef.current.value = null;
+        };
+        reader.onerror = (e) => {
+            console.error("Error reading file:", e);
+            alert("Failed to read the settings file.");
+             // Reset the input value on error
+             if (fileInputRef.current) fileInputRef.current.value = null;
+        };
+        reader.readAsText(file);
+    };
+
+
     return (
         <div
             style={{
@@ -66,9 +110,32 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <h2 style={{ margin: 0 }}>Sacred Grid Controls</h2>
                 {/* Container for buttons */}
-                <div style={{ display: 'flex', gap: '5px' }}> 
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    {/* Import Settings Button */}
+                    <button
+                        onClick={handleImportClick}
+                        title="Import settings from a JSON file"
+                        style={{
+                            background: 'rgba(0, 150, 50, 0.7)', // Different color for import
+                            color: 'white',
+                            border: 'none',
+                            padding: '5px 10px',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Import
+                    </button>
+                    {/* Hidden File Input */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".json" // Only accept JSON files
+                        style={{ display: 'none' }} // Keep it hidden
+                    />
                     {/* Export Settings Button */}
-                    <button 
+                    <button
                         onClick={handleExportSettings}
                         title="Export current settings to a JSON file"
                         style={{
