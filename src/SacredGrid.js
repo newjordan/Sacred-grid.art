@@ -511,8 +511,37 @@ const SacredGrid = () => {
         }
     };
 
+    // --- TEMPORARY FUNCTION TO LOG SETTINGS ---
+    const logCurrentSettings = () => {
+        console.log("Current SacredGrid Settings:");
+        // Use JSON.stringify for clean, copyable output
+        console.log(JSON.stringify(settings, null, 2)); 
+    };
+    // --- END TEMPORARY FUNCTION ---
+
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+            
+            {/* --- TEMPORARY BUTTON --- */}
+            <button 
+                onClick={logCurrentSettings}
+                style={{ 
+                    position: 'absolute', 
+                    top: '50px', // Adjust position as needed
+                    left: '10px', 
+                    zIndex: 200, // Ensure it's above other elements
+                    padding: '8px 12px',
+                    background: 'rgba(255, 100, 0, 0.7)', // Make it visible
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                }}
+            >
+                Log Current Settings
+            </button>
+            {/* --- END TEMPORARY BUTTON --- */}
+
             <SacredGridCanvas 
                 settings={settings} 
                 ref={rendererRef}
