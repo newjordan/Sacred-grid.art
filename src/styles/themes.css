@@ -1,0 +1,432 @@
+/* src/styles/themes.css - Dark/light theme system */
+
+/* Base Theme Variables (Dark by default) */
+:root {
+  --theme-bg-primary: #000000;
+  --theme-bg-secondary: #0a0a0a;
+  --theme-bg-tertiary: #1a1a1a;
+  --theme-bg-quaternary: #2a2a2a;
+  
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #e2e8f0;
+  --theme-text-tertiary: #94a3b8;
+  --theme-text-quaternary: #64748b;
+  --theme-text-inverse: #000000;
+  
+  --theme-border-primary: rgba(255, 255, 255, 0.1);
+  --theme-border-secondary: rgba(255, 255, 255, 0.05);
+  --theme-border-tertiary: rgba(255, 255, 255, 0.02);
+  
+  --theme-glass-bg: rgba(255, 255, 255, 0.05);
+  --theme-glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --theme-glass-bg-active: rgba(255, 255, 255, 0.12);
+  --theme-glass-border: rgba(255, 255, 255, 0.15);
+  --theme-glass-border-hover: rgba(255, 255, 255, 0.25);
+  
+  --theme-shadow-color: rgba(0, 0, 0, 0.5);
+  --theme-shadow-light: rgba(0, 0, 0, 0.1);
+  --theme-shadow-medium: rgba(0, 0, 0, 0.25);
+  --theme-shadow-heavy: rgba(0, 0, 0, 0.5);
+  
+  --theme-accent-primary: #0077ff;
+  --theme-accent-secondary: #00ffcc;
+  --theme-accent-tertiary: #ff6b6b;
+  
+  --theme-success: #4ecdc4;
+  --theme-warning: #ffe66d;
+  --theme-error: #ff6b6b;
+  --theme-info: #74b9ff;
+}
+
+/* Dark Theme (Default) */
+[data-theme="dark"],
+:root {
+  color-scheme: dark;
+  
+  --theme-bg-primary: #000000;
+  --theme-bg-secondary: #0a0a0a;
+  --theme-bg-tertiary: #1a1a1a;
+  --theme-bg-quaternary: #2a2a2a;
+  
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #e2e8f0;
+  --theme-text-tertiary: #94a3b8;
+  --theme-text-quaternary: #64748b;
+  --theme-text-inverse: #000000;
+  
+  --theme-border-primary: rgba(255, 255, 255, 0.1);
+  --theme-border-secondary: rgba(255, 255, 255, 0.05);
+  --theme-border-tertiary: rgba(255, 255, 255, 0.02);
+  
+  --theme-glass-bg: rgba(255, 255, 255, 0.05);
+  --theme-glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --theme-glass-bg-active: rgba(255, 255, 255, 0.12);
+  --theme-glass-border: rgba(255, 255, 255, 0.15);
+  --theme-glass-border-hover: rgba(255, 255, 255, 0.25);
+  
+  --theme-shadow-color: rgba(0, 0, 0, 0.8);
+  --theme-shadow-light: rgba(0, 0, 0, 0.2);
+  --theme-shadow-medium: rgba(0, 0, 0, 0.4);
+  --theme-shadow-heavy: rgba(0, 0, 0, 0.6);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  color-scheme: light;
+  
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #f8fafc;
+  --theme-bg-tertiary: #f1f5f9;
+  --theme-bg-quaternary: #e2e8f0;
+  
+  --theme-text-primary: #0f172a;
+  --theme-text-secondary: #334155;
+  --theme-text-tertiary: #64748b;
+  --theme-text-quaternary: #94a3b8;
+  --theme-text-inverse: #ffffff;
+  
+  --theme-border-primary: rgba(0, 0, 0, 0.1);
+  --theme-border-secondary: rgba(0, 0, 0, 0.05);
+  --theme-border-tertiary: rgba(0, 0, 0, 0.02);
+  
+  --theme-glass-bg: rgba(255, 255, 255, 0.7);
+  --theme-glass-bg-hover: rgba(255, 255, 255, 0.8);
+  --theme-glass-bg-active: rgba(255, 255, 255, 0.9);
+  --theme-glass-border: rgba(0, 0, 0, 0.1);
+  --theme-glass-border-hover: rgba(0, 0, 0, 0.15);
+  
+  --theme-shadow-color: rgba(0, 0, 0, 0.1);
+  --theme-shadow-light: rgba(0, 0, 0, 0.05);
+  --theme-shadow-medium: rgba(0, 0, 0, 0.1);
+  --theme-shadow-heavy: rgba(0, 0, 0, 0.2);
+  
+  /* Adjust accent colors for better contrast in light mode */
+  --theme-accent-primary: #0066cc;
+  --theme-accent-secondary: #00cc99;
+  --theme-accent-tertiary: #cc4444;
+}
+
+/* High Contrast Theme */
+[data-theme="high-contrast"] {
+  color-scheme: dark;
+  
+  --theme-bg-primary: #000000;
+  --theme-bg-secondary: #000000;
+  --theme-bg-tertiary: #111111;
+  --theme-bg-quaternary: #222222;
+  
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #ffffff;
+  --theme-text-tertiary: #cccccc;
+  --theme-text-quaternary: #aaaaaa;
+  --theme-text-inverse: #000000;
+  
+  --theme-border-primary: #ffffff;
+  --theme-border-secondary: #cccccc;
+  --theme-border-tertiary: #888888;
+  
+  --theme-glass-bg: rgba(255, 255, 255, 0.1);
+  --theme-glass-bg-hover: rgba(255, 255, 255, 0.15);
+  --theme-glass-bg-active: rgba(255, 255, 255, 0.2);
+  --theme-glass-border: #ffffff;
+  --theme-glass-border-hover: #ffffff;
+  
+  --theme-shadow-color: rgba(255, 255, 255, 0.3);
+  --theme-shadow-light: rgba(255, 255, 255, 0.1);
+  --theme-shadow-medium: rgba(255, 255, 255, 0.2);
+  --theme-shadow-heavy: rgba(255, 255, 255, 0.3);
+  
+  --theme-accent-primary: #00ff00;
+  --theme-accent-secondary: #ffff00;
+  --theme-accent-tertiary: #ff00ff;
+  
+  --theme-success: #00ff00;
+  --theme-warning: #ffff00;
+  --theme-error: #ff0000;
+  --theme-info: #00ffff;
+}
+
+/* Sepia Theme */
+[data-theme="sepia"] {
+  color-scheme: light;
+  
+  --theme-bg-primary: #f4f1ea;
+  --theme-bg-secondary: #f0ead6;
+  --theme-bg-tertiary: #ebe4d1;
+  --theme-bg-quaternary: #e6ddcc;
+  
+  --theme-text-primary: #5c4b37;
+  --theme-text-secondary: #6b5a47;
+  --theme-text-tertiary: #7a6957;
+  --theme-text-quaternary: #897867;
+  --theme-text-inverse: #f4f1ea;
+  
+  --theme-border-primary: rgba(92, 75, 55, 0.2);
+  --theme-border-secondary: rgba(92, 75, 55, 0.1);
+  --theme-border-tertiary: rgba(92, 75, 55, 0.05);
+  
+  --theme-glass-bg: rgba(244, 241, 234, 0.7);
+  --theme-glass-bg-hover: rgba(244, 241, 234, 0.8);
+  --theme-glass-bg-active: rgba(244, 241, 234, 0.9);
+  --theme-glass-border: rgba(92, 75, 55, 0.2);
+  --theme-glass-border-hover: rgba(92, 75, 55, 0.3);
+  
+  --theme-shadow-color: rgba(92, 75, 55, 0.2);
+  --theme-shadow-light: rgba(92, 75, 55, 0.1);
+  --theme-shadow-medium: rgba(92, 75, 55, 0.15);
+  --theme-shadow-heavy: rgba(92, 75, 55, 0.25);
+  
+  --theme-accent-primary: #8b4513;
+  --theme-accent-secondary: #cd853f;
+  --theme-accent-tertiary: #a0522d;
+}
+
+/* Cyberpunk Theme */
+[data-theme="cyberpunk"] {
+  color-scheme: dark;
+  
+  --theme-bg-primary: #0a0a0a;
+  --theme-bg-secondary: #1a0a1a;
+  --theme-bg-tertiary: #2a0a2a;
+  --theme-bg-quaternary: #3a0a3a;
+  
+  --theme-text-primary: #00ffff;
+  --theme-text-secondary: #ff00ff;
+  --theme-text-tertiary: #ffff00;
+  --theme-text-quaternary: #00ff00;
+  --theme-text-inverse: #000000;
+  
+  --theme-border-primary: rgba(0, 255, 255, 0.5);
+  --theme-border-secondary: rgba(255, 0, 255, 0.3);
+  --theme-border-tertiary: rgba(255, 255, 0, 0.2);
+  
+  --theme-glass-bg: rgba(0, 255, 255, 0.05);
+  --theme-glass-bg-hover: rgba(0, 255, 255, 0.08);
+  --theme-glass-bg-active: rgba(0, 255, 255, 0.12);
+  --theme-glass-border: rgba(0, 255, 255, 0.3);
+  --theme-glass-border-hover: rgba(0, 255, 255, 0.5);
+  
+  --theme-shadow-color: rgba(0, 255, 255, 0.3);
+  --theme-shadow-light: rgba(0, 255, 255, 0.1);
+  --theme-shadow-medium: rgba(0, 255, 255, 0.2);
+  --theme-shadow-heavy: rgba(0, 255, 255, 0.4);
+  
+  --theme-accent-primary: #00ffff;
+  --theme-accent-secondary: #ff00ff;
+  --theme-accent-tertiary: #ffff00;
+  
+  --theme-success: #00ff00;
+  --theme-warning: #ffff00;
+  --theme-error: #ff0040;
+  --theme-info: #0080ff;
+}
+
+/* Theme Application Classes */
+.theme-bg-primary {
+  background-color: var(--theme-bg-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--theme-bg-secondary);
+}
+
+.theme-bg-tertiary {
+  background-color: var(--theme-bg-tertiary);
+}
+
+.theme-bg-quaternary {
+  background-color: var(--theme-bg-quaternary);
+}
+
+.theme-text-primary {
+  color: var(--theme-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-text-tertiary {
+  color: var(--theme-text-tertiary);
+}
+
+.theme-text-quaternary {
+  color: var(--theme-text-quaternary);
+}
+
+.theme-text-inverse {
+  color: var(--theme-text-inverse);
+}
+
+.theme-border-primary {
+  border-color: var(--theme-border-primary);
+}
+
+.theme-border-secondary {
+  border-color: var(--theme-border-secondary);
+}
+
+.theme-border-tertiary {
+  border-color: var(--theme-border-tertiary);
+}
+
+.theme-accent-primary {
+  color: var(--theme-accent-primary);
+}
+
+.theme-accent-secondary {
+  color: var(--theme-accent-secondary);
+}
+
+.theme-accent-tertiary {
+  color: var(--theme-accent-tertiary);
+}
+
+/* Theme-aware Glass Components */
+.glass-themed {
+  background: var(--theme-glass-bg);
+  border-color: var(--theme-glass-border);
+}
+
+.glass-themed:hover {
+  background: var(--theme-glass-bg-hover);
+  border-color: var(--theme-glass-border-hover);
+}
+
+.glass-themed:active {
+  background: var(--theme-glass-bg-active);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: var(--theme-glass-bg);
+  border: 1px solid var(--theme-glass-border);
+  border-radius: var(--radius-full);
+  color: var(--theme-text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  background: var(--theme-glass-bg-hover);
+  border-color: var(--theme-glass-border-hover);
+  transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  background: var(--theme-glass-bg-active);
+  transform: scale(0.95);
+}
+
+.theme-toggle-icon {
+  font-size: 18px;
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.theme-toggle[data-theme="dark"] .theme-toggle-icon {
+  transform: rotate(0deg);
+}
+
+.theme-toggle[data-theme="light"] .theme-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* System Theme Detection */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --theme-bg-primary: #ffffff;
+    --theme-bg-secondary: #f8fafc;
+    --theme-bg-tertiary: #f1f5f9;
+    --theme-bg-quaternary: #e2e8f0;
+    
+    --theme-text-primary: #0f172a;
+    --theme-text-secondary: #334155;
+    --theme-text-tertiary: #64748b;
+    --theme-text-quaternary: #94a3b8;
+    --theme-text-inverse: #ffffff;
+    
+    --theme-border-primary: rgba(0, 0, 0, 0.1);
+    --theme-border-secondary: rgba(0, 0, 0, 0.05);
+    --theme-border-tertiary: rgba(0, 0, 0, 0.02);
+    
+    --theme-glass-bg: rgba(255, 255, 255, 0.7);
+    --theme-glass-bg-hover: rgba(255, 255, 255, 0.8);
+    --theme-glass-bg-active: rgba(255, 255, 255, 0.9);
+    --theme-glass-border: rgba(0, 0, 0, 0.1);
+    --theme-glass-border-hover: rgba(0, 0, 0, 0.15);
+    
+    --theme-shadow-color: rgba(0, 0, 0, 0.1);
+    --theme-shadow-light: rgba(0, 0, 0, 0.05);
+    --theme-shadow-medium: rgba(0, 0, 0, 0.1);
+    --theme-shadow-heavy: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Theme Transition */
+* {
+  transition: 
+    background-color var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+/* Disable transitions during theme change for performance */
+.theme-transitioning * {
+  transition: none !important;
+}
+
+/* Theme-specific Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-bg-secondary);
+  border-radius: var(--radius-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-glass-bg);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--theme-glass-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-glass-bg-hover);
+}
+
+/* Firefox Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-glass-bg) var(--theme-bg-secondary);
+}
+
+/* Theme-aware Selection */
+::selection {
+  background: var(--theme-accent-primary);
+  color: var(--theme-text-inverse);
+}
+
+::-moz-selection {
+  background: var(--theme-accent-primary);
+  color: var(--theme-text-inverse);
+}
+
+/* Print Theme Override */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+}
