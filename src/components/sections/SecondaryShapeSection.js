@@ -107,7 +107,11 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
         { value: AnimationMode.GROW, label: 'Grow' },
         { value: AnimationMode.PULSE, label: 'Pulse' },
         { value: AnimationMode.ORBIT, label: 'Orbit' },
-        { value: AnimationMode.WAVEFORM, label: 'Waveform' }
+        { value: AnimationMode.WAVEFORM, label: 'Waveform' },
+        { value: AnimationMode.SPIRAL, label: 'Spiral' },
+        { value: AnimationMode.HARMONIC, label: 'Harmonic' },
+        { value: AnimationMode.SWARM, label: 'Swarm' },
+        { value: AnimationMode.BREATHE, label: 'Breathe' }
     ];
     
     return (
