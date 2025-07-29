@@ -102,7 +102,34 @@ const SacredGridCanvas = forwardRef(({
             {onExport && (
                 <button
                     onClick={onExport}
-                    style={{ position: 'absolute', zIndex: 10, top: 10, right: 120 }}
+                    style={{
+                        position: 'absolute',
+                        zIndex: 10,
+                        top: '20px',
+                        right: '20px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: 'white',
+                        padding: '12px 20px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        e.target.style.transform = 'translateY(0px)';
+                    }}
                 >
                     Export Background
                 </button>
