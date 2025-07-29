@@ -24,6 +24,8 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
         { value: ShapeType.POLYGON, label: 'Polygon' },
         { value: ShapeType.FLOWER_OF_LIFE, label: 'Flower of Life' },
         { value: ShapeType.MERKABA, label: 'Merkaba' },
+        { value: ShapeType.METATRONS_CUBE, label: "Metatron's Cube" },
+        { value: ShapeType.TREE_OF_LIFE, label: 'Tree of Life' },
         { value: ShapeType.CIRCLE, label: 'Circle' },
         { value: ShapeType.STAR, label: 'Star' },
         { value: ShapeType.SPIRAL, label: 'Spiral' },
