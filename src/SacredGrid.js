@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
+import MandalaDesigner from './components/MandalaDesigner';
 import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
 // import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
@@ -129,6 +130,16 @@ const SacredGrid = () => {
     const [primaryVariableTiming, setPrimaryVariableTiming] = useState(true);
     const [primaryStaggerDelay, setPrimaryStaggerDelay] = useState(100);
 
+    // Primary shape-specific settings
+    const [primarySpiralType, setPrimarySpiralType] = useState('golden');
+    const [primaryTurns, setPrimaryTurns] = useState(4);
+    const [primaryArms, setPrimaryArms] = useState(1);
+    const [primaryMandalaStyle, setPrimaryMandalaStyle] = useState('geometric');
+    const [primaryMandalaSymmetry, setPrimaryMandalaSymmetry] = useState(8);
+    const [primaryMandalaLayers, setPrimaryMandalaLayers] = useState(4);
+    const [primaryMandalaPetals, setPrimaryMandalaPetals] = useState(6);
+    const [primaryMandalaComplexity, setPrimaryMandalaComplexity] = useState(0.5);
+
     // Primary stacking settings
     const [primaryStackingEnabled, setPrimaryStackingEnabled] = useState(true);
     const [primaryStackingCount, setPrimaryStackingCount] = useState(3);
@@ -172,6 +183,17 @@ const SacredGrid = () => {
     const [secondaryHarmonicRatio, setSecondaryHarmonicRatio] = useState("1:1");
     const [secondaryUseSymmetryGroup, setSecondaryUseSymmetryGroup] = useState(false);
     const [secondarySymmetryOperation, setSecondarySymmetryOperation] = useState("rotation");
+
+    // Secondary shape-specific settings
+    const [secondarySpiralType, setSecondarySpiralType] = useState('golden');
+    const [secondaryTurns, setSecondaryTurns] = useState(4);
+    const [secondaryArms, setSecondaryArms] = useState(1);
+    const [secondaryMandalaStyle, setSecondaryMandalaStyle] = useState('geometric');
+    const [secondaryMandalaSymmetry, setSecondaryMandalaSymmetry] = useState(8);
+    const [secondaryMandalaLayers, setSecondaryMandalaLayers] = useState(4);
+    const [secondaryMandalaPetals, setSecondaryMandalaPetals] = useState(6);
+    const [secondaryMandalaComplexity, setSecondaryMandalaComplexity] = useState(0.5);
+
     // Randomizer settings
     const [useRandomizer, setUseRandomizer] = useState(true);
     const [randomizerScale, setRandomizerScale] = useState(0.15); // Default 15% of primary size
@@ -290,6 +312,15 @@ const SacredGrid = () => {
                     offsetX: primaryOffsetX,
                     offsetY: primaryOffsetY,
                 },
+                // Shape-specific properties
+                spiralType: primarySpiralType,
+                turns: primaryTurns,
+                arms: primaryArms,
+                mandalaStyle: primaryMandalaStyle,
+                mandalaSymmetry: primaryMandalaSymmetry,
+                mandalaLayers: primaryMandalaLayers,
+                mandalaPetals: primaryMandalaPetals,
+                mandalaComplexity: primaryMandalaComplexity,
                 fractal: {
                     depth: primaryFractalDepth,
                     scale: primaryFractalScale,
@@ -329,6 +360,15 @@ const SacredGrid = () => {
                     offsetX: secondaryOffsetX,
                     offsetY: secondaryOffsetY,
                 },
+                // Shape-specific properties
+                spiralType: secondarySpiralType,
+                turns: secondaryTurns,
+                arms: secondaryArms,
+                mandalaStyle: secondaryMandalaStyle,
+                mandalaSymmetry: secondaryMandalaSymmetry,
+                mandalaLayers: secondaryMandalaLayers,
+                mandalaPetals: secondaryMandalaPetals,
+                mandalaComplexity: secondaryMandalaComplexity,
                 fractal: {
                     depth: secondaryFractalDepth,
                     scale: secondaryFractalScale,
@@ -455,6 +495,16 @@ const SacredGrid = () => {
         setPrimaryStackingTimeOffset,
         setPrimaryStackingInterval,
 
+        // Primary shape-specific setters
+        setPrimarySpiralType,
+        setPrimaryTurns,
+        setPrimaryArms,
+        setPrimaryMandalaStyle,
+        setPrimaryMandalaSymmetry,
+        setPrimaryMandalaLayers,
+        setPrimaryMandalaPetals,
+        setPrimaryMandalaComplexity,
+
         // Secondary Shape setters
         setSecondaryEnabled,
         setSecondaryType,
@@ -490,7 +540,17 @@ const SacredGrid = () => {
         setSecondaryHarmonicRatio,
         setSecondaryUseSymmetryGroup,
         setSecondarySymmetryOperation,
-        
+
+        // Secondary shape-specific setters
+        setSecondarySpiralType,
+        setSecondaryTurns,
+        setSecondaryArms,
+        setSecondaryMandalaStyle,
+        setSecondaryMandalaSymmetry,
+        setSecondaryMandalaLayers,
+        setSecondaryMandalaPetals,
+        setSecondaryMandalaComplexity,
+
         // Randomizer setters
         setUseRandomizer,
         setRandomizerScale,
@@ -726,8 +786,8 @@ const SacredGrid = () => {
                 onExport={handleExportImage}
             />
             
-            {showControls && 
-                <SacredGridControls 
+            {showControls &&
+                <SacredGridControls
                     settings={settings}
                     setSettings={setSettings}
                     toggleControls={toggleControls}
@@ -735,6 +795,13 @@ const SacredGrid = () => {
                     onImportSettings={handleImportSettings} // Pass down the import handler
                 />
             }
+
+            {/* Mandala Designer - shows when Custom Mandala is selected */}
+            <MandalaDesigner
+                settings={settings}
+                setSettings={setSettings}
+                isVisible={settings.shapes.primary.type === ShapeType.CUSTOM_MANDALA}
+            />
             {!showControls && (
                 <button
                     onClick={toggleControls}

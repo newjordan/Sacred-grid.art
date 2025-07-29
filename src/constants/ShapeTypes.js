@@ -12,6 +12,7 @@ export const ShapeType = {
     METATRONS_CUBE: 'metatronsCube',
     TREE_OF_LIFE: 'treeOfLife',
     MANDALA: 'mandala',
+    CUSTOM_MANDALA: 'customMandala',
     SECONDARY: 'secondary', // Added for secondary shape option
     // Add more as needed
 };
