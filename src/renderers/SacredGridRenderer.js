@@ -8,6 +8,7 @@ import {
     drawMerkaba,
     drawMetatronsCube,
     drawTreeOfLife,
+    drawMandala,
     drawCircle,
     drawStar,
     drawLissajous,

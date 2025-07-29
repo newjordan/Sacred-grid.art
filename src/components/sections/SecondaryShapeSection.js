@@ -97,6 +97,7 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
         { value: ShapeType.MERKABA, label: 'Merkaba' },
         { value: ShapeType.METATRONS_CUBE, label: "Metatron's Cube" },
         { value: ShapeType.TREE_OF_LIFE, label: 'Tree of Life' },
+        { value: ShapeType.MANDALA, label: 'Mandala' },
         { value: ShapeType.CIRCLE, label: 'Circle' },
         { value: ShapeType.STAR, label: 'Star' },
         { value: ShapeType.SPIRAL, label: 'Spiral' },

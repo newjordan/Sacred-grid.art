@@ -11,6 +11,7 @@ export const ShapeType = {
     PENTAGON: 'pentagon',
     METATRONS_CUBE: 'metatronsCube',
     TREE_OF_LIFE: 'treeOfLife',
+    MANDALA: 'mandala',
     SECONDARY: 'secondary', // Added for secondary shape option
     // Add more as needed
 };
@@ -124,15 +125,36 @@ export const ShapeTemplate = {
         // Automatically closes if start and end points match
         return false; // May not be a closed path depending on parameters
     },
-    SPIRAL: (ctx, x, y, radius, turns = 3, decay = 0.15, segments = 100) => {
+    SPIRAL: (ctx, x, y, radius, turns = 4, spiralType = 'golden', segments = 200) => {
+        const PHI = (1 + Math.sqrt(5)) / 2; // Golden ratio
+
         for (let i = 0; i <= segments; i++) {
-            const angle = (i / segments) * Math.PI * 2 * turns;
-            const r = radius * (1 - (i / segments) * decay);
+            const t = i / segments;
+            let angle, r;
+
+            switch (spiralType) {
+                case 'golden':
+                    angle = t * turns * 2 * Math.PI;
+                    r = radius * Math.pow(PHI, -2 * t * turns) * 0.8;
+                    break;
+                case 'archimedean':
+                    angle = t * turns * 2 * Math.PI;
+                    r = radius * (1 - t * 0.85);
+                    break;
+                case 'logarithmic':
+                    angle = t * turns * 2 * Math.PI;
+                    r = radius * Math.exp(-0.2 * t * turns) * 0.9;
+                    break;
+                default:
+                    angle = t * turns * 2 * Math.PI;
+                    r = radius * Math.pow(PHI, -2 * t * turns) * 0.8;
+            }
+
             const pointX = x + r * Math.cos(angle);
             const pointY = y + r * Math.sin(angle);
             if (i === 0) ctx.moveTo(pointX, pointY);
             else ctx.lineTo(pointX, pointY);
         }
-        return false; // Spirals are typically not closed paths
+        return false; // Spirals are not closed paths
     }
 };
