@@ -144,6 +144,8 @@ export const ShapeDrawers = {
     [ShapeType.POLYGON]: drawPolygon,
     [ShapeType.FLOWER_OF_LIFE]: drawFlowerOfLife,
     [ShapeType.MERKABA]: drawMerkaba,
+    [ShapeType.METATRONS_CUBE]: drawMetatronsCube,
+    [ShapeType.TREE_OF_LIFE]: drawTreeOfLife,
     [ShapeType.CIRCLE]: drawCircle,
     [ShapeType.STAR]: drawStar,
     [ShapeType.SPIRAL]: drawSpiral,
@@ -1217,6 +1219,206 @@ export function drawSpiral(ctx, params) {
         }
     }
     
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawMetatronsCube(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        ctx.globalAlpha = finalOpacity;
+        strokeColor = getShapeColor(1.0, globalSettings.colors.scheme, ctx, { rendererType: globalSettings.rendererType });
+    }
+
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
+    const circleRadius = dynamicRadius / 6;
+
+    // Check if we're in WebGL mode
+    const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
+
+    if (isWebGL) {
+        if (typeof ctx.drawCircle === 'function') {
+            // Central circle
+            ctx.drawCircle(cx, cy, circleRadius, strokeColor);
+
+            // Inner hexagon - 6 circles
+            const innerRadius = circleRadius * 2;
+            for (let i = 0; i < 6; i++) {
+                const angle = rotation + (i / 6) * Math.PI * 2;
+                const x = cx + innerRadius * Math.cos(angle);
+                const y = cy + innerRadius * Math.sin(angle);
+                ctx.drawCircle(x, y, circleRadius, strokeColor);
+            }
+
+            // Outer hexagon - 6 circles
+            const outerRadius = circleRadius * 4;
+            for (let i = 0; i < 6; i++) {
+                const angle = rotation + (i / 6) * Math.PI * 2 + (Math.PI / 6);
+                const x = cx + outerRadius * Math.cos(angle);
+                const y = cy + outerRadius * Math.sin(angle);
+                ctx.drawCircle(x, y, circleRadius, strokeColor);
+            }
+        }
+    } else {
+        // Canvas2D mode
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness;
+
+        // Central circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, circleRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Inner hexagon - 6 circles
+        const innerRadius = circleRadius * 2;
+        for (let i = 0; i < 6; i++) {
+            const angle = rotation + (i / 6) * Math.PI * 2;
+            const x = cx + innerRadius * Math.cos(angle);
+            const y = cy + innerRadius * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Outer hexagon - 6 circles
+        const outerRadius = circleRadius * 4;
+        for (let i = 0; i < 6; i++) {
+            const angle = rotation + (i / 6) * Math.PI * 2 + (Math.PI / 6);
+            const x = cx + outerRadius * Math.cos(angle);
+            const y = cy + outerRadius * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+export function drawTreeOfLife(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        ctx.globalAlpha = finalOpacity;
+        strokeColor = getShapeColor(1.0, globalSettings.colors.scheme, ctx, { rendererType: globalSettings.rendererType });
+    }
+
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
+    const sephirahRadius = dynamicRadius / 12;
+
+    // Traditional Tree of Life positions (simplified)
+    const sephirot = [
+        { x: 0, y: -dynamicRadius * 0.8, name: 'Kether' },      // Crown
+        { x: -dynamicRadius * 0.3, y: -dynamicRadius * 0.5, name: 'Chokmah' },   // Wisdom
+        { x: dynamicRadius * 0.3, y: -dynamicRadius * 0.5, name: 'Binah' },      // Understanding
+        { x: -dynamicRadius * 0.4, y: -dynamicRadius * 0.1, name: 'Chesed' },    // Mercy
+        { x: dynamicRadius * 0.4, y: -dynamicRadius * 0.1, name: 'Geburah' },    // Severity
+        { x: 0, y: 0, name: 'Tiphareth' },                      // Beauty
+        { x: -dynamicRadius * 0.4, y: dynamicRadius * 0.3, name: 'Netzach' },    // Victory
+        { x: dynamicRadius * 0.4, y: dynamicRadius * 0.3, name: 'Hod' },         // Glory
+        { x: 0, y: dynamicRadius * 0.5, name: 'Yesod' },        // Foundation
+        { x: 0, y: dynamicRadius * 0.8, name: 'Malkuth' }       // Kingdom
+    ];
+
+    // Apply rotation to positions
+    const rotatedSephirot = sephirot.map(seph => ({
+        x: cx + seph.x * Math.cos(rotation) - seph.y * Math.sin(rotation),
+        y: cy + seph.x * Math.sin(rotation) + seph.y * Math.cos(rotation),
+        name: seph.name
+    }));
+
+    // Check if we're in WebGL mode
+    const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
+
+    if (isWebGL) {
+        if (typeof ctx.drawCircle === 'function' && typeof ctx.drawLine === 'function') {
+            // Draw connecting paths first
+            const paths = [
+                [0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [3, 5], [4, 5],
+                [5, 6], [5, 7], [5, 8], [6, 7], [6, 8], [7, 8], [8, 9]
+            ];
+
+            paths.forEach(([from, to]) => {
+                const fromSeph = rotatedSephirot[from];
+                const toSeph = rotatedSephirot[to];
+                ctx.drawLine(fromSeph.x, fromSeph.y, toSeph.x, toSeph.y, strokeColor, thickness * 0.5);
+            });
+
+            // Draw sephirot circles
+            rotatedSephirot.forEach(seph => {
+                ctx.drawCircle(seph.x, seph.y, sephirahRadius, strokeColor);
+            });
+        }
+    } else {
+        // Canvas2D mode
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness * 0.5;
+
+        // Draw connecting paths first
+        const paths = [
+            [0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [3, 5], [4, 5],
+            [5, 6], [5, 7], [5, 8], [6, 7], [6, 8], [7, 8], [8, 9]
+        ];
+
+        paths.forEach(([from, to]) => {
+            const fromSeph = rotatedSephirot[from];
+            const toSeph = rotatedSephirot[to];
+
+            ctx.beginPath();
+            ctx.moveTo(fromSeph.x, fromSeph.y);
+            ctx.lineTo(toSeph.x, toSeph.y);
+            ctx.stroke();
+        });
+
+        // Draw sephirot circles
+        ctx.lineWidth = thickness;
+        rotatedSephirot.forEach(seph => {
+            ctx.beginPath();
+            ctx.arc(seph.x, seph.y, sephirahRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+    }
+
     // Reset global alpha
     ctx.globalAlpha = 1;
 }

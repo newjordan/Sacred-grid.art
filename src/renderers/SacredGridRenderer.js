@@ -1,14 +1,16 @@
 // src/renderers/SacredGridRenderer.js
 // This is a refactored version of the renderer with the new naming structure
 import { ShapeType, AnimationMode } from '../constants/ShapeTypes';
-import { 
+import {
     ShapeDrawers,
-    drawPolygon, 
-    drawFlowerOfLife, 
-    drawMerkaba, 
+    drawPolygon,
+    drawFlowerOfLife,
+    drawMerkaba,
+    drawMetatronsCube,
+    drawTreeOfLife,
     drawCircle,
     drawStar,
-    drawLissajous, 
+    drawLissajous,
     drawSpiral,
     drawHexagon,
     drawPentagon
