@@ -146,6 +146,7 @@ export const ShapeDrawers = {
     [ShapeType.MERKABA]: drawMerkaba,
     [ShapeType.METATRONS_CUBE]: drawMetatronsCube,
     [ShapeType.TREE_OF_LIFE]: drawTreeOfLife,
+    [ShapeType.MANDALA]: drawMandala,
     [ShapeType.CIRCLE]: drawCircle,
     [ShapeType.STAR]: drawStar,
     [ShapeType.SPIRAL]: drawSpiral,
@@ -1173,52 +1174,96 @@ export function drawSpiral(ctx, params) {
         );
         ctx.globalAlpha = finalOpacity;
     } else {
-        // Apply opacity directly to the context for consistent handling between gradient/non-gradient modes
         ctx.globalAlpha = finalOpacity;
-        // Get the shape color without embedding opacity (pass 1.0 as alpha)
         strokeColor = getShapeColor(1.0, globalSettings.colors.scheme, ctx, { rendererType: globalSettings.rendererType });
     }
 
-    // Spiral parameters (use settings if available)
-    const turns = shapeSettings.turns || 3;
-    const decay = shapeSettings.decay || 0.15;
-    const segments = 100;
-    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Apply as initial angle offset
+    // Enhanced spiral parameters
+    const turns = shapeSettings.turns || 4;
+    const spiralType = shapeSettings.spiralType || 'golden'; // 'golden', 'archimedean', 'logarithmic'
+    const segments = Math.max(100, turns * 50); // More segments for more turns
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
 
-    // Generate vertices for the spiral
+    // Mathematical constants
+    const PHI = (1 + Math.sqrt(5)) / 2; // Golden ratio
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle ≈ 137.5°
+
+    // Generate vertices based on spiral type
     const vertices = [];
+
     for (let i = 0; i <= segments; i++) {
-        const angle = rotation + (i / segments) * Math.PI * 2 * turns;
-        const r = dynamicRadius * (1 - (i / segments) * decay);
+        const t = i / segments; // Normalized parameter 0-1
+        let angle, r;
+
+        switch (spiralType) {
+            case 'golden':
+                // Golden spiral (Fibonacci spiral approximation)
+                angle = rotation + t * turns * 2 * Math.PI;
+                // Use golden ratio for radius growth
+                r = dynamicRadius * Math.pow(PHI, -2 * t * turns) * 0.8;
+                break;
+
+            case 'archimedean':
+                // Archimedean spiral (uniform spacing)
+                angle = rotation + t * turns * 2 * Math.PI;
+                r = dynamicRadius * (1 - t * 0.85); // Linear decrease
+                break;
+
+            case 'logarithmic':
+                // Logarithmic spiral (constant angle)
+                angle = rotation + t * turns * 2 * Math.PI;
+                const growthFactor = 0.2; // Controls how quickly spiral expands
+                r = dynamicRadius * Math.exp(-growthFactor * t * turns) * 0.9;
+                break;
+
+            default: // 'golden'
+                angle = rotation + t * turns * 2 * Math.PI;
+                r = dynamicRadius * Math.pow(PHI, -2 * t * turns) * 0.8;
+        }
+
         vertices.push({
             x: cx + r * Math.cos(angle),
             y: cy + r * Math.sin(angle)
         });
     }
 
-    // Check if we should use enhanced line factory drawing
-    if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
-        // For line factory, treat as a shape for better looping
-        drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
-    } else {
-        // Use the template for standard drawing
-        if (typeof ctx.beginPath === 'function') {
-            drawShapeTemplate(ctx, 
-                { cx, cy, radius, thickness, strokeColor, dynamicRadius },
-                (ctx, x, y, r) => ShapeTemplate.SPIRAL(ctx, x, y, r, turns, decay, segments),
-                false // Spiral is not a closed path
-            );
-        } else if (ctx.isWebGLContext === true && ctx.drawPolygon) {
-            // WebGL drawing - use the drawPolygon method directly
-            if (vertices && vertices.length > 2) {
-                console.log('Drawing spiral with WebGL, vertices:', vertices.length);
-                ctx.drawPolygon(vertices, null, strokeColor, thickness);
-            } else {
-                console.error('Cannot draw spiral in WebGL - insufficient vertices');
+    // Enhanced drawing with multiple spiral arms (optional)
+    const arms = shapeSettings.arms || 1;
+
+    for (let arm = 0; arm < arms; arm++) {
+        const armRotation = (arm * 2 * Math.PI) / arms;
+        const armVertices = vertices.map(v => ({
+            x: cx + (v.x - cx) * Math.cos(armRotation) - (v.y - cy) * Math.sin(armRotation),
+            y: cy + (v.x - cx) * Math.sin(armRotation) + (v.y - cy) * Math.cos(armRotation)
+        }));
+
+        // Draw each arm
+        if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
+            drawShapeWithLineFactory(ctx, { thickness, strokeColor }, armVertices, globalSettings);
+        } else {
+            if (typeof ctx.beginPath === 'function') {
+                // Canvas2D drawing
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = thickness;
+                ctx.beginPath();
+
+                armVertices.forEach((vertex, index) => {
+                    if (index === 0) {
+                        ctx.moveTo(vertex.x, vertex.y);
+                    } else {
+                        ctx.lineTo(vertex.x, vertex.y);
+                    }
+                });
+                ctx.stroke();
+            } else if (ctx.isWebGLContext === true && ctx.drawPolygon) {
+                // WebGL drawing
+                if (armVertices && armVertices.length > 2) {
+                    ctx.drawPolygon(armVertices, null, strokeColor, thickness);
+                }
             }
         }
     }
-    
+
     // Reset global alpha
     ctx.globalAlpha = 1;
 }
@@ -1421,4 +1466,332 @@ export function drawTreeOfLife(ctx, params) {
 
     // Reset global alpha
     ctx.globalAlpha = 1;
+}
+
+export function drawMandala(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    // Set the stroke style
+    let strokeColor;
+    if (globalSettings.colors.gradient.shapes.enabled) {
+        strokeColor = getMultiEasedColor(
+            time,
+            globalSettings.colors.gradient.shapes.colors,
+            1,
+            globalSettings.colors.gradient.cycleDuration,
+            globalSettings.colors.gradient.easing
+        );
+        ctx.globalAlpha = finalOpacity;
+    } else {
+        ctx.globalAlpha = finalOpacity;
+        strokeColor = getShapeColor(1.0, globalSettings.colors.scheme, ctx, { rendererType: globalSettings.rendererType });
+    }
+
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
+
+    // Mandala parameters (with artistic defaults)
+    const symmetry = shapeSettings.mandalaSymmetry || 8; // 4, 6, 8, 12, 16-fold symmetry
+    const layers = shapeSettings.mandalaLayers || 4; // Number of concentric layers
+    const petalCount = shapeSettings.mandalaPetals || 6; // Petals per layer
+    const complexity = shapeSettings.mandalaComplexity || 0.5; // 0-1, adds detail
+    const style = shapeSettings.mandalaStyle || 'geometric'; // 'geometric', 'floral', 'celtic', 'tibetan'
+
+    // Mathematical constants
+    const PHI = (1 + Math.sqrt(5)) / 2; // Golden ratio
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+
+    // Check if we're in WebGL mode
+    const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
+
+    if (!isWebGL) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = thickness;
+    }
+
+    // Draw mandala layers from outside to inside
+    for (let layer = layers; layer >= 1; layer--) {
+        const layerRadius = dynamicRadius * (layer / layers);
+        const layerOpacity = finalOpacity * (0.6 + 0.4 * (layer / layers)); // Outer layers slightly more transparent
+
+        if (!isWebGL) {
+            ctx.globalAlpha = layerOpacity;
+        }
+
+        // Draw symmetrical elements around the circle
+        for (let i = 0; i < symmetry; i++) {
+            const baseAngle = rotation + (i * 2 * Math.PI) / symmetry;
+
+            // Draw different mandala styles
+            switch (style) {
+                case 'geometric':
+                    drawGeometricMandalaElement(ctx, cx, cy, layerRadius, baseAngle, layer, petalCount, complexity, isWebGL, strokeColor, thickness);
+                    break;
+                case 'floral':
+                    drawFloralMandalaElement(ctx, cx, cy, layerRadius, baseAngle, layer, petalCount, complexity, isWebGL, strokeColor, thickness);
+                    break;
+                case 'celtic':
+                    drawCelticMandalaElement(ctx, cx, cy, layerRadius, baseAngle, layer, petalCount, complexity, isWebGL, strokeColor, thickness);
+                    break;
+                case 'tibetan':
+                    drawTibetanMandalaElement(ctx, cx, cy, layerRadius, baseAngle, layer, petalCount, complexity, isWebGL, strokeColor, thickness);
+                    break;
+                default:
+                    drawGeometricMandalaElement(ctx, cx, cy, layerRadius, baseAngle, layer, petalCount, complexity, isWebGL, strokeColor, thickness);
+            }
+        }
+
+        // Add connecting circles for each layer
+        if (!isWebGL) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, layerRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        } else if (ctx.drawCircle) {
+            ctx.drawCircle(cx, cy, layerRadius, strokeColor);
+        }
+    }
+
+    // Central element
+    const centralSize = dynamicRadius * 0.1;
+    if (!isWebGL) {
+        ctx.globalAlpha = finalOpacity;
+        ctx.beginPath();
+        ctx.arc(cx, cy, centralSize, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Add central star or flower
+        for (let i = 0; i < symmetry; i++) {
+            const angle = rotation + (i * 2 * Math.PI) / symmetry;
+            const x1 = cx + centralSize * 0.5 * Math.cos(angle);
+            const y1 = cy + centralSize * 0.5 * Math.sin(angle);
+            const x2 = cx + centralSize * 1.5 * Math.cos(angle);
+            const y2 = cy + centralSize * 1.5 * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+    } else if (ctx.drawCircle && ctx.drawLine) {
+        ctx.drawCircle(cx, cy, centralSize, strokeColor);
+
+        for (let i = 0; i < symmetry; i++) {
+            const angle = rotation + (i * 2 * Math.PI) / symmetry;
+            const x1 = cx + centralSize * 0.5 * Math.cos(angle);
+            const y1 = cy + centralSize * 0.5 * Math.sin(angle);
+            const x2 = cx + centralSize * 1.5 * Math.cos(angle);
+            const y2 = cy + centralSize * 1.5 * Math.sin(angle);
+
+            ctx.drawLine(x1, y1, x2, y2, strokeColor, thickness);
+        }
+    }
+
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+// Helper function for geometric mandala elements
+function drawGeometricMandalaElement(ctx, cx, cy, radius, angle, layer, petalCount, complexity, isWebGL, strokeColor, thickness) {
+    const elementRadius = radius * 0.15;
+    const elementX = cx + radius * 0.8 * Math.cos(angle);
+    const elementY = cy + radius * 0.8 * Math.sin(angle);
+
+    if (!isWebGL) {
+        // Draw geometric petals
+        for (let p = 0; p < petalCount; p++) {
+            const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+            const petalRadius = elementRadius * (0.5 + 0.5 * complexity);
+
+            ctx.beginPath();
+            ctx.arc(
+                elementX + petalRadius * Math.cos(petalAngle),
+                elementY + petalRadius * Math.sin(petalAngle),
+                elementRadius * 0.3,
+                0,
+                Math.PI * 2
+            );
+            ctx.stroke();
+        }
+
+        // Add connecting lines
+        if (complexity > 0.3) {
+            for (let p = 0; p < petalCount; p++) {
+                const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+                const petalRadius = elementRadius * (0.5 + 0.5 * complexity);
+
+                ctx.beginPath();
+                ctx.moveTo(elementX, elementY);
+                ctx.lineTo(
+                    elementX + petalRadius * Math.cos(petalAngle),
+                    elementY + petalRadius * Math.sin(petalAngle)
+                );
+                ctx.stroke();
+            }
+        }
+    } else if (ctx.drawCircle && ctx.drawLine) {
+        // WebGL version
+        for (let p = 0; p < petalCount; p++) {
+            const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+            const petalRadius = elementRadius * (0.5 + 0.5 * complexity);
+
+            ctx.drawCircle(
+                elementX + petalRadius * Math.cos(petalAngle),
+                elementY + petalRadius * Math.sin(petalAngle),
+                elementRadius * 0.3,
+                strokeColor
+            );
+
+            if (complexity > 0.3) {
+                ctx.drawLine(
+                    elementX, elementY,
+                    elementX + petalRadius * Math.cos(petalAngle),
+                    elementY + petalRadius * Math.sin(petalAngle),
+                    strokeColor, thickness * 0.5
+                );
+            }
+        }
+    }
+}
+
+// Helper function for floral mandala elements
+function drawFloralMandalaElement(ctx, cx, cy, radius, angle, layer, petalCount, complexity, isWebGL, strokeColor, thickness) {
+    const elementRadius = radius * 0.12;
+    const elementX = cx + radius * 0.85 * Math.cos(angle);
+    const elementY = cy + radius * 0.85 * Math.sin(angle);
+
+    if (!isWebGL) {
+        // Draw flower-like petals with curves
+        for (let p = 0; p < petalCount; p++) {
+            const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+            const petalLength = elementRadius * (0.8 + 0.4 * complexity);
+
+            // Create petal shape with bezier curves
+            ctx.beginPath();
+            ctx.moveTo(elementX, elementY);
+
+            const controlX1 = elementX + petalLength * 0.5 * Math.cos(petalAngle - 0.3);
+            const controlY1 = elementY + petalLength * 0.5 * Math.sin(petalAngle - 0.3);
+            const controlX2 = elementX + petalLength * 0.5 * Math.cos(petalAngle + 0.3);
+            const controlY2 = elementY + petalLength * 0.5 * Math.sin(petalAngle + 0.3);
+            const endX = elementX + petalLength * Math.cos(petalAngle);
+            const endY = elementY + petalLength * Math.sin(petalAngle);
+
+            ctx.quadraticCurveTo(controlX1, controlY1, endX, endY);
+            ctx.quadraticCurveTo(controlX2, controlY2, elementX, elementY);
+            ctx.stroke();
+        }
+    } else if (ctx.drawLine) {
+        // Simplified version for WebGL
+        for (let p = 0; p < petalCount; p++) {
+            const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+            const petalLength = elementRadius * (0.8 + 0.4 * complexity);
+
+            ctx.drawLine(
+                elementX, elementY,
+                elementX + petalLength * Math.cos(petalAngle),
+                elementY + petalLength * Math.sin(petalAngle),
+                strokeColor, thickness
+            );
+        }
+    }
+}
+
+// Helper function for Celtic mandala elements
+function drawCelticMandalaElement(ctx, cx, cy, radius, angle, layer, petalCount, complexity, isWebGL, strokeColor, thickness) {
+    const elementRadius = radius * 0.1;
+    const elementX = cx + radius * 0.9 * Math.cos(angle);
+    const elementY = cy + radius * 0.9 * Math.sin(angle);
+
+    if (!isWebGL) {
+        // Draw interwoven Celtic knot patterns
+        const knotSize = elementRadius * (0.5 + 0.5 * complexity);
+
+        // Create a simple Celtic knot
+        for (let k = 0; k < 3; k++) {
+            const knotAngle = angle + (k * 2 * Math.PI) / 3;
+            const x1 = elementX + knotSize * Math.cos(knotAngle);
+            const y1 = elementY + knotSize * Math.sin(knotAngle);
+            const x2 = elementX + knotSize * Math.cos(knotAngle + 2 * Math.PI / 3);
+            const y2 = elementY + knotSize * Math.sin(knotAngle + 2 * Math.PI / 3);
+
+            ctx.beginPath();
+            ctx.arc(x1, y1, knotSize * 0.3, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+    } else if (ctx.drawCircle && ctx.drawLine) {
+        // WebGL version
+        const knotSize = elementRadius * (0.5 + 0.5 * complexity);
+
+        for (let k = 0; k < 3; k++) {
+            const knotAngle = angle + (k * 2 * Math.PI) / 3;
+            const x1 = elementX + knotSize * Math.cos(knotAngle);
+            const y1 = elementY + knotSize * Math.sin(knotAngle);
+            const x2 = elementX + knotSize * Math.cos(knotAngle + 2 * Math.PI / 3);
+            const y2 = elementY + knotSize * Math.sin(knotAngle + 2 * Math.PI / 3);
+
+            ctx.drawCircle(x1, y1, knotSize * 0.3, strokeColor);
+            ctx.drawLine(x1, y1, x2, y2, strokeColor, thickness);
+        }
+    }
+}
+
+// Helper function for Tibetan mandala elements
+function drawTibetanMandalaElement(ctx, cx, cy, radius, angle, layer, petalCount, complexity, isWebGL, strokeColor, thickness) {
+    const elementRadius = radius * 0.08;
+    const elementX = cx + radius * 0.95 * Math.cos(angle);
+    const elementY = cy + radius * 0.95 * Math.sin(angle);
+
+    if (!isWebGL) {
+        // Draw lotus petals and sacred symbols
+        const lotusLayers = Math.floor(2 + complexity * 3);
+
+        for (let l = 0; l < lotusLayers; l++) {
+            const layerRadius = elementRadius * (1 - l * 0.3);
+            const layerPetals = Math.max(4, petalCount - l);
+
+            for (let p = 0; p < layerPetals; p++) {
+                const petalAngle = angle + (p * 2 * Math.PI) / layerPetals + l * 0.2;
+                const petalX = elementX + layerRadius * Math.cos(petalAngle);
+                const petalY = elementY + layerRadius * Math.sin(petalAngle);
+
+                // Draw pointed petal shape
+                ctx.beginPath();
+                ctx.moveTo(elementX, elementY);
+                ctx.lineTo(petalX, petalY);
+                ctx.lineTo(
+                    elementX + layerRadius * 0.7 * Math.cos(petalAngle + 0.1),
+                    elementY + layerRadius * 0.7 * Math.sin(petalAngle + 0.1)
+                );
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+
+        // Central dot
+        ctx.beginPath();
+        ctx.arc(elementX, elementY, elementRadius * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+    } else if (ctx.drawLine && ctx.drawCircle) {
+        // Simplified WebGL version
+        for (let p = 0; p < petalCount; p++) {
+            const petalAngle = angle + (p * 2 * Math.PI) / petalCount;
+            const petalX = elementX + elementRadius * Math.cos(petalAngle);
+            const petalY = elementY + elementRadius * Math.sin(petalAngle);
+
+            ctx.drawLine(elementX, elementY, petalX, petalY, strokeColor, thickness);
+        }
+
+        ctx.drawCircle(elementX, elementY, elementRadius * 0.1, strokeColor);
+    }
 }
