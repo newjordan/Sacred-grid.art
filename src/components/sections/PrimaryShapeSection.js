@@ -27,6 +27,7 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
         { value: ShapeType.METATRONS_CUBE, label: "Metatron's Cube" },
         { value: ShapeType.TREE_OF_LIFE, label: 'Tree of Life' },
         { value: ShapeType.MANDALA, label: 'Mandala' },
+        { value: ShapeType.CUSTOM_MANDALA, label: '🎨 Custom Mandala' },
         { value: ShapeType.CIRCLE, label: 'Circle' },
         { value: ShapeType.STAR, label: 'Star' },
         { value: ShapeType.SPIRAL, label: 'Spiral' },
@@ -171,6 +172,115 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                                 // This might need a new setter if you want to persist this value
                                 if (setSettings.setPrimaryParamDelta) {
                                     setSettings.setPrimaryParamDelta(parseFloat(e.target.value));
+                                }
+                            }}
+                        />
+                    </>
+                )}
+                {settings.shapes.primary.type === ShapeType.SPIRAL && (
+                    <>
+                        <SelectDropdown
+                            label="Spiral Type"
+                            value={settings.shapes.primary.spiralType || 'golden'}
+                            onChange={(e) => {
+                                if (setSettings.setPrimarySpiralType) {
+                                    setSettings.setPrimarySpiralType(e.target.value);
+                                }
+                            }}
+                            options={[
+                                { value: 'golden', label: 'Golden Spiral (Fibonacci)' },
+                                { value: 'archimedean', label: 'Archimedean (Uniform)' },
+                                { value: 'logarithmic', label: 'Logarithmic (Nautilus)' }
+                            ]}
+                        />
+                        <RangeSlider
+                            label="Turns"
+                            min={1}
+                            max={8}
+                            step={0.5}
+                            value={settings.shapes.primary.turns || 4}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryTurns) {
+                                    setSettings.setPrimaryTurns(parseFloat(e.target.value));
+                                }
+                            }}
+                        />
+                        <RangeSlider
+                            label="Arms"
+                            min={1}
+                            max={6}
+                            step={1}
+                            value={settings.shapes.primary.arms || 1}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryArms) {
+                                    setSettings.setPrimaryArms(parseInt(e.target.value));
+                                }
+                            }}
+                        />
+                    </>
+                )}
+                {settings.shapes.primary.type === ShapeType.MANDALA && (
+                    <>
+                        <SelectDropdown
+                            label="Mandala Style"
+                            value={settings.shapes.primary.mandalaStyle || 'geometric'}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryMandalaStyle) {
+                                    setSettings.setPrimaryMandalaStyle(e.target.value);
+                                }
+                            }}
+                            options={[
+                                { value: 'geometric', label: 'Geometric' },
+                                { value: 'floral', label: 'Floral' },
+                                { value: 'celtic', label: 'Celtic' },
+                                { value: 'tibetan', label: 'Tibetan' }
+                            ]}
+                        />
+                        <RangeSlider
+                            label="Symmetry"
+                            min={4}
+                            max={16}
+                            step={2}
+                            value={settings.shapes.primary.mandalaSymmetry || 8}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryMandalaSymmetry) {
+                                    setSettings.setPrimaryMandalaSymmetry(parseInt(e.target.value));
+                                }
+                            }}
+                        />
+                        <RangeSlider
+                            label="Layers"
+                            min={1}
+                            max={8}
+                            step={1}
+                            value={settings.shapes.primary.mandalaLayers || 4}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryMandalaLayers) {
+                                    setSettings.setPrimaryMandalaLayers(parseInt(e.target.value));
+                                }
+                            }}
+                        />
+                        <RangeSlider
+                            label="Petals per Layer"
+                            min={3}
+                            max={12}
+                            step={1}
+                            value={settings.shapes.primary.mandalaPetals || 6}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryMandalaPetals) {
+                                    setSettings.setPrimaryMandalaPetals(parseInt(e.target.value));
+                                }
+                            }}
+                        />
+                        <RangeSlider
+                            label="Complexity"
+                            min={0}
+                            max={1}
+                            step={0.1}
+                            value={settings.shapes.primary.mandalaComplexity || 0.5}
+                            onChange={(e) => {
+                                if (setSettings.setPrimaryMandalaComplexity) {
+                                    setSettings.setPrimaryMandalaComplexity(parseFloat(e.target.value));
                                 }
                             }}
                         />

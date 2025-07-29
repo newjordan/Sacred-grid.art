@@ -246,6 +246,115 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                                 />
                             </>
                         )}
+                        {settings.shapes.secondary.type === ShapeType.SPIRAL && (
+                            <>
+                                <SelectDropdown
+                                    label="Spiral Type"
+                                    value={settings.shapes.secondary.spiralType || 'golden'}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondarySpiralType) {
+                                            setSettings.setSecondarySpiralType(e.target.value);
+                                        }
+                                    }}
+                                    options={[
+                                        { value: 'golden', label: 'Golden Spiral (Fibonacci)' },
+                                        { value: 'archimedean', label: 'Archimedean (Uniform)' },
+                                        { value: 'logarithmic', label: 'Logarithmic (Nautilus)' }
+                                    ]}
+                                />
+                                <RangeSlider
+                                    label="Turns"
+                                    min={1}
+                                    max={8}
+                                    step={0.5}
+                                    value={settings.shapes.secondary.turns || 4}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryTurns) {
+                                            setSettings.setSecondaryTurns(parseFloat(e.target.value));
+                                        }
+                                    }}
+                                />
+                                <RangeSlider
+                                    label="Arms"
+                                    min={1}
+                                    max={6}
+                                    step={1}
+                                    value={settings.shapes.secondary.arms || 1}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryArms) {
+                                            setSettings.setSecondaryArms(parseInt(e.target.value));
+                                        }
+                                    }}
+                                />
+                            </>
+                        )}
+                        {settings.shapes.secondary.type === ShapeType.MANDALA && (
+                            <>
+                                <SelectDropdown
+                                    label="Mandala Style"
+                                    value={settings.shapes.secondary.mandalaStyle || 'geometric'}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryMandalaStyle) {
+                                            setSettings.setSecondaryMandalaStyle(e.target.value);
+                                        }
+                                    }}
+                                    options={[
+                                        { value: 'geometric', label: 'Geometric' },
+                                        { value: 'floral', label: 'Floral' },
+                                        { value: 'celtic', label: 'Celtic' },
+                                        { value: 'tibetan', label: 'Tibetan' }
+                                    ]}
+                                />
+                                <RangeSlider
+                                    label="Symmetry"
+                                    min={4}
+                                    max={16}
+                                    step={2}
+                                    value={settings.shapes.secondary.mandalaSymmetry || 8}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryMandalaSymmetry) {
+                                            setSettings.setSecondaryMandalaSymmetry(parseInt(e.target.value));
+                                        }
+                                    }}
+                                />
+                                <RangeSlider
+                                    label="Layers"
+                                    min={1}
+                                    max={8}
+                                    step={1}
+                                    value={settings.shapes.secondary.mandalaLayers || 4}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryMandalaLayers) {
+                                            setSettings.setSecondaryMandalaLayers(parseInt(e.target.value));
+                                        }
+                                    }}
+                                />
+                                <RangeSlider
+                                    label="Petals per Layer"
+                                    min={3}
+                                    max={12}
+                                    step={1}
+                                    value={settings.shapes.secondary.mandalaPetals || 6}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryMandalaPetals) {
+                                            setSettings.setSecondaryMandalaPetals(parseInt(e.target.value));
+                                        }
+                                    }}
+                                />
+                                <RangeSlider
+                                    label="Complexity"
+                                    min={0}
+                                    max={1}
+                                    step={0.1}
+                                    value={settings.shapes.secondary.mandalaComplexity || 0.5}
+                                    onChange={(e) => {
+                                        if (setSettings.setSecondaryMandalaComplexity) {
+                                            setSettings.setSecondaryMandalaComplexity(parseFloat(e.target.value));
+                                        }
+                                    }}
+                                />
+                            </>
+                        )}
                     </FieldSet>
 
                     <FieldSet legend="Secondary Shape Appearance">
