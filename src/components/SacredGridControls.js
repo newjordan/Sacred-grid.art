@@ -98,13 +98,16 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                 top: 20,
                 left: 10,
                 color: 'white',
-                background: 'rgba(0,0,0,0.7)',
-                padding: '15px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                padding: '20px',
                 maxHeight: '90vh',
-                width: '350px',
+                width: '420px',
                 overflowY: 'auto',
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset'
             }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -116,12 +119,25 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                         onClick={handleImportClick}
                         title="Import settings from a JSON file"
                         style={{
-                            background: 'rgba(0, 150, 50, 0.7)', // Different color for import
+                            background: 'rgba(0, 200, 100, 0.15)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(0, 200, 100, 0.3)',
                             color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
+                            padding: '8px 14px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = 'rgba(0, 200, 100, 0.25)';
+                            e.target.style.borderColor = 'rgba(0, 200, 100, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = 'rgba(0, 200, 100, 0.15)';
+                            e.target.style.borderColor = 'rgba(0, 200, 100, 0.3)';
                         }}
                     >
                         Import
@@ -139,30 +155,56 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                         onClick={handleExportSettings}
                         title="Export current settings to a JSON file"
                         style={{
-                            background: 'rgba(0, 100, 200, 0.7)', // Different color
+                            background: 'rgba(0, 119, 255, 0.15)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(0, 119, 255, 0.3)',
                             color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
+                            padding: '8px 14px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = 'rgba(0, 119, 255, 0.25)';
+                            e.target.style.borderColor = 'rgba(0, 119, 255, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = 'rgba(0, 119, 255, 0.15)';
+                            e.target.style.borderColor = 'rgba(0, 119, 255, 0.3)';
                         }}
                     >
                         Export
                     </button>
                     {/* Hide Button */}
-                    <button 
+                    <button
                         onClick={toggleControls}
                         style={{
-                            background: 'rgba(50, 50, 50, 0.7)',
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
                             color: 'white',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Hide
-                </button>
+                            padding: '8px 14px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        }}
+                    >
+                        Hide
+                    </button>
                 </div>
             </div>
 

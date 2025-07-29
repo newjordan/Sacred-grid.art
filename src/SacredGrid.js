@@ -740,15 +740,31 @@ const SacredGrid = () => {
                     onClick={toggleControls}
                     style={{
                         position: 'absolute',
-                        top: '10px',
-                        left: '10px',
-                        background: 'rgba(0, 0, 0, 0.5)',
+                        top: '20px',
+                        left: '20px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
                         color: 'white',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
+                        padding: '12px 20px',
+                        borderRadius: '12px',
                         cursor: 'pointer',
                         zIndex: 150,
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        e.target.style.transform = 'translateY(0px)';
                     }}
                 >
                     Show Controls

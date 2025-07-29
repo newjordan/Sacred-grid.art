@@ -9,6 +9,13 @@ export interface Vector3D extends Vector2D {
   z: number;
 }
 
+export interface Rectangle {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface Color {
   r: number;
   g: number;
