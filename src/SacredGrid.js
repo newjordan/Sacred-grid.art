@@ -139,6 +139,7 @@ const SacredGrid = () => {
     const [primaryMandalaLayers, setPrimaryMandalaLayers] = useState(4);
     const [primaryMandalaPetals, setPrimaryMandalaPetals] = useState(6);
     const [primaryMandalaComplexity, setPrimaryMandalaComplexity] = useState(0.5);
+    const [customMandalaData, setCustomMandalaData] = useState([]);
 
     // Primary stacking settings
     const [primaryStackingEnabled, setPrimaryStackingEnabled] = useState(true);
@@ -321,6 +322,7 @@ const SacredGrid = () => {
                 mandalaLayers: primaryMandalaLayers,
                 mandalaPetals: primaryMandalaPetals,
                 mandalaComplexity: primaryMandalaComplexity,
+                customMandalaData: customMandalaData,
                 fractal: {
                     depth: primaryFractalDepth,
                     scale: primaryFractalScale,
@@ -504,6 +506,7 @@ const SacredGrid = () => {
         setPrimaryMandalaLayers,
         setPrimaryMandalaPetals,
         setPrimaryMandalaComplexity,
+        setCustomMandalaData,
 
         // Secondary Shape setters
         setSecondaryEnabled,
@@ -781,8 +784,6 @@ const SacredGrid = () => {
                 settings={settings}
                 ref={rendererRef}
                 rendererType={rendererType}
-                showControls={showControls}
-                toggleControls={toggleControls}
                 onExport={handleExportImage}
             />
             

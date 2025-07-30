@@ -5,8 +5,6 @@ import { RendererType } from '../renderers/RendererFactory';
 const SacredGridCanvas = forwardRef(({
     settings,
     onExport,
-    toggleControls,
-    showControls,
     rendererType = RendererType.CANVAS_2D
 }, ref) => {
     console.log('SacredGridCanvas rendering with settings:', settings);
@@ -132,14 +130,6 @@ const SacredGridCanvas = forwardRef(({
                     }}
                 >
                     Export Background
-                </button>
-            )}
-            {toggleControls && (
-                <button
-                    onClick={toggleControls}
-                    style={{ position: 'absolute', zIndex: 10, top: 10, right: 10 }}
-                >
-                    {showControls !== undefined ? (showControls ? 'Hide Controls' : 'Show Controls') : 'Toggle Controls'}
                 </button>
             )}
         </div>

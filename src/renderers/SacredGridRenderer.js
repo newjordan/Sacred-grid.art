@@ -9,6 +9,7 @@ import {
     drawMetatronsCube,
     drawTreeOfLife,
     drawMandala,
+    drawCustomMandala,
     drawCircle,
     drawStar,
     drawLissajous,
