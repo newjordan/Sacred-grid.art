@@ -147,6 +147,7 @@ export const ShapeDrawers = {
     [ShapeType.METATRONS_CUBE]: drawMetatronsCube,
     [ShapeType.TREE_OF_LIFE]: drawTreeOfLife,
     [ShapeType.MANDALA]: drawMandala,
+    [ShapeType.CUSTOM_MANDALA]: drawCustomMandala,
     [ShapeType.CIRCLE]: drawCircle,
     [ShapeType.STAR]: drawStar,
     [ShapeType.SPIRAL]: drawSpiral,
@@ -1793,5 +1794,142 @@ function drawTibetanMandalaElement(ctx, cx, cy, radius, angle, layer, petalCount
         }
 
         ctx.drawCircle(elementX, elementY, elementRadius * 0.1, strokeColor);
+    }
+}
+
+export function drawCustomMandala(ctx, params) {
+    const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
+
+    // Get custom mandala data from settings
+    const customMandalaData = shapeSettings.customMandalaData || [];
+    if (customMandalaData.length === 0) return;
+
+    // Calculate animation parameters
+    const { dynamicRadius, finalOpacity } = calculateAnimationParams(
+        time,
+        shapeSettings,
+        globalSettings
+    );
+
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
+    const symmetry = shapeSettings.mandalaSymmetry || 8;
+    const pieAngle = (2 * Math.PI) / symmetry;
+
+    // Scale factor to fit the dynamic radius
+    const scaleFactor = dynamicRadius / 120; // Assuming designer canvas radius of ~120px
+
+    // Check if we're in WebGL mode
+    const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
+
+    // Draw all symmetry copies
+    for (let i = 0; i < symmetry; i++) {
+        if (!isWebGL) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(rotation + i * pieAngle);
+            ctx.scale(scaleFactor, scaleFactor);
+
+            // Clip to pie slice
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(120, 0);
+            ctx.arc(0, 0, 120, 0, pieAngle);
+            ctx.closePath();
+            ctx.clip();
+        }
+
+        // Draw each path
+        customMandalaData.forEach(pathData => {
+            const pathPoints = pathData.points || pathData;
+            const pathColor = pathData.color || '#0077ff';
+            const pathWidth = (pathData.width || 2) * scaleFactor;
+            const useLineFactory = pathData.useLineFactory !== false;
+
+            if (pathPoints.length < 2) return;
+
+            // Apply opacity
+            let finalColor = pathColor;
+            if (globalSettings.colors.gradient.shapes.enabled) {
+                finalColor = getMultiEasedColor(
+                    time,
+                    globalSettings.colors.gradient.shapes.colors,
+                    1,
+                    globalSettings.colors.gradient.cycleDuration,
+                    globalSettings.colors.gradient.easing
+                );
+            }
+
+            if (!isWebGL) {
+                ctx.globalAlpha = finalOpacity;
+                ctx.strokeStyle = finalColor;
+                ctx.lineWidth = pathWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                // Draw Bézier path
+                ctx.beginPath();
+
+                // Translate points relative to center (designer canvas center was 150,150)
+                const firstPoint = pathPoints[0];
+                ctx.moveTo(firstPoint.x - 150, firstPoint.y - 150);
+
+                for (let j = 1; j < pathPoints.length; j++) {
+                    const prevPoint = pathPoints[j - 1];
+                    const currentPoint = pathPoints[j];
+
+                    const prevX = prevPoint.x - 150;
+                    const prevY = prevPoint.y - 150;
+                    const currX = currentPoint.x - 150;
+                    const currY = currentPoint.y - 150;
+
+                    if (prevPoint.handleOut && currentPoint.handleIn) {
+                        // Cubic Bézier curve
+                        ctx.bezierCurveTo(
+                            prevPoint.handleOut.x - 150, prevPoint.handleOut.y - 150,
+                            currentPoint.handleIn.x - 150, currentPoint.handleIn.y - 150,
+                            currX, currY
+                        );
+                    } else if (prevPoint.handleOut) {
+                        // Quadratic curve
+                        ctx.quadraticCurveTo(
+                            prevPoint.handleOut.x - 150, prevPoint.handleOut.y - 150,
+                            currX, currY
+                        );
+                    } else {
+                        // Straight line
+                        ctx.lineTo(currX, currY);
+                    }
+                }
+
+                if (useLineFactory && globalSettings.lineFactory) {
+                    // Apply line factory effects if enabled
+                    ctx.stroke();
+                } else {
+                    ctx.stroke();
+                }
+            } else if (ctx.drawLine) {
+                // WebGL version - simplified line drawing
+                for (let j = 1; j < pathPoints.length; j++) {
+                    const prevPoint = pathPoints[j - 1];
+                    const currentPoint = pathPoints[j];
+
+                    const x1 = cx + (prevPoint.x - 150) * scaleFactor;
+                    const y1 = cy + (prevPoint.y - 150) * scaleFactor;
+                    const x2 = cx + (currentPoint.x - 150) * scaleFactor;
+                    const y2 = cy + (currentPoint.y - 150) * scaleFactor;
+
+                    ctx.drawLine(x1, y1, x2, y2, finalColor, pathWidth);
+                }
+            }
+        });
+
+        if (!isWebGL) {
+            ctx.restore();
+        }
+    }
+
+    // Reset global alpha
+    if (!isWebGL) {
+        ctx.globalAlpha = 1;
     }
 }
