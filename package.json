@@ -7,10 +7,10 @@
   "homepage": "https://sacred-grid.art",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/newjordan/sacred-grid.art.git"
+    "url": "git+https://github.com/sacredgrid/sacred-grid.art.git"
   },
   "bugs": {
-    "url": "https://github.com/newjordan/sacred-grid.art/issues"
+    "url": "https://github.com/sacredgrid/sacred-grid.art/issues"
   },
   "keywords": [
     "sacred-geometry",

@@ -50,7 +50,7 @@ View the live demo at: [https://sacred-grid.art](https://sacred-grid.art)
 
 ```bash
 # Clone the repository
-git clone https://github.com/newjordan/sacred-grid.art.git
+git clone https://github.com/sacredgrid/sacred-grid.art.git
 cd sacred-grid.art
 
 # Install dependencies
@@ -220,13 +220,7 @@ Join our Discord community to connect with other users, share your creations, ge
 
 ## 💝 Sponsor
 
-If you find Sacred Grid useful for your projects or appreciate our work in advancing sacred geometry visualization tools, please consider supporting the project:
-
-<p align="center">
-  <a href="https://www.patreon.com/Frosty40" target="_blank"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a Patron" height="45"></a>
-  &nbsp;&nbsp;
-  <a href="https://ko-fi.com/frosty40" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Buy Me A Coffee" height="45" width="180"></a>
-</p>
+If you find Sacred Grid useful for your projects or appreciate our work in advancing sacred geometry visualization tools, please consider supporting the project through GitHub Sponsors or other funding platforms.
 
 Your support will help us:
 - Expand the library with more sacred geometry patterns
@@ -235,12 +229,10 @@ Your support will help us:
 - Support integrations with other frameworks
 - Respond to community requests
 
-If you're representing a company that would like to sponsor Sacred Grid, please reach out to Frosty40 on Patreon or Ko-fi for corporate sponsorship options.
-
 ### Corporate Sponsors
 
 <p align="center">
-  <em>Become our first corporate sponsor! Contact Frosty40 on Patreon or Ko-fi for details.</em>
+  <em>Become our first corporate sponsor! Contact us through GitHub Issues for corporate sponsorship options.</em>
 </p>
 
 ## 📜 License

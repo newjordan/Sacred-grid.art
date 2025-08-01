@@ -6,6 +6,8 @@ import SacredGridControls from './components/SacredGridControls';
 import MandalaDesigner from './components/MandalaDesigner';
 import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
+import { ExportManager } from './export/ExportManager.js';
+import { StateDuplicator } from './utils/StateDuplicator';
 // import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
 
 // Add a small CSS snippet to ensure full-screen display
@@ -35,6 +37,9 @@ const SacredGrid = () => {
 
     // Reference to the renderer
     const rendererRef = useRef(null);
+
+    // Export manager
+    const exportManagerRef = useRef(new ExportManager());
 
     // Canvas2D is the only renderer in this version
     const rendererType = RendererType.CANVAS_2D;
@@ -111,7 +116,7 @@ const SacredGrid = () => {
     const [primaryOpacity, setPrimaryOpacity] = useState(1.0);
     const [primaryThickness, setPrimaryThickness] = useState(6);
     const [primaryFractalDepth, setPrimaryFractalDepth] = useState(1);
-    const [primaryFractalScale, setPrimaryFractalScale] = useState(0.5);
+    const [primaryFractalScale, setPrimaryFractalScale] = useState(0.5); // Fractal distance
     const [primaryFractalThicknessFalloff, setPrimaryFractalThicknessFalloff] = useState(0.8);
     const [primaryFractalChildCount, setPrimaryFractalChildCount] = useState(3);
     const [primaryFractalSacredPositioning, setPrimaryFractalSacredPositioning] = useState(true);
@@ -200,6 +205,50 @@ const SacredGrid = () => {
     const [randomizerScale, setRandomizerScale] = useState(0.15); // Default 15% of primary size
     const [randomSeedOffset, setRandomSeedOffset] = useState(0); // Allows changing the seed pattern
 
+    // Modern Post-Processing settings
+    const [modernPostProcessingEnabled, setModernPostProcessingEnabled] = useState(false);
+    const [modernPostProcessingIntensity, setModernPostProcessingIntensity] = useState(1.0);
+
+    // Bloom settings
+    const [bloomEnabled, setBloomEnabled] = useState(false);
+    const [bloomThreshold, setBloomThreshold] = useState(0.8);
+    const [bloomIntensity, setBloomIntensity] = useState(1.0);
+    const [bloomRadius, setBloomRadius] = useState(1.0);
+    const [bloomSoftKnee, setBloomSoftKnee] = useState(0.5);
+    const [bloomQuality, setBloomQuality] = useState('high');
+    const [bloomToneMapping, setBloomToneMapping] = useState(true);
+    const [bloomExposure, setBloomExposure] = useState(1.0);
+
+    // Color Grading settings
+    const [colorGradingEnabled, setColorGradingEnabled] = useState(false);
+    const [colorGradingExposure, setColorGradingExposure] = useState(0.0);
+    const [colorGradingContrast, setColorGradingContrast] = useState(1.0);
+    const [colorGradingHighlights, setColorGradingHighlights] = useState(0.0);
+    const [colorGradingShadows, setColorGradingShadows] = useState(0.0);
+    const [colorGradingWhites, setColorGradingWhites] = useState(0.0);
+    const [colorGradingBlacks, setColorGradingBlacks] = useState(0.0);
+    const [colorGradingTemperature, setColorGradingTemperature] = useState(0.0);
+    const [colorGradingTint, setColorGradingTint] = useState(0.0);
+    const [colorGradingVibrance, setColorGradingVibrance] = useState(0.0);
+    const [colorGradingSaturation, setColorGradingSaturation] = useState(1.0);
+    const [colorGradingGamma, setColorGradingGamma] = useState(1.0);
+
+    // Cinematic Effects settings
+    const [chromaticAberrationEnabled, setChromaticAberrationEnabled] = useState(false);
+    const [chromaticAberrationIntensity, setChromaticAberrationIntensity] = useState(0.5);
+    const [chromaticAberrationQuality, setChromaticAberrationQuality] = useState('high');
+    const [chromaticAberrationRadial, setChromaticAberrationRadial] = useState(true);
+
+    const [vignetteEnabled, setVignetteEnabled] = useState(false);
+    const [vignetteIntensity, setVignetteIntensity] = useState(0.5);
+    const [vignetteSmoothness, setVignetteSmoothness] = useState(0.5);
+    const [vignetteRoundness, setVignetteRoundness] = useState(1.0);
+
+    const [filmGrainEnabled, setFilmGrainEnabled] = useState(false);
+    const [filmGrainIntensity, setFilmGrainIntensity] = useState(0.3);
+    const [filmGrainSize, setFilmGrainSize] = useState(1.0);
+    const [filmGrainLuminance, setFilmGrainLuminance] = useState(0.7);
+    const [filmGrainColored, setFilmGrainColored] = useState(false);
 
     // Control panel visibility
     const [showControls, setShowControls] = useState(true);
@@ -325,7 +374,7 @@ const SacredGrid = () => {
                 customMandalaData: customMandalaData,
                 fractal: {
                     depth: primaryFractalDepth,
-                    scale: primaryFractalScale,
+                    scale: primaryFractalScale, // Fractal distance (positioning)
                     thicknessFalloff: primaryFractalThicknessFalloff,
                     childCount: primaryFractalChildCount,
                     sacredPositioning: primaryFractalSacredPositioning,
@@ -406,6 +455,61 @@ const SacredGrid = () => {
                 },
             }
         },
+
+        // Modern Post-Processing settings
+        modernPostProcessing: {
+            enabled: modernPostProcessingEnabled,
+            intensity: modernPostProcessingIntensity,
+
+            bloom: {
+                enabled: bloomEnabled,
+                threshold: bloomThreshold,
+                intensity: bloomIntensity,
+                radius: bloomRadius,
+                softKnee: bloomSoftKnee,
+                quality: bloomQuality,
+                toneMapping: bloomToneMapping,
+                exposure: bloomExposure
+            },
+
+            colorGrading: {
+                enabled: colorGradingEnabled,
+                exposure: colorGradingExposure,
+                contrast: colorGradingContrast,
+                highlights: colorGradingHighlights,
+                shadows: colorGradingShadows,
+                whites: colorGradingWhites,
+                blacks: colorGradingBlacks,
+                temperature: colorGradingTemperature,
+                tint: colorGradingTint,
+                vibrance: colorGradingVibrance,
+                saturation: colorGradingSaturation,
+                gamma: colorGradingGamma
+            },
+
+            cinematic: {
+                chromaticAberration: {
+                    enabled: chromaticAberrationEnabled,
+                    intensity: chromaticAberrationIntensity,
+                    quality: chromaticAberrationQuality,
+                    radial: chromaticAberrationRadial
+                },
+                vignette: {
+                    enabled: vignetteEnabled,
+                    intensity: vignetteIntensity,
+                    smoothness: vignetteSmoothness,
+                    roundness: vignetteRoundness,
+                    center: [0.5, 0.5]
+                },
+                filmGrain: {
+                    enabled: filmGrainEnabled,
+                    intensity: filmGrainIntensity,
+                    size: filmGrainSize,
+                    luminance: filmGrainLuminance,
+                    colored: filmGrainColored
+                }
+            }
+        }
     };
 
     // Build setSettings object for callbacks
@@ -558,6 +662,49 @@ const SacredGrid = () => {
         setUseRandomizer,
         setRandomizerScale,
         setRandomSeedOffset,
+
+        // Modern Post-Processing setters
+        setModernPostProcessingEnabled,
+        setModernPostProcessingIntensity,
+
+        // Bloom setters
+        setBloomEnabled,
+        setBloomThreshold,
+        setBloomIntensity,
+        setBloomRadius,
+        setBloomSoftKnee,
+        setBloomQuality,
+        setBloomToneMapping,
+        setBloomExposure,
+
+        // Color Grading setters
+        setColorGradingEnabled,
+        setColorGradingExposure,
+        setColorGradingContrast,
+        setColorGradingHighlights,
+        setColorGradingShadows,
+        setColorGradingWhites,
+        setColorGradingBlacks,
+        setColorGradingTemperature,
+        setColorGradingTint,
+        setColorGradingVibrance,
+        setColorGradingSaturation,
+        setColorGradingGamma,
+
+        // Cinematic Effects setters
+        setChromaticAberrationEnabled,
+        setChromaticAberrationIntensity,
+        setChromaticAberrationQuality,
+        setChromaticAberrationRadial,
+        setVignetteEnabled,
+        setVignetteIntensity,
+        setVignetteSmoothness,
+        setVignetteRoundness,
+        setFilmGrainEnabled,
+        setFilmGrainIntensity,
+        setFilmGrainSize,
+        setFilmGrainLuminance,
+        setFilmGrainColored,
     };
 
     // Handle importing settings from a JSON file
@@ -763,18 +910,255 @@ const SacredGrid = () => {
         }
     };
 
-    // Handle exporting the canvas as an image
-    const handleExportImage = () => {
-        if (rendererRef.current) {
-            const dataURL = rendererRef.current.exportAsImage();
-            if (dataURL) {
-                const link = document.createElement('a');
-                link.href = dataURL;
-                link.download = 'sacred-grid-' + new Date().toISOString().slice(0, 10) + '.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+    // Handle exporting with comprehensive settings capture
+    const handleExport = async (exportOptions, progressCallback) => {
+        try {
+            // Get the canvas from the renderer through the exposed canvas property
+            const canvas = rendererRef.current?.canvas || null;
+
+            if (!canvas) {
+                throw new Error('Canvas not available for export. Make sure the Sacred Grid is fully loaded.');
             }
+
+            console.log('🎯 Canvas found for export:', {
+                width: canvas.width,
+                height: canvas.height,
+                element: canvas
+            });
+
+            // DEBUG: Show current UI state values
+            console.clear();
+            console.log('🚨 EXPORT DEBUG - Current UI State:');
+            console.log('Grid Size:', gridSize);
+            console.log('Show Vertices:', showVertices);
+            console.log('Show XY Grid:', showXYGrid);
+            console.log('Use Gradient Lines:', useGradientLines);
+            console.log('Primary Type:', primaryType);
+            console.log('Primary Size:', primarySize);
+            console.log('Background Color:', backgroundColor);
+
+            // Capture ALL current settings from the application state
+            const comprehensiveSettings = {
+                // Grid Settings
+                gridSize,
+                gridSpacing,
+                connectionOpacity,
+                noiseIntensity,
+                lineWidthMultiplier,
+                gridBreathingSpeed,
+                gridBreathingIntensity,
+                showVertices,
+
+                // XY Grid Settings
+                showXYGrid,
+                xyGridSize,
+                xyGridSpacing,
+                xyGridOpacity,
+                xyGridLineWidth,
+                xyGridColor,
+                showXYGridLabels,
+
+                // Line Factory Settings
+                lineStyle,
+                lineTaper,
+                taperStart,
+                taperEnd,
+                lineGlow,
+                lineGlowColor,
+                lineOutline,
+                lineOutlineColor,
+                lineOutlineWidth,
+                dashPattern,
+                dashOffset,
+                sineWaveType,
+                sineAmplitude,
+                sineFrequency,
+                sinePhase,
+                useLineFactoryForGrid,
+
+                // Mouse Settings
+                mouseInfluenceRadius,
+                maxMouseScale,
+
+                // Color Settings
+                backgroundColor,
+                colorScheme,
+                lineColor,
+                useGradientLines,
+                gradientColorsLines,
+                useGradientDots,
+                gradientColorsDots,
+                useGradientShapes,
+                gradientColorsShapes,
+                colorEasingType,
+                colorCycleDuration,
+
+                // Animation Settings
+                animationSpeed,
+
+                // Primary Shape Settings
+                primaryType,
+                primarySize,
+                primaryOpacity,
+                primaryThickness,
+                primaryFractalDepth,
+                primaryFractalScale,
+                primaryFractalThicknessFalloff,
+                primaryFractalChildCount,
+                primaryFractalSacredPositioning,
+                primaryFractalSacredIntensity,
+                primaryOffsetX,
+                primaryOffsetY,
+                primaryVertices,
+                primaryRotation,
+                usePrimaryLineFactory,
+                primaryAnimationMode,
+                primaryAnimationReverse,
+                primaryAnimationSpeed,
+                primaryAnimationIntensity,
+                primaryAnimationFadeIn,
+                primaryAnimationFadeOut,
+                primaryVariableTiming,
+                primaryStaggerDelay,
+
+                // Primary Shape-specific Settings
+                primarySpiralType,
+                primaryTurns,
+                primaryArms,
+                primaryMandalaStyle,
+                primaryMandalaSymmetry,
+                primaryMandalaLayers,
+                primaryMandalaPetals,
+                primaryMandalaComplexity,
+                customMandalaData,
+
+                // Primary Stacking Settings
+                primaryStackingEnabled,
+                primaryStackingCount,
+
+                // Secondary Shape Settings (if they exist)
+                secondaryType: secondaryType || 'none',
+                secondarySize: secondarySize || 200,
+                secondaryOpacity: secondaryOpacity || 0.5,
+                secondaryThickness: secondaryThickness || 3,
+                secondaryVertices: secondaryVertices || 6,
+                secondaryRotation: secondaryRotation || 0,
+                secondaryOffsetX: secondaryOffsetX || 0,
+                secondaryOffsetY: secondaryOffsetY || 0,
+                secondaryAnimationSpeed: secondaryAnimationSpeed || 0.001,
+                secondaryAnimationIntensity: secondaryAnimationIntensity || 0.15,
+
+                // Renderer Settings
+                rendererType,
+                showControls
+            };
+
+            console.log('📊 Exporting with comprehensive settings:');
+            console.log(`🎯 Total settings captured: ${Object.keys(comprehensiveSettings).length}`);
+
+            await exportManagerRef.current.export(
+                comprehensiveSettings,
+                canvas,
+                exportOptions,
+                progressCallback || ((progress, message) => {
+                    console.log(`Export progress: ${Math.round(progress * 100)}% - ${message}`);
+                })
+            );
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert(`Export failed: ${error.message}`);
+        }
+    };
+
+    // Legacy export handler for backward compatibility
+    const handleExportImage = () => {
+        handleExport({
+            format: 'png',
+            quality: 0.9,
+            width: 1920,
+            height: 1080,
+            transparent: false
+        });
+    };
+
+    // State duplication functionality
+    const createApplicationSnapshot = async () => {
+        try {
+            console.log('📸 Creating application snapshot...');
+
+            const canvas = rendererRef.current?.canvas || null;
+
+            // Gather current application state
+            const additionalState = {
+                performance: {
+                    fps: 60, // This would come from actual performance monitoring
+                    frameTime: 16.67,
+                    memoryUsage: 0,
+                    renderTime: 0,
+                    particleCount: 0,
+                    shapeCount: 0
+                },
+                animation: {
+                    currentTime: performance.now(),
+                    isPlaying: true,
+                    speed: 1,
+                    startTime: performance.now()
+                },
+                mouse: {
+                    position: { x: -1000, y: -1000 },
+                    isActive: false
+                },
+                ui: {
+                    showControls,
+                    activePanel: null,
+                    isLoading: false
+                }
+            };
+
+            // Create snapshot using the comprehensive settings
+            const snapshot = await StateDuplicator.createSnapshot(
+                canvas,
+                settings,
+                additionalState
+            );
+
+            console.log('✅ Application snapshot created successfully');
+            console.log(StateDuplicator.getSnapshotSummary(snapshot));
+
+            return snapshot;
+        } catch (error) {
+            console.error('❌ Failed to create application snapshot:', error);
+            throw error;
+        }
+    };
+
+    const restoreFromSnapshot = async (snapshot) => {
+        try {
+            console.log('🔄 Restoring application from snapshot...');
+
+            const canvas = rendererRef.current?.canvas || null;
+
+            const success = await StateDuplicator.restoreFromSnapshot(
+                snapshot,
+                canvas,
+                setSettings,
+                (uiState) => {
+                    if (uiState.showControls !== undefined) {
+                        setShowControls(uiState.showControls);
+                    }
+                }
+            );
+
+            if (success) {
+                console.log('✅ Application restored from snapshot successfully');
+            } else {
+                throw new Error('Failed to restore application state');
+            }
+
+            return success;
+        } catch (error) {
+            console.error('❌ Failed to restore from snapshot:', error);
+            throw error;
         }
     };
 
@@ -794,6 +1178,9 @@ const SacredGrid = () => {
                     toggleControls={toggleControls}
                     rendererType={rendererType}
                     onImportSettings={handleImportSettings} // Pass down the import handler
+                    onExport={handleExport} // Pass down the export handler
+                    onCreateSnapshot={createApplicationSnapshot} // Pass down snapshot creation
+                    onRestoreSnapshot={restoreFromSnapshot} // Pass down snapshot restoration
                 />
             }
 

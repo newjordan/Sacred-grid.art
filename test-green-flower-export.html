@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Flower Export Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .canvas-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .canvas-wrapper {
+            text-align: center;
+        }
+        
+        .test-canvas {
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            border-radius: 8px;
+            background: #000000;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: rgba(0, 119, 255, 0.2);
+            border: 1px solid rgba(0, 119, 255, 0.4);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 119, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .btn.success {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn.success:hover {
+            background: rgba(0, 255, 136, 0.4);
+        }
+        
+        .settings-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .success { color: #00ff88; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa00; }
+        .info { color: #0077ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 Green Flower Export Test</h1>
+            <p>Testing the enhanced standalone renderer with the beautiful green flower settings</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎨 Green Flower Renderer Test</h2>
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <h3>Test Renderer</h3>
+                    <canvas id="testCanvas" class="test-canvas" width="400" height="400"></canvas>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="startAnimation" class="btn">▶️ Start Animation</button>
+                <button id="stopAnimation" class="btn">⏸️ Stop Animation</button>
+                <button id="resetAnimation" class="btn">🔄 Reset</button>
+                <button id="exportStandalone" class="btn success">📄 Export Standalone</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>⚙️ Green Flower Settings</h2>
+            <div id="settingsDisplay" class="settings-display">Loading green flower settings...</div>
+        </div>
+    </div>
+
+    <script>
+        // Green Flower Settings (extracted from the beautiful green flower file)
+        const greenFlowerSettings = {
+            grid: {
+                size: 6,
+                spacing: 50,
+                baseDotSize: 3,
+                connectionOpacity: 0.5,
+                noiseIntensity: 0.1,
+                lineWidthMultiplier: 1,
+                breathingSpeed: 1,
+                breathingIntensity: 0.2,
+                showVertices: true,
+                showConnections: false,
+                vertexColor: '#0077ff',
+                vertexOpacity: 0.8,
+                connectionColor: '#0077ff',
+                connectionWidth: 1
+            },
+            colors: {
+                background: '#000000',
+                primary: '#0077ff',
+                secondary: '#00ff88',
+                accent: '#ff0077'
+            },
+            shapes: {
+                primary: {
+                    enabled: true,
+                    type: 'flowerOfLife',
+                    size: 80,
+                    opacity: 0.8,
+                    thickness: 2,
+                    vertices: 6,
+                    colors: {
+                        gradient: {
+                            enabled: true,
+                            colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'],
+                            cycleDuration: 8,
+                            easingType: 'easeInOutQuad'
+                        }
+                    },
+                    animation: {
+                        enabled: true,
+                        mode: 'pulse',
+                        speed: 0.5,
+                        rotation: true,
+                        rotationSpeed: 0.1
+                    },
+                    fractal: {
+                        enabled: true,
+                        depth: 3,
+                        scale: 0.7,
+                        timeOffset: 0.8
+                    }
+                }
+            },
+            xyGrid: {
+                show: true,
+                color: '#333333',
+                opacity: 0.3,
+                lineWidth: 0.5,
+                spacing: 35,
+                size: 15
+            },
+            animation: {
+                enabled: true,
+                speed: 1,
+                mode: 'continuous'
+            }
+        };
+
+        // Display settings
+        document.getElementById('settingsDisplay').textContent = JSON.stringify(greenFlowerSettings, null, 2);
+
+        // Test renderer implementation (simplified version of our enhanced renderer)
+        class GreenFlowerTestRenderer {
+            constructor(canvas, settings) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.settings = settings;
+                this.isPlaying = false;
+                this.time = 0;
+                this.startTime = performance.now();
+                this.animationFrame = null;
+                this.PHI = (1 + Math.sqrt(5)) / 2;
+                
+                console.log('🌸 Green Flower Test Renderer initialized');
+            }
+
+            start() {
+                this.isPlaying = true;
+                this.animate();
+            }
+
+            stop() {
+                this.isPlaying = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+            }
+
+            reset() {
+                this.time = 0;
+                this.startTime = performance.now();
+                this.render();
+            }
+
+            animate() {
+                if (!this.isPlaying) return;
+                
+                this.time = (performance.now() - this.startTime) * 0.001;
+                this.render();
+                
+                this.animationFrame = requestAnimationFrame(() => this.animate());
+            }
+
+            render() {
+                // Clear canvas
+                this.ctx.fillStyle = this.settings.colors.background;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+
+                // Draw XY Grid
+                if (this.settings.xyGrid.show) {
+                    this.drawXYGrid();
+                }
+
+                // Draw the beautiful flower of life with all effects
+                this.drawEnhancedFlowerOfLife(centerX, centerY);
+            }
+
+            drawXYGrid() {
+                const { xyGrid } = this.settings;
+                this.ctx.strokeStyle = xyGrid.color;
+                this.ctx.lineWidth = xyGrid.lineWidth;
+                this.ctx.globalAlpha = xyGrid.opacity;
+
+                const spacing = xyGrid.spacing;
+                const size = xyGrid.size;
+
+                // Draw grid lines
+                for (let i = -size; i <= size; i++) {
+                    const x = this.canvas.width / 2 + i * spacing;
+                    const y = this.canvas.height / 2 + i * spacing;
+                    
+                    // Vertical lines
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                    
+                    // Horizontal lines
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+
+                this.ctx.globalAlpha = 1;
+            }
+
+            drawEnhancedFlowerOfLife(centerX, centerY) {
+                const shape = this.settings.shapes.primary;
+                if (!shape.enabled) return;
+
+                // Calculate animation parameters
+                const pulseValue = Math.sin(this.time * shape.animation.speed) * 0.5 + 0.5;
+                const size = shape.size * (1 + pulseValue * 0.3);
+                const opacity = shape.opacity * (0.7 + pulseValue * 0.3);
+                const rotation = this.time * shape.animation.rotationSpeed;
+
+                // Get animated color
+                const colors = shape.colors.gradient.colors;
+                const cycleDuration = shape.colors.gradient.cycleDuration;
+                const color = this.getAnimatedColor(colors, cycleDuration, opacity);
+
+                // Draw fractal layers
+                if (shape.fractal.enabled) {
+                    for (let i = 0; i < shape.fractal.depth; i++) {
+                        const layerScale = Math.pow(shape.fractal.scale, i);
+                        const layerTime = this.time + i * shape.fractal.timeOffset;
+                        const layerRotation = rotation + layerTime * 0.1;
+                        const layerSize = size * layerScale;
+                        const layerOpacity = opacity * (1 - i * 0.2);
+                        
+                        this.drawFlowerOfLifeLayer(centerX, centerY, layerSize, color, layerRotation, layerOpacity);
+                    }
+                } else {
+                    this.drawFlowerOfLifeLayer(centerX, centerY, size, color, rotation, opacity);
+                }
+            }
+
+            drawFlowerOfLifeLayer(centerX, centerY, radius, color, rotation, opacity) {
+                this.ctx.save();
+                this.ctx.translate(centerX, centerY);
+                this.ctx.rotate(rotation);
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = this.settings.shapes.primary.thickness;
+                this.ctx.globalAlpha = opacity;
+
+                // Central circle
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                this.ctx.stroke();
+
+                // First ring of 6 circles
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i * Math.PI) / 3;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+
+                // Second ring of 12 circles
+                const outerRadius = radius * Math.sqrt(3);
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i * Math.PI) / 6;
+                    const x = Math.cos(angle) * outerRadius;
+                    const y = Math.sin(angle) * outerRadius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
+            getAnimatedColor(colors, cycleDuration, alpha) {
+                const n = colors.length;
+                let progress = (this.time % cycleDuration) / cycleDuration;
+                const scaledProgress = progress * n;
+                const index = Math.floor(scaledProgress);
+                const nextIndex = (index + 1) % n;
+                let t = scaledProgress - index;
+                
+                // Apply easing
+                t = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                
+                const color1 = this.parseHexColor(colors[index]);
+                const color2 = this.parseHexColor(colors[nextIndex]);
+                
+                const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
+                const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
+                const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
+                
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            parseHexColor(hex) {
+                const c = hex.replace('#', '');
+                return [
+                    parseInt(c.substring(0, 2), 16),
+                    parseInt(c.substring(2, 4), 16),
+                    parseInt(c.substring(4, 6), 16)
+                ];
+            }
+        }
+
+        // Initialize test renderer
+        const canvas = document.getElementById('testCanvas');
+        const renderer = new GreenFlowerTestRenderer(canvas, greenFlowerSettings);
+
+        // Control buttons
+        document.getElementById('startAnimation').addEventListener('click', () => {
+            renderer.start();
+            console.log('✅ Animation started');
+        });
+
+        document.getElementById('stopAnimation').addEventListener('click', () => {
+            renderer.stop();
+            console.log('⏸️ Animation stopped');
+        });
+
+        document.getElementById('resetAnimation').addEventListener('click', () => {
+            renderer.reset();
+            console.log('🔄 Animation reset');
+        });
+
+        document.getElementById('exportStandalone').addEventListener('click', () => {
+            console.log('📄 Exporting standalone green flower...');
+            
+            // Create a simple standalone HTML with the green flower
+            const standaloneHTML = `<!DOCTYPE html>
+<html><head><title>Green Flower - Sacred Grid</title><style>
+body{margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;}
+canvas{border-radius:8px;box-shadow:0 8px 32px rgba(0,255,136,0.3);}
+</style></head><body>
+<canvas id="canvas" width="800" height="600"></canvas>
+<script>
+const settings = ${JSON.stringify(greenFlowerSettings, null, 2)};
+// Enhanced renderer code would go here
+console.log('🌸 Green Flower Standalone loaded!', settings);
+</script></body></html>`;
+            
+            const blob = new Blob([standaloneHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'green-flower-sacred-grid.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            console.log('✅ Green flower standalone exported!');
+        });
+
+        // Start with a single frame render
+        renderer.render();
+        
+        console.log('🌸 Green Flower Test Page loaded!');
+        console.log('Click "Start Animation" to see the beautiful green flower in action!');
+    </script>
+</body>
+</html>

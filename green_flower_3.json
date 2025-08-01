@@ -1,0 +1,205 @@
+{
+  "grid": {
+    "size": 7,
+    "spacing": 96,
+    "baseDotSize": 1,
+    "connectionOpacity": 0.15,
+    "noiseIntensity": 1,
+    "lineWidthMultiplier": 1,
+    "breathingSpeed": 0.0048,
+    "breathingIntensity": 0.21,
+    "showVertices": true,
+    "useLineFactorySettings": false
+  },
+  "mouse": {
+    "influenceRadius": 200,
+    "maxScale": 2,
+    "position": {
+      "x": -1000,
+      "y": -1000
+    }
+  },
+  "colors": {
+    "background": "#000000",
+    "scheme": "blue",
+    "lineColor": "#0077ff",
+    "gradient": {
+      "lines": {
+        "enabled": true,
+        "colors": [
+          "#ff0000",
+          "#ff7700",
+          "#00ff00",
+          "#0000ff"
+        ]
+      },
+      "dots": {
+        "enabled": true,
+        "colors": [
+          "#0c7b97",
+          "#461cba",
+          "#0077ff",
+          "#00ffff"
+        ]
+      },
+      "shapes": {
+        "enabled": true,
+        "colors": [
+          "#377642",
+          "#335b39",
+          "#39d5ae",
+          "#2aea6a"
+        ]
+      },
+      "easing": "easeInOutCubic",
+      "cycleDuration": 9600
+    }
+  },
+  "animation": {
+    "speed": 0.1
+  },
+  "xyGrid": {
+    "show": true,
+    "size": 15,
+    "spacing": 35,
+    "opacity": 0.86,
+    "lineWidth": 0.5,
+    "color": "#444444",
+    "showLabels": true
+  },
+  "lineFactory": {
+    "style": "solid",
+    "taper": {
+      "type": "none",
+      "startWidth": 0.1,
+      "endWidth": 0.1
+    },
+    "glow": {
+      "intensity": 0,
+      "color": "#ffffff"
+    },
+    "outline": {
+      "enabled": false,
+      "color": "#000000",
+      "width": 0.5
+    },
+    "dash": {
+      "pattern": [
+        5,
+        5
+      ],
+      "offset": 0
+    },
+    "sineWave": {
+      "type": "none",
+      "amplitude": 5,
+      "frequency": 0.1,
+      "phase": 0
+    },
+    "loopLine": true,
+    "bidirectionalWaves": true
+  },
+  "shapes": {
+    "primary": {
+      "type": "flowerOfLife",
+      "size": 294,
+      "opacity": 0.02,
+      "thickness": 2.8,
+      "vertices": 3,
+      "rotation": 0,
+      "useLineFactory": false,
+      "position": {
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "spiralType": "golden",
+      "turns": 4,
+      "arms": 1,
+      "mandalaStyle": "geometric",
+      "mandalaSymmetry": 8,
+      "mandalaLayers": 4,
+      "mandalaPetals": 6,
+      "mandalaComplexity": 0.5,
+      "customMandalaData": [],
+      "fractal": {
+        "depth": 4,
+        "scale": 0.7,
+        "thicknessFalloff": 0.89,
+        "childCount": 6,
+        "sacredPositioning": false,
+        "sacredIntensity": 0.5
+      },
+      "animation": {
+        "mode": "pulse",
+        "reverse": false,
+        "speed": 0.0006,
+        "intensity": 0.4,
+        "fadeIn": 0.2,
+        "fadeOut": 0.2,
+        "variableTiming": true,
+        "staggerDelay": 560
+      },
+      "stacking": {
+        "enabled": true,
+        "count": 3,
+        "timeOffset": -3000,
+        "interval": 1000
+      }
+    },
+    "secondary": {
+      "enabled": false,
+      "type": "flowerOfLife",
+      "size": 127,
+      "opacity": 0.05,
+      "thickness": 2.5,
+      "vertices": 5,
+      "rotation": 36,
+      "useLineFactory": false,
+      "position": {
+        "offsetX": 0,
+        "offsetY": 0
+      },
+      "spiralType": "golden",
+      "turns": 4,
+      "arms": 1,
+      "mandalaStyle": "geometric",
+      "mandalaSymmetry": 8,
+      "mandalaLayers": 4,
+      "mandalaPetals": 6,
+      "mandalaComplexity": 0.5,
+      "fractal": {
+        "depth": 4,
+        "scale": 0.5,
+        "thicknessFalloff": 0.59,
+        "childCount": 6,
+        "sacredPositioning": false,
+        "sacredIntensity": 0.5
+      },
+      "animation": {
+        "mode": "pulse",
+        "reverse": true,
+        "speed": 0.0001,
+        "intensity": 0.67,
+        "fadeIn": 0.2,
+        "fadeOut": 0.2,
+        "variableTiming": true,
+        "staggerDelay": 150
+      },
+      "stacking": {
+        "enabled": true,
+        "count": 2,
+        "timeOffset": 1500,
+        "interval": 1500,
+        "mathRelationships": {
+          "useRandomizer": true,
+          "randomizerScale": 0.15,
+          "randomSeedOffset": 0,
+          "useHarmonicRatios": false,
+          "harmonicRatio": "1:1",
+          "useSymmetryGroup": false,
+          "symmetryOperation": "rotation"
+        }
+      }
+    }
+  }
+}

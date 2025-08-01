@@ -23,7 +23,12 @@ const ExportControls: React.FC<ExportControlsProps> = ({
     quality: 0.9,
     width: 1920,
     height: 1080,
-    transparent: false
+    transparent: false,
+    // Standalone-specific defaults
+    standaloneTitle: 'Sacred Grid Player',
+    includeControls: true,
+    enableFullscreen: true,
+    showInfo: true
   });
 
   const [customDimensions, setCustomDimensions] = useState(false);
@@ -40,13 +45,10 @@ const ExportControls: React.FC<ExportControlsProps> = ({
     { name: 'Facebook Cover (1200×630)', width: 1200, height: 630 }
   ];
 
-  // Format options
+  // Format options - PNG and Standalone
   const formatOptions = [
-    { value: 'png', label: 'PNG', description: 'Best for graphics with transparency' },
-    { value: 'jpg', label: 'JPEG', description: 'Best for photographs, smaller file size' },
-    { value: 'svg', label: 'SVG', description: 'Vector format, infinitely scalable' },
-    { value: 'gif', label: 'GIF', description: 'Animated format (if animation enabled)' },
-    { value: 'webm', label: 'WebM', description: 'Modern video format for animations' }
+    { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
+    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file' }
   ];
 
   const updateOptions = (updates: Partial<ExportOptions>) => {
@@ -91,6 +93,9 @@ const ExportControls: React.FC<ExportControlsProps> = ({
         break;
       case 'webm':
         sizeKB = pixels * 0.5 / 1024; // Compressed video
+        break;
+      case 'widget':
+        sizeKB = exportOptions.includeControls ? 25 : 15; // Lightweight HTML/JS/CSS
         break;
     }
 
@@ -163,7 +168,7 @@ const ExportControls: React.FC<ExportControlsProps> = ({
         </div>
 
         {/* Quality Settings */}
-        {(exportOptions.format === 'jpg' || exportOptions.format === 'webm') && (
+        {exportOptions.format === 'png' && (
           <Slider
             label="Quality"
             value={exportOptions.quality * 100}
@@ -172,12 +177,12 @@ const ExportControls: React.FC<ExportControlsProps> = ({
             max={100}
             step={5}
             formatValue={(val) => `${val}%`}
-            description="Higher quality = larger file size"
+            description="PNG compression quality"
           />
         )}
 
-        {/* Transparency */}
-        {(exportOptions.format === 'png' || exportOptions.format === 'svg') && (
+        {/* Transparency - PNG only */}
+        {exportOptions.format === 'png' && (
           <Toggle
             checked={exportOptions.transparent}
             onChange={(checked) => updateOptions({ transparent: checked })}
@@ -185,6 +190,77 @@ const ExportControls: React.FC<ExportControlsProps> = ({
             description="Remove background for overlay use"
           />
         )}
+
+        {/* Standalone-specific Options */}
+        {exportOptions.format === 'standalone' && (
+          <div className="space-y-4 p-4 glass-card">
+            <h4 className="text-sm font-semibold text-white/90 mb-3">Standalone Options</h4>
+
+            <div>
+              <label className="block text-xs text-white/70 mb-1">Title</label>
+              <input
+                type="text"
+                value={exportOptions.standaloneTitle || 'Sacred Grid Player'}
+                onChange={(e) => updateOptions({ standaloneTitle: e.target.value })}
+                className="glass-input w-full text-sm"
+                placeholder="Sacred Grid Player"
+              />
+            </div>
+
+            <Toggle
+              checked={exportOptions.includeControls || true}
+              onChange={(checked) => updateOptions({ includeControls: checked })}
+              label="Include Interactive Controls"
+              description="Add play/pause, reset, and fullscreen controls"
+            />
+
+            <Toggle
+              checked={exportOptions.enableFullscreen || true}
+              onChange={(checked) => updateOptions({ enableFullscreen: checked })}
+              label="Enable Fullscreen"
+              description="Allow fullscreen viewing"
+            />
+
+            <Toggle
+              checked={exportOptions.showInfo || true}
+              onChange={(checked) => updateOptions({ showInfo: checked })}
+              label="Show Info Panel"
+              description="Display grid information and creation date"
+            />
+
+            <Toggle
+              checked={exportOptions.optimize ?? true}
+              onChange={(checked) => updateOptions({ optimize: checked })}
+              label="Optimize File Size"
+              description="Remove unused elements and compress content"
+            />
+
+            {exportOptions.optimize && (
+              <div>
+                <label className="block text-xs text-white/70 mb-1">Optimization Level</label>
+                <select
+                  value={exportOptions.optimizationLevel || 'default'}
+                  onChange={(e) => updateOptions({ optimizationLevel: e.target.value as 'conservative' | 'default' | 'aggressive' })}
+                  className="glass-input w-full text-sm"
+                >
+                  <option value="conservative">Conservative (Safer)</option>
+                  <option value="default">Default (Balanced)</option>
+                  <option value="aggressive">Aggressive (Maximum compression)</option>
+                </select>
+              </div>
+            )}
+
+            <div className="text-xs text-white/50 p-2 bg-blue-500/10 rounded border border-blue-500/20">
+              💡 <strong>Tip:</strong> The exported file will be a self-contained HTML file (~15-50KB)
+              that runs the same algorithm as the main application and works offline.
+              {exportOptions.optimize && (
+                <><br/>🔧 <strong>Optimization:</strong> Removes unused settings and compresses content for smaller file size.</>
+              )}
+            </div>
+          </div>
+        )}
+
+
 
         {/* Dimensions */}
         <div>

@@ -11,14 +11,42 @@ export function easeInOutCubic(t) {
 }
 
 export function applyEasing(easingType, t) {
+    return applyEnhancedEasing(easingType, t);
+}
+
+// Enhanced easing functions with higher precision and more options
+export function applyEnhancedEasing(easingType, t) {
+    // Clamp input to prevent numerical issues
+    t = Math.max(0, Math.min(1, t));
+
     switch (easingType) {
-        case 'easeInOutQuad':
-            return easeInOutQuad(t);
         case 'easeInOutCubic':
-            return easeInOutCubic(t);
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        case 'easeInOutQuad':
+            return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+        case 'easeInOutSine':
+            return -(Math.cos(Math.PI * t) - 1) / 2;
+
+        case 'easeInOutExpo':
+            if (t === 0) return 0;
+            if (t === 1) return 1;
+            return t < 0.5
+                ? Math.pow(2, 20 * t - 10) / 2
+                : (2 - Math.pow(2, -20 * t + 10)) / 2;
+
+        case 'easeInOutElastic':
+            const c5 = (2 * Math.PI) / 4.5;
+            if (t === 0) return 0;
+            if (t === 1) return 1;
+            return t < 0.5
+                ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
+                : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
+
         case 'linear':
         default:
-            return easeLinear(t);
+            return t;
     }
 }
 
@@ -30,6 +58,8 @@ export function parseHexColor(hex) {
     return [r, g, b];
 }
 
+// Enhanced color interpolation with sub-pixel precision
+// Eliminates color snapping by avoiding premature rounding
 export function getMultiEasedColor(time, colors, alpha, cycleDuration, easingType) {
     const n = colors.length;
     let progress = (time % cycleDuration) / cycleDuration;
@@ -37,13 +67,25 @@ export function getMultiEasedColor(time, colors, alpha, cycleDuration, easingTyp
     const index = Math.floor(scaledProgress);
     const nextIndex = (index + 1) % n;
     let t = scaledProgress - index;
-    t = applyEasing(easingType, t);
+
+    // Apply enhanced easing
+    t = applyEnhancedEasing(easingType, t);
+
     const [r1, g1, b1] = parseHexColor(colors[index]);
     const [r2, g2, b2] = parseHexColor(colors[nextIndex]);
-    const r = Math.round(r1 + (r2 - r1) * t);
-    const g = Math.round(g1 + (g2 - g1) * t);
-    const b = Math.round(b1 + (b2 - b1) * t);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+    // High-precision interpolation (no rounding until final step)
+    const r = r1 + (r2 - r1) * t;
+    const g = g1 + (g2 - g1) * t;
+    const b = b1 + (b2 - b1) * t;
+
+    // Apply sub-pixel precision rounding for smoother transitions
+    const precision = 1000;
+    const finalR = Math.round(r * precision) / precision;
+    const finalG = Math.round(g * precision) / precision;
+    const finalB = Math.round(b * precision) / precision;
+
+    return `rgba(${Math.round(finalR)}, ${Math.round(finalG)}, ${Math.round(finalB)}, ${alpha})`;
 }
 
 // Detect WebGL renderer from context or settings

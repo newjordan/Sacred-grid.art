@@ -260,11 +260,22 @@ export enum RendererType {
 
 // Export/Import Types
 export interface ExportOptions {
-  format: 'png' | 'jpg' | 'svg' | 'gif' | 'webm';
+  format: 'png' | 'standalone';
   quality: number;
   width: number;
   height: number;
   transparent: boolean;
+  scale?: number;
+  // Standalone-specific options
+  standaloneTitle?: string;
+  includeControls?: boolean;
+  enableFullscreen?: boolean;
+  showInfo?: boolean;
+  customCSS?: string;
+  customJS?: string;
+  // Optimization options
+  optimize?: boolean;
+  optimizationLevel?: 'conservative' | 'default' | 'aggressive';
 }
 
 // Layer System (Phase 5)

@@ -9,9 +9,11 @@ import LineFactorySection from './sections/LineFactorySection';
 import GradientSettingsSection from './sections/GradientSettingsSection';
 import SecondaryShapeSection from './sections/SecondaryShapeSection';
 import PrimaryShapeSection from './sections/PrimaryShapeSection';
+import ExportControls from './panels/ExportControls.js';
+import PostProcessingSection from './sections/PostProcessingSection.js';
 
-// Accept onImportSettings prop
-const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType, onImportSettings }) => {
+// Accept onImportSettings and onExport props
+const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType, onImportSettings, onExport }) => {
 
     // Ref for the hidden file input
     const fileInputRef = useRef(null);
@@ -265,6 +267,21 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                     setSettings={setSettings}
                 />
             </CollapsibleSection>
+
+            {/* Post-Processing Effects */}
+            <CollapsibleSection title="Post-Processing Effects" initiallyOpen={false}>
+                <PostProcessingSection
+                    settings={settings}
+                    setSettings={setSettings}
+                />
+            </CollapsibleSection>
+
+            {/* Export Settings */}
+            {onExport && (
+                <CollapsibleSection title="Export" initiallyOpen={false}>
+                    <ExportControls onExport={onExport} />
+                </CollapsibleSection>
+            )}
         </div>
     );
 };
