@@ -8,8 +8,7 @@ import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
 import { ExportManager } from './export/ExportManager.js';
 import { StateDuplicator } from './utils/StateDuplicator';
-import { DEFAULT_SETTINGS } from './utils/constants.ts';
-import { useDefaultSettings } from './hooks/useDefaultSettings';
+import { loadDefaultPattern } from './utils/defaultLoader';
 // import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
 
 // Add a small CSS snippet to ensure full-screen display
@@ -46,25 +45,25 @@ const SacredGrid = () => {
     // Canvas2D is the only renderer in this version
     const rendererType = RendererType.CANVAS_2D;
 
-    // Grid settings - Initialize with DEFAULT_SETTINGS
-    const [gridSize, setGridSize] = useState(DEFAULT_SETTINGS.grid.size);
-    const [gridSpacing, setGridSpacing] = useState(DEFAULT_SETTINGS.grid.spacing);
-    const [baseDotSize, setBaseDotSize] = useState(DEFAULT_SETTINGS.grid.baseDotSize);
-    const [connectionOpacity, setConnectionOpacity] = useState(DEFAULT_SETTINGS.grid.connectionOpacity);
-    const [noiseIntensity, setNoiseIntensity] = useState(DEFAULT_SETTINGS.grid.noiseIntensity);
-    const [lineWidthMultiplier, setLineWidthMultiplier] = useState(DEFAULT_SETTINGS.grid.lineWidthMultiplier);
-    const [gridBreathingSpeed, setGridBreathingSpeed] = useState(DEFAULT_SETTINGS.grid.breathingSpeed);
-    const [gridBreathingIntensity, setGridBreathingIntensity] = useState(DEFAULT_SETTINGS.grid.breathingIntensity);
-    const [showVertices, setShowVertices] = useState(DEFAULT_SETTINGS.grid.showVertices);
+    // Grid settings - Will be set by defaultLoader
+    const [gridSize, setGridSize] = useState(6);
+    const [gridSpacing, setGridSpacing] = useState(140);
+    const [baseDotSize, setBaseDotSize] = useState(2);
+    const [connectionOpacity, setConnectionOpacity] = useState(0.15);
+    const [noiseIntensity, setNoiseIntensity] = useState(1);
+    const [lineWidthMultiplier, setLineWidthMultiplier] = useState(1);
+    const [gridBreathingSpeed, setGridBreathingSpeed] = useState(0.0008);
+    const [gridBreathingIntensity, setGridBreathingIntensity] = useState(0.2);
+    const [showVertices, setShowVertices] = useState(true);
     
-    // XY Grid settings - Initialize with DEFAULT_SETTINGS
-    const [showXYGrid, setShowXYGrid] = useState(DEFAULT_SETTINGS.xyGrid.show);
-    const [xyGridSize, setXYGridSize] = useState(DEFAULT_SETTINGS.xyGrid.size);
-    const [xyGridSpacing, setXYGridSpacing] = useState(DEFAULT_SETTINGS.xyGrid.spacing);
-    const [xyGridOpacity, setXYGridOpacity] = useState(DEFAULT_SETTINGS.xyGrid.opacity);
-    const [xyGridLineWidth, setXYGridLineWidth] = useState(DEFAULT_SETTINGS.xyGrid.lineWidth);
-    const [xyGridColor, setXYGridColor] = useState(DEFAULT_SETTINGS.xyGrid.color);
-    const [showXYGridLabels, setShowXYGridLabels] = useState(DEFAULT_SETTINGS.xyGrid.showLabels);
+    // XY Grid settings - Will be set by defaultLoader
+    const [showXYGrid, setShowXYGrid] = useState(true);
+    const [xyGridSize, setXYGridSize] = useState(20);
+    const [xyGridSpacing, setXYGridSpacing] = useState(40);
+    const [xyGridOpacity, setXYGridOpacity] = useState(0.1);
+    const [xyGridLineWidth, setXYGridLineWidth] = useState(0.5);
+    const [xyGridColor, setXYGridColor] = useState('#444444');
+    const [showXYGridLabels, setShowXYGridLabels] = useState(false);
     
     // Line Factory settings
     const [lineStyle, setLineStyle] = useState(LineStyleType.SOLID);
@@ -709,8 +708,15 @@ const SacredGrid = () => {
         setFilmGrainColored,
     };
 
-    // 🌸 Apply beautiful default settings on first run (Green Flower pattern)
-    useDefaultSettings(setSettings);
+    // 🌸 Load beautiful Green Flower pattern on startup
+    useEffect(() => {
+        // Load the default pattern after component mounts and setters are ready
+        const timer = setTimeout(() => {
+            loadDefaultPattern(setSettings);
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, []); // Empty dependency array = run once on mount
 
     // Handle importing settings from a JSON file
     const handleImportSettings = (jsonContent) => {
