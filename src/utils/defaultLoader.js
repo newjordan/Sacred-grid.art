@@ -11,107 +11,107 @@ export const loadDefaultPattern = (setSettings) => {
     console.log('🌸 Loading beautiful Green Flower pattern as default...');
     
     try {
-        // Apply all settings from green_flower_2.json
+        // Apply all settings from green_flower_2.json using correct nested structure
         const settings = greenFlowerSettings;
-        
+
         // Grid settings
-        if (settings.gridSize !== undefined) setSettings.setGridSize(settings.gridSize);
-        if (settings.gridSpacing !== undefined) setSettings.setGridSpacing(settings.gridSpacing);
-        if (settings.baseDotSize !== undefined) setSettings.setBaseDotSize(settings.baseDotSize);
-        if (settings.connectionOpacity !== undefined) setSettings.setConnectionOpacity(settings.connectionOpacity);
-        if (settings.noiseIntensity !== undefined) setSettings.setNoiseIntensity(settings.noiseIntensity);
-        if (settings.lineWidthMultiplier !== undefined) setSettings.setLineWidthMultiplier(settings.lineWidthMultiplier);
-        if (settings.gridBreathingSpeed !== undefined) setSettings.setGridBreathingSpeed(settings.gridBreathingSpeed);
-        if (settings.gridBreathingIntensity !== undefined) setSettings.setGridBreathingIntensity(settings.gridBreathingIntensity);
-        if (settings.showVertices !== undefined) setSettings.setShowVertices(settings.showVertices);
+        if (settings.grid?.size !== undefined) setSettings.setGridSize(settings.grid.size);
+        if (settings.grid?.spacing !== undefined) setSettings.setGridSpacing(settings.grid.spacing);
+        if (settings.grid?.baseDotSize !== undefined) setSettings.setBaseDotSize(settings.grid.baseDotSize);
+        if (settings.grid?.connectionOpacity !== undefined) setSettings.setConnectionOpacity(settings.grid.connectionOpacity);
+        if (settings.grid?.noiseIntensity !== undefined) setSettings.setNoiseIntensity(settings.grid.noiseIntensity);
+        if (settings.grid?.lineWidthMultiplier !== undefined) setSettings.setLineWidthMultiplier(settings.grid.lineWidthMultiplier);
+        if (settings.grid?.breathingSpeed !== undefined) setSettings.setGridBreathingSpeed(settings.grid.breathingSpeed);
+        if (settings.grid?.breathingIntensity !== undefined) setSettings.setGridBreathingIntensity(settings.grid.breathingIntensity);
+        if (settings.grid?.showVertices !== undefined) setSettings.setShowVertices(settings.grid.showVertices);
 
         // XY Grid settings
-        if (settings.showXYGrid !== undefined) setSettings.setShowXYGrid(settings.showXYGrid);
-        if (settings.xyGridSize !== undefined) setSettings.setXYGridSize(settings.xyGridSize);
-        if (settings.xyGridSpacing !== undefined) setSettings.setXYGridSpacing(settings.xyGridSpacing);
-        if (settings.xyGridOpacity !== undefined) setSettings.setXYGridOpacity(settings.xyGridOpacity);
-        if (settings.xyGridLineWidth !== undefined) setSettings.setXYGridLineWidth(settings.xyGridLineWidth);
-        if (settings.xyGridColor !== undefined) setSettings.setXYGridColor(settings.xyGridColor);
-        if (settings.showXYGridLabels !== undefined) setSettings.setShowXYGridLabels(settings.showXYGridLabels);
+        if (settings.xyGrid?.show !== undefined) setSettings.setShowXYGrid(settings.xyGrid.show);
+        if (settings.xyGrid?.size !== undefined) setSettings.setXYGridSize(settings.xyGrid.size);
+        if (settings.xyGrid?.spacing !== undefined) setSettings.setXYGridSpacing(settings.xyGrid.spacing);
+        if (settings.xyGrid?.opacity !== undefined) setSettings.setXYGridOpacity(settings.xyGrid.opacity);
+        if (settings.xyGrid?.lineWidth !== undefined) setSettings.setXYGridLineWidth(settings.xyGrid.lineWidth);
+        if (settings.xyGrid?.color !== undefined) setSettings.setXYGridColor(settings.xyGrid.color);
+        if (settings.xyGrid?.showLabels !== undefined) setSettings.setShowXYGridLabels(settings.xyGrid.showLabels);
 
         // Color settings
-        if (settings.backgroundColor !== undefined) setSettings.setBackgroundColor(settings.backgroundColor);
-        if (settings.colorScheme !== undefined) setSettings.setColorScheme(settings.colorScheme);
-        if (settings.lineColor !== undefined) setSettings.setLineColor(settings.lineColor);
-        
+        if (settings.colors?.background !== undefined) setSettings.setBackgroundColor(settings.colors.background);
+        if (settings.colors?.scheme !== undefined) setSettings.setColorScheme(settings.colors.scheme);
+        if (settings.colors?.lineColor !== undefined) setSettings.setLineColor(settings.colors.lineColor);
+
         // Gradient settings
-        if (settings.useGradientLines !== undefined) setSettings.setUseGradientLines(settings.useGradientLines);
-        if (settings.gradientColorsLines !== undefined) setSettings.setGradientColorsLines(settings.gradientColorsLines);
-        if (settings.useGradientDots !== undefined) setSettings.setUseGradientDots(settings.useGradientDots);
-        if (settings.gradientColorsDots !== undefined) setSettings.setGradientColorsDots(settings.gradientColorsDots);
-        if (settings.useGradientShapes !== undefined) setSettings.setUseGradientShapes(settings.useGradientShapes);
-        if (settings.gradientColorsShapes !== undefined) setSettings.setGradientColorsShapes(settings.gradientColorsShapes);
-        if (settings.colorEasingType !== undefined) setSettings.setColorEasingType(settings.colorEasingType);
-        if (settings.colorCycleDuration !== undefined) setSettings.setColorCycleDuration(settings.colorCycleDuration);
+        if (settings.colors?.gradient?.lines?.enabled !== undefined) setSettings.setUseGradientLines(settings.colors.gradient.lines.enabled);
+        if (settings.colors?.gradient?.lines?.colors !== undefined) setSettings.setGradientColorsLines(settings.colors.gradient.lines.colors);
+        if (settings.colors?.gradient?.dots?.enabled !== undefined) setSettings.setUseGradientDots(settings.colors.gradient.dots.enabled);
+        if (settings.colors?.gradient?.dots?.colors !== undefined) setSettings.setGradientColorsDots(settings.colors.gradient.dots.colors);
+        if (settings.colors?.gradient?.shapes?.enabled !== undefined) setSettings.setUseGradientShapes(settings.colors.gradient.shapes.enabled);
+        if (settings.colors?.gradient?.shapes?.colors !== undefined) setSettings.setGradientColorsShapes(settings.colors.gradient.shapes.colors);
+        if (settings.colors?.gradient?.easing !== undefined) setSettings.setColorEasingType(settings.colors.gradient.easing);
+        if (settings.colors?.gradient?.cycleDuration !== undefined) setSettings.setColorCycleDuration(settings.colors.gradient.cycleDuration);
 
         // Animation settings
-        if (settings.animationSpeed !== undefined) setSettings.setAnimationSpeed(settings.animationSpeed);
+        if (settings.animation?.speed !== undefined) setSettings.setAnimationSpeed(settings.animation.speed);
 
         // Line Factory settings
-        if (settings.lineStyle !== undefined) setSettings.setLineStyle(settings.lineStyle);
-        if (settings.lineTaper !== undefined) setSettings.setLineTaper(settings.lineTaper);
-        if (settings.taperStart !== undefined) setSettings.setTaperStart(settings.taperStart);
-        if (settings.taperEnd !== undefined) setSettings.setTaperEnd(settings.taperEnd);
-        if (settings.lineGlow !== undefined) setSettings.setLineGlow(settings.lineGlow);
-        if (settings.lineGlowColor !== undefined) setSettings.setLineGlowColor(settings.lineGlowColor);
-        if (settings.lineOutline !== undefined) setSettings.setLineOutline(settings.lineOutline);
-        if (settings.lineOutlineColor !== undefined) setSettings.setLineOutlineColor(settings.lineOutlineColor);
-        if (settings.lineOutlineWidth !== undefined) setSettings.setLineOutlineWidth(settings.lineOutlineWidth);
-        if (settings.dashPattern !== undefined) setSettings.setDashPattern(settings.dashPattern);
-        if (settings.dashOffset !== undefined) setSettings.setDashOffset(settings.dashOffset);
-        if (settings.sineWaveType !== undefined) setSettings.setSineWaveType(settings.sineWaveType);
-        if (settings.sineAmplitude !== undefined) setSettings.setSineAmplitude(settings.sineAmplitude);
-        if (settings.sineFrequency !== undefined) setSettings.setSineFrequency(settings.sineFrequency);
-        if (settings.sinePhase !== undefined) setSettings.setSinePhase(settings.sinePhase);
-        if (settings.loopLine !== undefined) setSettings.setLoopLine(settings.loopLine);
-        if (settings.bidirectionalWaves !== undefined) setSettings.setBidirectionalWaves(settings.bidirectionalWaves);
+        if (settings.lineFactory?.style !== undefined) setSettings.setLineStyle(settings.lineFactory.style);
+        if (settings.lineFactory?.taper?.type !== undefined) setSettings.setLineTaper(settings.lineFactory.taper.type);
+        if (settings.lineFactory?.taper?.startWidth !== undefined) setSettings.setTaperStart(settings.lineFactory.taper.startWidth);
+        if (settings.lineFactory?.taper?.endWidth !== undefined) setSettings.setTaperEnd(settings.lineFactory.taper.endWidth);
+        if (settings.lineFactory?.glow?.intensity !== undefined) setSettings.setLineGlow(settings.lineFactory.glow.intensity);
+        if (settings.lineFactory?.glow?.color !== undefined) setSettings.setLineGlowColor(settings.lineFactory.glow.color);
+        if (settings.lineFactory?.outline?.enabled !== undefined) setSettings.setLineOutline(settings.lineFactory.outline.enabled);
+        if (settings.lineFactory?.outline?.color !== undefined) setSettings.setLineOutlineColor(settings.lineFactory.outline.color);
+        if (settings.lineFactory?.outline?.width !== undefined) setSettings.setLineOutlineWidth(settings.lineFactory.outline.width);
+        if (settings.lineFactory?.dash?.pattern !== undefined) setSettings.setDashPattern(settings.lineFactory.dash.pattern);
+        if (settings.lineFactory?.dash?.offset !== undefined) setSettings.setDashOffset(settings.lineFactory.dash.offset);
+        if (settings.lineFactory?.sineWave?.type !== undefined) setSettings.setSineWaveType(settings.lineFactory.sineWave.type);
+        if (settings.lineFactory?.sineWave?.amplitude !== undefined) setSettings.setSineAmplitude(settings.lineFactory.sineWave.amplitude);
+        if (settings.lineFactory?.sineWave?.frequency !== undefined) setSettings.setSineFrequency(settings.lineFactory.sineWave.frequency);
+        if (settings.lineFactory?.sineWave?.phase !== undefined) setSettings.setSinePhase(settings.lineFactory.sineWave.phase);
+        if (settings.lineFactory?.loopLine !== undefined) setSettings.setLoopLine(settings.lineFactory.loopLine);
+        if (settings.lineFactory?.bidirectionalWaves !== undefined) setSettings.setBidirectionalWaves(settings.lineFactory.bidirectionalWaves);
 
         // Primary shape settings
-        if (settings.primaryShapeType !== undefined) setSettings.setPrimaryShapeType(settings.primaryShapeType);
-        if (settings.primaryShapeSize !== undefined) setSettings.setPrimaryShapeSize(settings.primaryShapeSize);
-        if (settings.primaryShapeOpacity !== undefined) setSettings.setPrimaryShapeOpacity(settings.primaryShapeOpacity);
-        if (settings.primaryShapeThickness !== undefined) setSettings.setPrimaryShapeThickness(settings.primaryShapeThickness);
-        if (settings.primaryShapeVertices !== undefined) setSettings.setPrimaryShapeVertices(settings.primaryShapeVertices);
-        if (settings.primaryShapeRotation !== undefined) setSettings.setPrimaryShapeRotation(settings.primaryShapeRotation);
-        if (settings.primaryShapeOffsetX !== undefined) setSettings.setPrimaryShapeOffsetX(settings.primaryShapeOffsetX);
-        if (settings.primaryShapeOffsetY !== undefined) setSettings.setPrimaryShapeOffsetY(settings.primaryShapeOffsetY);
+        if (settings.shapes?.primary?.type !== undefined) setSettings.setPrimaryShapeType(settings.shapes.primary.type);
+        if (settings.shapes?.primary?.size !== undefined) setSettings.setPrimaryShapeSize(settings.shapes.primary.size);
+        if (settings.shapes?.primary?.opacity !== undefined) setSettings.setPrimaryShapeOpacity(settings.shapes.primary.opacity);
+        if (settings.shapes?.primary?.thickness !== undefined) setSettings.setPrimaryShapeThickness(settings.shapes.primary.thickness);
+        if (settings.shapes?.primary?.vertices !== undefined) setSettings.setPrimaryShapeVertices(settings.shapes.primary.vertices);
+        if (settings.shapes?.primary?.rotation !== undefined) setSettings.setPrimaryShapeRotation(settings.shapes.primary.rotation);
+        if (settings.shapes?.primary?.position?.offsetX !== undefined) setSettings.setPrimaryShapeOffsetX(settings.shapes.primary.position.offsetX);
+        if (settings.shapes?.primary?.position?.offsetY !== undefined) setSettings.setPrimaryShapeOffsetY(settings.shapes.primary.position.offsetY);
 
         // Primary shape animation
-        if (settings.primaryAnimationMode !== undefined) setSettings.setPrimaryAnimationMode(settings.primaryAnimationMode);
-        if (settings.primaryAnimationReverse !== undefined) setSettings.setPrimaryAnimationReverse(settings.primaryAnimationReverse);
-        if (settings.primaryAnimationSpeed !== undefined) setSettings.setPrimaryAnimationSpeed(settings.primaryAnimationSpeed);
-        if (settings.primaryAnimationIntensity !== undefined) setSettings.setPrimaryAnimationIntensity(settings.primaryAnimationIntensity);
-        if (settings.primaryFadeIn !== undefined) setSettings.setPrimaryFadeIn(settings.primaryFadeIn);
-        if (settings.primaryFadeOut !== undefined) setSettings.setPrimaryFadeOut(settings.primaryFadeOut);
-        if (settings.primaryVariableTiming !== undefined) setSettings.setPrimaryVariableTiming(settings.primaryVariableTiming);
-        if (settings.primaryStaggerDelay !== undefined) setSettings.setPrimaryStaggerDelay(settings.primaryStaggerDelay);
+        if (settings.shapes?.primary?.animation?.mode !== undefined) setSettings.setPrimaryAnimationMode(settings.shapes.primary.animation.mode);
+        if (settings.shapes?.primary?.animation?.reverse !== undefined) setSettings.setPrimaryAnimationReverse(settings.shapes.primary.animation.reverse);
+        if (settings.shapes?.primary?.animation?.speed !== undefined) setSettings.setPrimaryAnimationSpeed(settings.shapes.primary.animation.speed);
+        if (settings.shapes?.primary?.animation?.intensity !== undefined) setSettings.setPrimaryAnimationIntensity(settings.shapes.primary.animation.intensity);
+        if (settings.shapes?.primary?.animation?.fadeIn !== undefined) setSettings.setPrimaryFadeIn(settings.shapes.primary.animation.fadeIn);
+        if (settings.shapes?.primary?.animation?.fadeOut !== undefined) setSettings.setPrimaryFadeOut(settings.shapes.primary.animation.fadeOut);
+        if (settings.shapes?.primary?.animation?.variableTiming !== undefined) setSettings.setPrimaryVariableTiming(settings.shapes.primary.animation.variableTiming);
+        if (settings.shapes?.primary?.animation?.staggerDelay !== undefined) setSettings.setPrimaryStaggerDelay(settings.shapes.primary.animation.staggerDelay);
 
         // Primary shape stacking
-        if (settings.primaryStackingEnabled !== undefined) setSettings.setPrimaryStackingEnabled(settings.primaryStackingEnabled);
-        if (settings.primaryStackingCount !== undefined) setSettings.setPrimaryStackingCount(settings.primaryStackingCount);
-        if (settings.primaryStackingTimeOffset !== undefined) setSettings.setPrimaryStackingTimeOffset(settings.primaryStackingTimeOffset);
-        if (settings.primaryStackingInterval !== undefined) setSettings.setPrimaryStackingInterval(settings.primaryStackingInterval);
+        if (settings.shapes?.primary?.stacking?.enabled !== undefined) setSettings.setPrimaryStackingEnabled(settings.shapes.primary.stacking.enabled);
+        if (settings.shapes?.primary?.stacking?.count !== undefined) setSettings.setPrimaryStackingCount(settings.shapes.primary.stacking.count);
+        if (settings.shapes?.primary?.stacking?.timeOffset !== undefined) setSettings.setPrimaryStackingTimeOffset(settings.shapes.primary.stacking.timeOffset);
+        if (settings.shapes?.primary?.stacking?.interval !== undefined) setSettings.setPrimaryStackingInterval(settings.shapes.primary.stacking.interval);
 
         // Primary shape fractal
-        if (settings.primaryFractalDepth !== undefined) setSettings.setPrimaryFractalDepth(settings.primaryFractalDepth);
-        if (settings.primaryFractalScale !== undefined) setSettings.setPrimaryFractalScale(settings.primaryFractalScale);
-        if (settings.primaryFractalThicknessFalloff !== undefined) setSettings.setPrimaryFractalThicknessFalloff(settings.primaryFractalThicknessFalloff);
-        if (settings.primaryFractalChildCount !== undefined) setSettings.setPrimaryFractalChildCount(settings.primaryFractalChildCount);
-        if (settings.primarySacredPositioning !== undefined) setSettings.setPrimarySacredPositioning(settings.primarySacredPositioning);
-        if (settings.primarySacredIntensity !== undefined) setSettings.setPrimarySacredIntensity(settings.primarySacredIntensity);
+        if (settings.shapes?.primary?.fractal?.depth !== undefined) setSettings.setPrimaryFractalDepth(settings.shapes.primary.fractal.depth);
+        if (settings.shapes?.primary?.fractal?.scale !== undefined) setSettings.setPrimaryFractalScale(settings.shapes.primary.fractal.scale);
+        if (settings.shapes?.primary?.fractal?.thicknessFalloff !== undefined) setSettings.setPrimaryFractalThicknessFalloff(settings.shapes.primary.fractal.thicknessFalloff);
+        if (settings.shapes?.primary?.fractal?.childCount !== undefined) setSettings.setPrimaryFractalChildCount(settings.shapes.primary.fractal.childCount);
+        if (settings.shapes?.primary?.fractal?.sacredPositioning !== undefined) setSettings.setPrimarySacredPositioning(settings.shapes.primary.fractal.sacredPositioning);
+        if (settings.shapes?.primary?.fractal?.sacredIntensity !== undefined) setSettings.setPrimarySacredIntensity(settings.shapes.primary.fractal.sacredIntensity);
 
         // Secondary shape settings
-        if (settings.secondaryShapeEnabled !== undefined) setSettings.setSecondaryShapeEnabled(settings.secondaryShapeEnabled);
-        if (settings.secondaryShapeType !== undefined) setSettings.setSecondaryShapeType(settings.secondaryShapeType);
-        if (settings.secondaryShapeSize !== undefined) setSettings.setSecondaryShapeSize(settings.secondaryShapeSize);
-        if (settings.secondaryShapeOpacity !== undefined) setSettings.setSecondaryShapeOpacity(settings.secondaryShapeOpacity);
-        if (settings.secondaryShapeThickness !== undefined) setSettings.setSecondaryShapeThickness(settings.secondaryShapeThickness);
-        if (settings.secondaryShapeRotation !== undefined) setSettings.setSecondaryShapeRotation(settings.secondaryShapeRotation);
+        if (settings.shapes?.secondary?.enabled !== undefined) setSettings.setSecondaryShapeEnabled(settings.shapes.secondary.enabled);
+        if (settings.shapes?.secondary?.type !== undefined) setSettings.setSecondaryShapeType(settings.shapes.secondary.type);
+        if (settings.shapes?.secondary?.size !== undefined) setSettings.setSecondaryShapeSize(settings.shapes.secondary.size);
+        if (settings.shapes?.secondary?.opacity !== undefined) setSettings.setSecondaryShapeOpacity(settings.shapes.secondary.opacity);
+        if (settings.shapes?.secondary?.thickness !== undefined) setSettings.setSecondaryShapeThickness(settings.shapes.secondary.thickness);
+        if (settings.shapes?.secondary?.rotation !== undefined) setSettings.setSecondaryShapeRotation(settings.shapes.secondary.rotation);
 
         // Secondary shape animation
         if (settings.secondaryAnimationMode !== undefined) setSettings.setSecondaryAnimationMode(settings.secondaryAnimationMode);
