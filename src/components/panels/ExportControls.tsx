@@ -45,10 +45,10 @@ const ExportControls: React.FC<ExportControlsProps> = ({
     { name: 'Facebook Cover (1200×630)', width: 1200, height: 630 }
   ];
 
-  // Format options - PNG and Standalone
+  // Format options - PNG only (HTML export coming soon)
   const formatOptions = [
     { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
-    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file' }
+    { value: 'standalone', label: 'Standalone HTML (Coming Soon)', description: 'Self-contained interactive HTML file - Currently being refined', disabled: true }
   ];
 
   const updateOptions = (updates: Partial<ExportOptions>) => {
@@ -130,10 +130,14 @@ const ExportControls: React.FC<ExportControlsProps> = ({
               <label
                 key={format.value}
                 className={`
-                  glass-card p-3 cursor-pointer transition-all duration-200
-                  ${exportOptions.format === format.value 
-                    ? 'ring-2 ring-blue-500/50 bg-blue-500/10' 
-                    : 'hover:bg-white/5'
+                  glass-card p-3 transition-all duration-200
+                  ${(format as any).disabled
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer'
+                  }
+                  ${exportOptions.format === format.value && !(format as any).disabled
+                    ? 'ring-2 ring-blue-500/50 bg-blue-500/10'
+                    : !(format as any).disabled ? 'hover:bg-white/5' : ''
                   }
                 `}
               >
@@ -141,8 +145,9 @@ const ExportControls: React.FC<ExportControlsProps> = ({
                   type="radio"
                   name="format"
                   value={format.value}
-                  checked={exportOptions.format === format.value}
-                  onChange={(e) => updateOptions({ format: e.target.value as any })}
+                  checked={exportOptions.format === format.value && !(format as any).disabled}
+                  onChange={(e) => !(format as any).disabled && updateOptions({ format: e.target.value as any })}
+                  disabled={(format as any).disabled}
                   className="sr-only"
                 />
                 <div className="flex items-center justify-between">
