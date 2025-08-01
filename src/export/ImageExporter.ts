@@ -129,7 +129,7 @@ export class ImageExporter {
   }
 
   /**
-   * Export canvas directly
+   * Export canvas directly with exact resolution matching
    */
   async exportCanvas(
     sourceCanvas: HTMLCanvasElement,
@@ -145,28 +145,39 @@ export class ImageExporter {
       ...config
     };
 
-    // Set up export canvas
+    // Set up export canvas with exact dimensions
     const exportWidth = fullConfig.width * fullConfig.scale;
     const exportHeight = fullConfig.height * fullConfig.scale;
-    
+
+    console.log('🎯 ImageExporter: Setting up export canvas:', {
+      source: { width: sourceCanvas.width, height: sourceCanvas.height },
+      config: fullConfig,
+      export: { width: exportWidth, height: exportHeight }
+    });
+
     this.canvas.width = exportWidth;
     this.canvas.height = exportHeight;
 
     // Clear and set background if needed
     this.ctx.clearRect(0, 0, exportWidth, exportHeight);
-    
+
     if (!fullConfig.transparent && fullConfig.backgroundColor) {
       this.ctx.fillStyle = fullConfig.backgroundColor;
       this.ctx.fillRect(0, 0, exportWidth, exportHeight);
     }
 
-    // Draw source canvas scaled
+    // Use high-quality image rendering
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
+
+    // Draw source canvas with exact pixel mapping
     this.ctx.drawImage(
       sourceCanvas,
       0, 0, sourceCanvas.width, sourceCanvas.height,
       0, 0, exportWidth, exportHeight
     );
 
+    console.log('✅ ImageExporter: Canvas rendered, converting to blob...');
     return this.canvasToBlob(fullConfig);
   }
 

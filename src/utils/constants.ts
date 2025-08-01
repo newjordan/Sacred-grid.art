@@ -239,17 +239,17 @@ export {
   BlendMode
 };
 
-// Default Settings Template
+// Default Settings Template - Beautiful Green Flower Pattern
 export const DEFAULT_SETTINGS = {
   grid: {
-    size: GRID.DEFAULT_SIZE,
-    spacing: GRID.DEFAULT_SPACING,
-    baseDotSize: GRID.DEFAULT_DOT_SIZE,
+    size: 7,
+    spacing: 96,
+    baseDotSize: 1,
     connectionOpacity: 0.15,
     noiseIntensity: 1,
     lineWidthMultiplier: 1,
-    breathingSpeed: 0.0008,
-    breathingIntensity: 0.2,
+    breathingSpeed: 0.0048,
+    breathingIntensity: 0.21,
     showVertices: true,
     useLineFactorySettings: false
   },
@@ -263,49 +263,163 @@ export const DEFAULT_SETTINGS = {
     scheme: 'blue',
     lineColor: COLORS.SACRED_BLUE,
     gradient: {
-      lines: { enabled: false, colors: ['#ff0000', '#00ff00', '#0000ff'] },
-      dots: { enabled: false, colors: ['#ff00ff', '#00ffff', '#ffff00'] },
-      shapes: { enabled: false, colors: ['#ffffff', '#aaaaaa', '#000000'] },
-      easing: 'linear',
-      cycleDuration: 6000
+      lines: {
+        enabled: true,
+        colors: ['#ff0000', '#ff7700', '#00ff00', '#0000ff']
+      },
+      dots: {
+        enabled: true,
+        colors: ['#0c7b97', '#461cba', '#0077ff', '#00ffff']
+      },
+      shapes: {
+        enabled: true,
+        colors: ['#377642', '#adc7b1', '#aaaaaa', '#2aea6a']
+      },
+      easing: 'easeInOutQuad',
+      cycleDuration: 7300
     }
   },
   animation: {
-    speed: 1
+    speed: 0.1
+  },
+  xyGrid: {
+    show: true,
+    size: 15,
+    spacing: 35,
+    opacity: 0.86,
+    lineWidth: 0.5,
+    color: '#444444',
+    showLabels: true
+  },
+  lineFactory: {
+    style: 'solid',
+    taper: {
+      type: 'none',
+      startWidth: 0.1,
+      endWidth: 0.1
+    },
+    glow: {
+      intensity: 0,
+      color: '#ffffff'
+    },
+    outline: {
+      enabled: false,
+      color: '#000000',
+      width: 0.5
+    },
+    dash: {
+      pattern: [5, 5],
+      offset: 0
+    },
+    sineWave: {
+      type: 'none',
+      amplitude: 5,
+      frequency: 0.1,
+      phase: 0
+    },
+    loopLine: true,
+    bidirectionalWaves: true
   },
   shapes: {
     primary: {
-      type: ShapeType.POLYGON,
-      size: SHAPE.DEFAULT_SIZE,
-      opacity: 1.0,
-      thickness: SHAPE.DEFAULT_THICKNESS,
+      type: 'flowerOfLife',
+      size: 282,
+      opacity: 0.04,
+      thickness: 5.1,
       vertices: 3,
       rotation: 0,
-      position: { x: 0, y: 0 },
       useLineFactory: false,
+      position: {
+        offsetX: 0,
+        offsetY: 0
+      },
+      spiralType: 'golden',
+      turns: 4,
+      arms: 1,
+      mandalaStyle: 'geometric',
+      mandalaSymmetry: 8,
+      mandalaLayers: 4,
+      mandalaPetals: 6,
+      mandalaComplexity: 0.5,
+      customMandalaData: [],
       fractal: {
-        depth: FRACTAL.DEFAULT_DEPTH,
-        scale: FRACTAL.DEFAULT_SCALE,
-        thicknessFalloff: 0.8,
-        childCount: FRACTAL.DEFAULT_CHILD_COUNT,
-        sacredPositioning: true,
+        depth: 3,
+        scale: 0.5,
+        thicknessFalloff: 0.91,
+        childCount: 6,
+        sacredPositioning: false,
         sacredIntensity: 0.5
       },
       animation: {
-        mode: AnimationMode.GROW,
+        mode: 'grow',
         reverse: false,
         speed: 0.0008,
-        intensity: 0.2,
+        intensity: 0.42,
         fadeIn: 0.2,
         fadeOut: 0.2,
-        variableTiming: true,
-        staggerDelay: 100
+        variableTiming: false,
+        staggerDelay: 290
       },
       stacking: {
         enabled: true,
-        count: 3,
+        count: 1,
         timeOffset: -3000,
         interval: 1000
+      }
+    },
+    secondary: {
+      enabled: false,
+      type: 'flowerOfLife',
+      size: 127,
+      opacity: 0.05,
+      thickness: 2.5,
+      vertices: 5,
+      rotation: 36,
+      useLineFactory: false,
+      position: {
+        offsetX: 0,
+        offsetY: 0
+      },
+      spiralType: 'golden',
+      turns: 4,
+      arms: 1,
+      mandalaStyle: 'geometric',
+      mandalaSymmetry: 8,
+      mandalaLayers: 4,
+      mandalaPetals: 6,
+      mandalaComplexity: 0.5,
+      fractal: {
+        depth: 4,
+        scale: 0.5,
+        thicknessFalloff: 0.59,
+        childCount: 6,
+        sacredPositioning: false,
+        sacredIntensity: 0.5
+      },
+      animation: {
+        mode: 'pulse',
+        reverse: true,
+        speed: 0.0001,
+        intensity: 0.67,
+        fadeIn: 0.2,
+        fadeOut: 0.2,
+        variableTiming: true,
+        staggerDelay: 150
+      },
+      stacking: {
+        enabled: true,
+        count: 2,
+        timeOffset: 1500,
+        interval: 1500,
+        mathRelationships: {
+          useRandomizer: true,
+          randomizerScale: 0.15,
+          randomSeedOffset: 0,
+          useHarmonicRatios: false,
+          harmonicRatio: '1:1',
+          useSymmetryGroup: false,
+          symmetryOperation: 'rotation'
+        }
       }
     }
   }
