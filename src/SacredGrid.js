@@ -8,7 +8,6 @@ import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
 import { ExportManager } from './export/ExportManager.js';
 import { StateDuplicator } from './utils/StateDuplicator';
-import { loadDefaultPattern } from './utils/defaultLoader';
 // import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
 
 // Add a small CSS snippet to ensure full-screen display
@@ -708,15 +707,28 @@ const SacredGrid = () => {
         setFilmGrainColored,
     };
 
-    // 🌸 Load beautiful Green Flower pattern on startup
+    // 🌸 Load beautiful Green Flower pattern on startup using existing import system
     useEffect(() => {
-        // Load the default pattern after component mounts and setters are ready
-        const timer = setTimeout(() => {
-            loadDefaultPattern(setSettings);
-        }, 100);
+        // Use the existing handleImportSettings function that already works perfectly
+        const loadGreenFlower = async () => {
+            try {
+                // Import the green flower settings using the existing import mechanism
+                const greenFlowerSettings = await import('./green_flower_2.json');
+                console.log('🌸 Loading Green Flower pattern using existing import system...');
 
+                // Use the existing handleImportSettings function that already works
+                handleImportSettings(greenFlowerSettings.default);
+
+                console.log('✅ Green Flower pattern loaded successfully!');
+            } catch (error) {
+                console.error('❌ Failed to load green flower pattern:', error);
+            }
+        };
+
+        // Load after a short delay to ensure component is ready
+        const timer = setTimeout(loadGreenFlower, 200);
         return () => clearTimeout(timer);
-    }, []); // Empty dependency array = run once on mount
+    }, []); // Run once on mount
 
     // Handle importing settings from a JSON file
     const handleImportSettings = (jsonContent) => {
