@@ -9,6 +9,13 @@
       name="description"
       content="A high-performance Canvas2D library for creating interactive sacred geometry visualizations"
     />
+
+    <!-- Force HTTPS redirect -->
+    <script>
+      if (location.protocol !== 'https:' && location.hostname === 'sacred-grid.art') {
+        location.replace('https:' + window.location.href.substring(window.location.protocol.length));
+      }
+    </script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
