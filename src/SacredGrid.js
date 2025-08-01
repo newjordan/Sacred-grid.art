@@ -707,27 +707,20 @@ const SacredGrid = () => {
         setFilmGrainColored,
     };
 
-    // 🌸 Load beautiful Green Flower pattern on startup using existing import system
+    // 🌸 Load Green Flower pattern on startup - SIMPLE VERSION
     useEffect(() => {
-        // Use the existing handleImportSettings function that already works perfectly
-        const loadGreenFlower = async () => {
-            try {
-                // Import the green flower settings using the existing import mechanism
-                const greenFlowerSettings = await import('./green_flower_2.json');
-                console.log('🌸 Loading Green Flower pattern using existing import system...');
+        console.log('🌸 Loading Green Flower pattern...');
 
-                // Use the existing handleImportSettings function that already works
-                handleImportSettings(greenFlowerSettings.default);
-
-                console.log('✅ Green Flower pattern loaded successfully!');
-            } catch (error) {
-                console.error('❌ Failed to load green flower pattern:', error);
-            }
-        };
-
-        // Load after a short delay to ensure component is ready
-        const timer = setTimeout(loadGreenFlower, 200);
-        return () => clearTimeout(timer);
+        // Import and load the green flower settings directly
+        import('./green_flower_2.json')
+            .then(greenFlowerModule => {
+                const jsonString = JSON.stringify(greenFlowerModule.default);
+                handleImportSettings(jsonString);
+                console.log('✅ Green Flower pattern loaded!');
+            })
+            .catch(error => {
+                console.error('❌ Failed to load green flower:', error);
+            });
     }, []); // Run once on mount
 
     // Handle importing settings from a JSON file
