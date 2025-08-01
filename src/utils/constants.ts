@@ -1,6 +1,6 @@
 // src/utils/constants.ts - Consolidated constants for Sacred Grid
 
-import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType, BlendMode } from '../types';
+import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from '../constants/ShapeTypes';
 
 // Mathematical Constants
 export const GOLDEN_RATIO = 1.618033988749895;
@@ -235,8 +235,7 @@ export {
   AnimationMode,
   LineStyleType,
   TaperType,
-  SineWaveType,
-  BlendMode
+  SineWaveType
 };
 
 // Default Settings Template - Beautiful Green Flower Pattern
