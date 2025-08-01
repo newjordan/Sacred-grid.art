@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilkDrop Post-Processing Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        
+        .canvas-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .test-canvas {
+            border: 2px solid rgba(255, 107, 107, 0.5);
+            border-radius: 12px;
+            background: #000000;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+        }
+        
+        .controls-section {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .effect-group {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .group-header {
+            background: rgba(255, 107, 107, 0.1);
+            border-bottom: 1px solid rgba(255, 107, 107, 0.2);
+            padding: 12px 15px;
+            font-weight: 600;
+            color: #ff6b6b;
+        }
+        
+        .group-content {
+            padding: 15px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            min-width: 100px;
+        }
+        
+        .control-input {
+            flex: 1;
+            margin-left: 15px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #ff6b6b;
+        }
+        
+        select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: white;
+            padding: 6px 10px;
+            width: 100%;
+        }
+        
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            border-radius: 6px;
+            color: white;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(255, 107, 107, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .metrics {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        .canvas-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .canvas-btn {
+            background: rgba(0, 119, 255, 0.2);
+            border: 1px solid rgba(0, 119, 255, 0.4);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .canvas-btn:hover {
+            background: rgba(0, 119, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .canvas-btn.active {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌈 MilkDrop Post-Processing Test</h1>
+            <p>Experience the legendary visual effects that made MilkDrop famous</p>
+        </div>
+        
+        <div class="main-grid">
+            <div class="canvas-section">
+                <canvas id="testCanvas" class="test-canvas" width="800" height="600"></canvas>
+                
+                <div class="canvas-controls">
+                    <button id="startBtn" class="canvas-btn">▶️ Start Animation</button>
+                    <button id="stopBtn" class="canvas-btn">⏸️ Stop</button>
+                    <button id="resetBtn" class="canvas-btn">🔄 Reset</button>
+                    <button id="randomBtn" class="canvas-btn">🎲 Random</button>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <h3>🎛️ MilkDrop Effects</h3>
+                
+                <!-- Screen Warping -->
+                <div class="effect-group">
+                    <div class="group-header">🌀 Screen Warping</div>
+                    <div class="group-content">
+                        <div class="control-row">
+                            <label class="control-label">Enable</label>
+                            <input type="checkbox" id="warpEnabled" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Type</label>
+                            <select id="warpType" class="control-input">
+                                <option value="radial">Radial Push/Pull</option>
+                                <option value="spiral">Spiral Twist</option>
+                                <option value="wave">Wave Distortion</option>
+                                <option value="tunnel">Tunnel Effect</option>
+                                <option value="kaleidoscope">Kaleidoscope</option>
+                                <option value="fisheye">Fisheye Lens</option>
+                                <option value="ripple">Ripple Waves</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Intensity</label>
+                            <input type="range" id="warpIntensity" min="0" max="1" step="0.01" value="0.5" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Speed</label>
+                            <input type="range" id="warpSpeed" min="0" max="5" step="0.1" value="1" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Frequency</label>
+                            <input type="range" id="warpFrequency" min="0.1" max="10" step="0.1" value="2" class="control-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feedback Loops -->
+                <div class="effect-group">
+                    <div class="group-header">🔄 Feedback Loops</div>
+                    <div class="group-content">
+                        <div class="control-row">
+                            <label class="control-label">Enable</label>
+                            <input type="checkbox" id="feedbackEnabled" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Intensity</label>
+                            <input type="range" id="feedbackIntensity" min="0" max="1" step="0.01" value="0.95" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Decay</label>
+                            <input type="range" id="feedbackDecay" min="0.8" max="1" step="0.001" value="0.98" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Zoom</label>
+                            <input type="range" id="feedbackZoom" min="0.95" max="1.05" step="0.001" value="1.01" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Rotation</label>
+                            <input type="range" id="feedbackRotation" min="-0.1" max="0.1" step="0.001" value="0.01" class="control-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Cycling -->
+                <div class="effect-group">
+                    <div class="group-header">🎨 Color Cycling</div>
+                    <div class="group-content">
+                        <div class="control-row">
+                            <label class="control-label">Enable</label>
+                            <input type="checkbox" id="colorEnabled" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Hue Shift</label>
+                            <input type="range" id="colorHue" min="-180" max="180" step="1" value="30" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Saturation</label>
+                            <input type="range" id="colorSaturation" min="0" max="2" step="0.01" value="1" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Brightness</label>
+                            <input type="range" id="colorBrightness" min="0" max="2" step="0.01" value="1" class="control-input">
+                        </div>
+                        <div class="control-row">
+                            <label class="control-label">Invert</label>
+                            <input type="checkbox" id="colorInvert" class="control-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Presets -->
+                <div class="effect-group">
+                    <div class="group-header">🎭 MilkDrop Presets</div>
+                    <div class="group-content">
+                        <div class="preset-buttons">
+                            <button class="preset-btn" onclick="loadPreset('psychedelic')">Psychedelic</button>
+                            <button class="preset-btn" onclick="loadPreset('tunnel')">Tunnel Vision</button>
+                            <button class="preset-btn" onclick="loadPreset('kaleidoscope')">Kaleidoscope</button>
+                            <button class="preset-btn" onclick="loadPreset('feedback')">Feedback Storm</button>
+                            <button class="preset-btn" onclick="loadPreset('waves')">Ocean Waves</button>
+                            <button class="preset-btn" onclick="loadPreset('spiral')">Spiral Galaxy</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div id="metricsDisplay" class="metrics">
+                    Performance metrics will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simplified MilkDrop Post-Processor for demo
+        class MilkDropDemo {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.isPlaying = false;
+                this.time = 0;
+                this.startTime = performance.now();
+                this.frameCount = 0;
+                
+                // Create frame buffers
+                this.frameBuffer1 = document.createElement('canvas');
+                this.frameBuffer2 = document.createElement('canvas');
+                this.feedbackBuffer = document.createElement('canvas');
+                
+                [this.frameBuffer1, this.frameBuffer2, this.feedbackBuffer].forEach(buffer => {
+                    buffer.width = canvas.width;
+                    buffer.height = canvas.height;
+                });
+                
+                this.fb1Ctx = this.frameBuffer1.getContext('2d');
+                this.fb2Ctx = this.frameBuffer2.getContext('2d');
+                this.feedbackCtx = this.feedbackBuffer.getContext('2d');
+                
+                // Effect configuration
+                this.config = {
+                    warp: { enabled: false, type: 'radial', intensity: 0.5, speed: 1, frequency: 2 },
+                    feedback: { enabled: false, intensity: 0.95, decay: 0.98, zoom: 1.01, rotation: 0.01 },
+                    color: { enabled: false, hueShift: 30, saturation: 1, brightness: 1, invert: false }
+                };
+                
+                this.setupControls();
+                console.log('🌈 MilkDrop Demo initialized');
+            }
+            
+            setupControls() {
+                // Warp controls
+                document.getElementById('warpEnabled').addEventListener('change', (e) => {
+                    this.config.warp.enabled = e.target.checked;
+                });
+                document.getElementById('warpType').addEventListener('change', (e) => {
+                    this.config.warp.type = e.target.value;
+                });
+                document.getElementById('warpIntensity').addEventListener('input', (e) => {
+                    this.config.warp.intensity = parseFloat(e.target.value);
+                });
+                document.getElementById('warpSpeed').addEventListener('input', (e) => {
+                    this.config.warp.speed = parseFloat(e.target.value);
+                });
+                document.getElementById('warpFrequency').addEventListener('input', (e) => {
+                    this.config.warp.frequency = parseFloat(e.target.value);
+                });
+                
+                // Feedback controls
+                document.getElementById('feedbackEnabled').addEventListener('change', (e) => {
+                    this.config.feedback.enabled = e.target.checked;
+                });
+                document.getElementById('feedbackIntensity').addEventListener('input', (e) => {
+                    this.config.feedback.intensity = parseFloat(e.target.value);
+                });
+                document.getElementById('feedbackDecay').addEventListener('input', (e) => {
+                    this.config.feedback.decay = parseFloat(e.target.value);
+                });
+                document.getElementById('feedbackZoom').addEventListener('input', (e) => {
+                    this.config.feedback.zoom = parseFloat(e.target.value);
+                });
+                document.getElementById('feedbackRotation').addEventListener('input', (e) => {
+                    this.config.feedback.rotation = parseFloat(e.target.value);
+                });
+                
+                // Color controls
+                document.getElementById('colorEnabled').addEventListener('change', (e) => {
+                    this.config.color.enabled = e.target.checked;
+                });
+                document.getElementById('colorHue').addEventListener('input', (e) => {
+                    this.config.color.hueShift = parseFloat(e.target.value);
+                });
+                document.getElementById('colorSaturation').addEventListener('input', (e) => {
+                    this.config.color.saturation = parseFloat(e.target.value);
+                });
+                document.getElementById('colorBrightness').addEventListener('input', (e) => {
+                    this.config.color.brightness = parseFloat(e.target.value);
+                });
+                document.getElementById('colorInvert').addEventListener('change', (e) => {
+                    this.config.color.invert = e.target.checked;
+                });
+            }
+            
+            start() {
+                this.isPlaying = true;
+                this.animate();
+                document.getElementById('startBtn').classList.add('active');
+            }
+            
+            stop() {
+                this.isPlaying = false;
+                document.getElementById('startBtn').classList.remove('active');
+            }
+            
+            reset() {
+                this.time = 0;
+                this.startTime = performance.now();
+                this.frameCount = 0;
+                this.clearBuffers();
+            }
+            
+            clearBuffers() {
+                [this.fb1Ctx, this.fb2Ctx, this.feedbackCtx].forEach(ctx => {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                });
+            }
+            
+            animate() {
+                if (!this.isPlaying) return;
+                
+                this.time = (performance.now() - this.startTime) * 0.001;
+                this.frameCount++;
+                
+                this.render();
+                this.updateMetrics();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            render() {
+                // Draw base Sacred Grid pattern
+                this.drawBasePattern();
+                
+                // Copy to frame buffer
+                this.fb1Ctx.clearRect(0, 0, this.frameBuffer1.width, this.frameBuffer1.height);
+                this.fb1Ctx.drawImage(this.canvas, 0, 0);
+                
+                let currentBuffer = this.frameBuffer1;
+                let nextBuffer = this.frameBuffer2;
+                
+                // Apply effects
+                if (this.config.feedback.enabled) {
+                    this.applyFeedback(currentBuffer, nextBuffer);
+                    [currentBuffer, nextBuffer] = [nextBuffer, currentBuffer];
+                }
+                
+                if (this.config.warp.enabled) {
+                    this.applyWarp(currentBuffer, nextBuffer);
+                    [currentBuffer, nextBuffer] = [nextBuffer, currentBuffer];
+                }
+                
+                if (this.config.color.enabled) {
+                    this.applyColorEffects(currentBuffer, nextBuffer);
+                    [currentBuffer, nextBuffer] = [nextBuffer, currentBuffer];
+                }
+                
+                // Copy final result back to main canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.drawImage(currentBuffer, 0, 0);
+            }
+            
+            drawBasePattern() {
+                // Clear canvas
+                this.ctx.fillStyle = '#000000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                // Draw animated Sacred Grid pattern
+                this.ctx.strokeStyle = '#0077ff';
+                this.ctx.lineWidth = 2;
+                
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i * Math.PI * 2) / 6 + this.time * 0.5;
+                    const radius = 100 + Math.sin(this.time * 2 + i) * 30;
+                    
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 50, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    // Draw connecting lines
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(centerX, centerY);
+                    this.ctx.lineTo(x, y);
+                    this.ctx.stroke();
+                }
+            }
+            
+            applyFeedback(source, target) {
+                const targetCtx = target.getContext('2d');
+                targetCtx.clearRect(0, 0, target.width, target.height);
+                
+                if (this.frameCount > 1) {
+                    targetCtx.save();
+                    
+                    const centerX = target.width * 0.5;
+                    const centerY = target.height * 0.5;
+                    
+                    targetCtx.translate(centerX, centerY);
+                    targetCtx.scale(this.config.feedback.zoom, this.config.feedback.zoom);
+                    targetCtx.rotate(this.config.feedback.rotation);
+                    targetCtx.translate(-centerX, -centerY);
+                    
+                    targetCtx.globalAlpha = this.config.feedback.decay;
+                    targetCtx.drawImage(this.feedbackBuffer, 0, 0);
+                    
+                    targetCtx.restore();
+                }
+                
+                targetCtx.globalCompositeOperation = 'screen';
+                targetCtx.globalAlpha = this.config.feedback.intensity;
+                targetCtx.drawImage(source, 0, 0);
+                targetCtx.globalCompositeOperation = 'source-over';
+                targetCtx.globalAlpha = 1;
+                
+                this.feedbackCtx.clearRect(0, 0, this.feedbackBuffer.width, this.feedbackBuffer.height);
+                this.feedbackCtx.drawImage(target, 0, 0);
+            }
+            
+            applyWarp(source, target) {
+                // Simplified warp effect for demo
+                const targetCtx = target.getContext('2d');
+                targetCtx.clearRect(0, 0, target.width, target.height);
+                
+                const { type, intensity, speed, frequency } = this.config.warp;
+                const time = this.time * speed;
+                
+                targetCtx.save();
+                targetCtx.translate(target.width / 2, target.height / 2);
+                
+                switch (type) {
+                    case 'spiral':
+                        targetCtx.rotate(time * intensity * 0.1);
+                        break;
+                    case 'wave':
+                        targetCtx.transform(1, Math.sin(time * frequency) * intensity * 0.1, 0, 1, 0, 0);
+                        break;
+                    case 'tunnel':
+                        const scale = 1 + Math.sin(time) * intensity * 0.2;
+                        targetCtx.scale(scale, scale);
+                        break;
+                }
+                
+                targetCtx.translate(-target.width / 2, -target.height / 2);
+                targetCtx.drawImage(source, 0, 0);
+                targetCtx.restore();
+            }
+            
+            applyColorEffects(source, target) {
+                const targetCtx = target.getContext('2d');
+                targetCtx.clearRect(0, 0, target.width, target.height);
+                
+                if (this.config.color.invert) {
+                    targetCtx.filter = 'invert(1)';
+                }
+                
+                const hue = (this.config.color.hueShift + this.time * 30) % 360;
+                targetCtx.filter += ` hue-rotate(${hue}deg) saturate(${this.config.color.saturation}) brightness(${this.config.color.brightness})`;
+                
+                targetCtx.drawImage(source, 0, 0);
+                targetCtx.filter = 'none';
+            }
+            
+            updateMetrics() {
+                const metrics = [
+                    `🌈 MilkDrop Post-Processing Demo`,
+                    `⏱️ Time: ${this.time.toFixed(2)}s`,
+                    `📊 Frames: ${this.frameCount}`,
+                    `🌀 Warp: ${this.config.warp.enabled ? this.config.warp.type : 'Off'}`,
+                    `🔄 Feedback: ${this.config.feedback.enabled ? 'On' : 'Off'}`,
+                    `🎨 Color: ${this.config.color.enabled ? 'On' : 'Off'}`,
+                    `🎯 Effects: ${[this.config.warp.enabled, this.config.feedback.enabled, this.config.color.enabled].filter(Boolean).length}/3`
+                ].join('\n');
+                
+                document.getElementById('metricsDisplay').textContent = metrics;
+            }
+        }
+        
+        // Preset configurations
+        const presets = {
+            psychedelic: {
+                warp: { enabled: true, type: 'kaleidoscope', intensity: 0.8, speed: 2, frequency: 4 },
+                feedback: { enabled: true, intensity: 0.9, decay: 0.95, zoom: 1.02, rotation: 0.02 },
+                color: { enabled: true, hueShift: 60, saturation: 1.5, brightness: 1.2, invert: false }
+            },
+            tunnel: {
+                warp: { enabled: true, type: 'tunnel', intensity: 0.6, speed: 1.5, frequency: 2 },
+                feedback: { enabled: true, intensity: 0.8, decay: 0.99, zoom: 0.99, rotation: 0 },
+                color: { enabled: false }
+            },
+            kaleidoscope: {
+                warp: { enabled: true, type: 'kaleidoscope', intensity: 1, speed: 0.5, frequency: 6 },
+                feedback: { enabled: false },
+                color: { enabled: true, hueShift: 0, saturation: 2, brightness: 1, invert: false }
+            },
+            feedback: {
+                warp: { enabled: false },
+                feedback: { enabled: true, intensity: 1, decay: 0.92, zoom: 1.05, rotation: 0.05 },
+                color: { enabled: true, hueShift: 120, saturation: 1, brightness: 1, invert: true }
+            },
+            waves: {
+                warp: { enabled: true, type: 'wave', intensity: 0.4, speed: 1, frequency: 3 },
+                feedback: { enabled: true, intensity: 0.7, decay: 0.97, zoom: 1, rotation: 0 },
+                color: { enabled: true, hueShift: 180, saturation: 1.2, brightness: 1, invert: false }
+            },
+            spiral: {
+                warp: { enabled: true, type: 'spiral', intensity: 0.7, speed: 1.2, frequency: 2 },
+                feedback: { enabled: true, intensity: 0.85, decay: 0.96, zoom: 1.01, rotation: 0.01 },
+                color: { enabled: true, hueShift: 90, saturation: 1.3, brightness: 1.1, invert: false }
+            }
+        };
+        
+        function loadPreset(name) {
+            const preset = presets[name];
+            if (!preset) return;
+            
+            demo.config = JSON.parse(JSON.stringify(preset));
+            
+            // Update UI controls
+            document.getElementById('warpEnabled').checked = preset.warp?.enabled || false;
+            document.getElementById('warpType').value = preset.warp?.type || 'radial';
+            document.getElementById('warpIntensity').value = preset.warp?.intensity || 0.5;
+            document.getElementById('warpSpeed').value = preset.warp?.speed || 1;
+            document.getElementById('warpFrequency').value = preset.warp?.frequency || 2;
+            
+            document.getElementById('feedbackEnabled').checked = preset.feedback?.enabled || false;
+            document.getElementById('feedbackIntensity').value = preset.feedback?.intensity || 0.95;
+            document.getElementById('feedbackDecay').value = preset.feedback?.decay || 0.98;
+            document.getElementById('feedbackZoom').value = preset.feedback?.zoom || 1.01;
+            document.getElementById('feedbackRotation').value = preset.feedback?.rotation || 0.01;
+            
+            document.getElementById('colorEnabled').checked = preset.color?.enabled || false;
+            document.getElementById('colorHue').value = preset.color?.hueShift || 0;
+            document.getElementById('colorSaturation').value = preset.color?.saturation || 1;
+            document.getElementById('colorBrightness').value = preset.color?.brightness || 1;
+            document.getElementById('colorInvert').checked = preset.color?.invert || false;
+            
+            console.log(`🎭 Loaded preset: ${name}`);
+        }
+        
+        // Initialize demo
+        const canvas = document.getElementById('testCanvas');
+        const demo = new MilkDropDemo(canvas);
+        
+        // Control buttons
+        document.getElementById('startBtn').addEventListener('click', () => demo.start());
+        document.getElementById('stopBtn').addEventListener('click', () => demo.stop());
+        document.getElementById('resetBtn').addEventListener('click', () => demo.reset());
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            const presetNames = Object.keys(presets);
+            const randomPreset = presetNames[Math.floor(Math.random() * presetNames.length)];
+            loadPreset(randomPreset);
+        });
+        
+        console.log('🌈 MilkDrop Post-Processing Test loaded!');
+        console.log('Try the presets to see classic MilkDrop effects in action!');
+    </script>
+</body>
+</html>

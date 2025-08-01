@@ -79,6 +79,17 @@ const SacredGridCanvas = forwardRef(({
             if (rendererInstanceRef.current) {
                 rendererInstanceRef.current.updateSettings(newSettings);
             }
+        },
+        // Expose the canvas for export functionality
+        get canvas() {
+            if (rendererInstanceRef.current && rendererInstanceRef.current.renderer) {
+                return rendererInstanceRef.current.renderer.canvas;
+            }
+            return null;
+        },
+        // Expose the full renderer instance
+        get renderer() {
+            return rendererInstanceRef.current;
         }
     }));
 

@@ -17,31 +17,55 @@ function seededRandom(seed) {
     return x - Math.floor(x);
 }
 
-export function calculateAnimationParams(time, shapeSettings, globalSettings) {
+// Calculate symmetric fractal timing to eliminate asymmetrical issues
+function calculateSymmetricFractalTiming(baseTime, fractalDepth, childIndex, totalChildren) {
+    // Use mathematical constants for perfect symmetry
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+    const tau = Math.PI * 2;
+
+    // Calculate symmetric phase offset based on golden ratio
+    const phaseOffset = (childIndex / totalChildren) * tau;
+
+    // Apply depth-based scaling with golden ratio for natural progression
+    const depthScale = Math.pow(goldenRatio, -fractalDepth);
+
+    // Return perfectly symmetric timing
+    return baseTime + (phaseOffset * depthScale * 1000); // Convert to milliseconds
+}
+
+export function calculateAnimationParams(time, shapeSettings, globalSettings, fractalDepth = 0, childIndex = 0, totalChildren = 1) {
     const { animation } = shapeSettings;
-    
-    // Unique variation factors based on shape properties
-    const uniqueId = (shapeSettings.type?.charCodeAt(0) || 0) + 
-                     (shapeSettings.vertices || 0) * 10 + 
+
+    // Enhanced timing calculation with symmetric fractal support
+    let adjustedTime = time;
+
+    // Use symmetric timing for fractal children to eliminate asymmetrical issues
+    if (fractalDepth > 0 && totalChildren > 1) {
+        adjustedTime = calculateSymmetricFractalTiming(time, fractalDepth, childIndex, totalChildren);
+    }
+
+    // Unique variation factors based on shape properties (for non-fractal variations only)
+    const uniqueId = (shapeSettings.type?.charCodeAt(0) || 0) +
+                     (shapeSettings.vertices || 0) * 10 +
                      (shapeSettings.position?.offsetX || 0) * 0.1 +
                      (shapeSettings.position?.offsetY || 0) * 0.1;
-    
-    // Variable loop duration for more organic feel
+
+    // Enhanced loop duration calculation with better timing consistency
     const baseLoopDuration = 6000;
-    const durationVariation = animation.variableTiming ? 
-        (seededRandom(uniqueId) * 2000) - 1000 : 0; // +/- 1000ms variation if enabled
-    const loopDuration = baseLoopDuration + durationVariation;
-    
-    // Add delay to stagger shape initialization
-    const delay = animation.staggerDelay ? uniqueId % animation.staggerDelay : 0;
-    
-    // Apply child-specific phase shift for fractal children
-    // This creates more varied and organic movement in child shapes
-    const childPhaseShift = animation.childPhaseShift || 0;
-    const childPhaseOffset = childPhaseShift * 500; // Scale the phase shift
-    
-    const adjustedTime = Math.max(0, time - delay + childPhaseOffset);
-    
+    let loopDuration = baseLoopDuration;
+
+    // Only apply variable timing for non-fractal shapes to maintain symmetry
+    if (animation.variableTiming && fractalDepth === 0) {
+        const durationVariation = (seededRandom(uniqueId) * 1000) - 500; // Reduced variation
+        loopDuration = baseLoopDuration + durationVariation;
+    }
+
+    // Apply stagger delay only for non-fractal shapes
+    const delay = (animation.staggerDelay && fractalDepth === 0) ? uniqueId % animation.staggerDelay : 0;
+
+    // Final time adjustment
+    adjustedTime = Math.max(0, adjustedTime - delay);
+
     const rawProgress = (adjustedTime % loopDuration) / loopDuration;
 
     // Apply reverse animation if configured
@@ -232,8 +256,8 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings) {
         finalOpacity = shapeSettings.opacity;
     }
 
-    return { 
-        dynamicRadius, 
+    return {
+        dynamicRadius,
         finalOpacity,
         progress, // Return progress for additional effects
         uniqueId, // Return the unique ID for consistency in effects

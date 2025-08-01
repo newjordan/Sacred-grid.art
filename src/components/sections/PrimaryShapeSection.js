@@ -394,9 +394,9 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                     onChange={(e) => setSettings.setPrimaryFractalDepth(parseInt(e.target.value))}
                 />
                 <RangeSlider
-                    label="Fractal Scale"
+                    label="Fractal Distance"
                     min={0.1}
-                    max={1}
+                    max={2.0}
                     step={0.1}
                     value={settings.shapes.primary.fractal.scale}
                     onChange={(e) => setSettings.setPrimaryFractalScale(parseFloat(e.target.value))}

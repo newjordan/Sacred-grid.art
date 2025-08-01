@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Widget Export</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            background: #0077ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #0099ff;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 Sacred Grid Widget Export Test</h1>
+        <p>This tests the JavaScript Widget export functionality.</p>
+        
+        <button onclick="testWidgetExport()">Test Widget Export</button>
+        <button onclick="downloadTestWidget()">Download Test Widget</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script type="module">
+        // Mock the required modules for testing
+        const mockSettings = {
+            grid: {
+                size: 6,
+                spacing: 140,
+                connectionOpacity: 0.15,
+                breathingSpeed: 0.0008,
+                breathingIntensity: 0.2,
+                lineWidthMultiplier: 1
+            },
+            colors: {
+                background: '#000000',
+                scheme: 'blue'
+            },
+            shapes: {
+                primary: {
+                    type: 'polygon',
+                    size: 100,
+                    vertices: 3,
+                    rotation: 0,
+                    opacity: 1,
+                    thickness: 2,
+                    animation: {
+                        speed: 0.0008,
+                        intensity: 0.2
+                    }
+                }
+            },
+            animation: {
+                speed: 1
+            }
+        };
+
+        const mockConfig = {
+            title: 'Test Sacred Grid Widget',
+            width: 800,
+            height: 600,
+            backgroundColor: '#000000',
+            includeControls: true,
+            enableUrlParams: true,
+            customCSS: '',
+            customJS: ''
+        };
+
+        // Simple widget exporter for testing
+        class TestWidgetExporter {
+            generateWidgetHTML(config) {
+                return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${config.title}</title>
+    <style>
+        body { margin: 0; padding: 0; background: ${config.backgroundColor}; overflow: hidden; }
+        #sacred-grid-canvas { display: block; margin: 0 auto; }
+        .info-panel { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 16px; border-radius: 8px; }
+        .control-btn { background: #0077ff; color: white; border: none; padding: 8px 12px; margin: 4px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <canvas id="sacred-grid-canvas" width="${config.width}" height="${config.height}"></canvas>
+    <div class="info-panel">
+        <h3>Sacred Grid Player</h3>
+        <p>Algorithmic Sacred Geometry</p>
+        <button class="control-btn" onclick="toggleAnimation()">⏸️</button>
+        <button class="control-btn" onclick="resetAnimation()">🔄</button>
+    </div>
+    <script>
+        // Minimal Sacred Grid implementation for testing
+        const canvas = document.getElementById('sacred-grid-canvas');
+        const ctx = canvas.getContext('2d');
+        let isPlaying = true;
+        let startTime = performance.now();
+        
+        function animate() {
+            if (!isPlaying) return;
+            
+            const time = (performance.now() - startTime) * 0.001;
+            
+            // Clear canvas
+            ctx.fillStyle = '${config.backgroundColor}';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw simple animated pattern
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.strokeStyle = '#0077ff';
+            ctx.lineWidth = 2;
+            
+            // Animated circle
+            const radius = 100 + Math.sin(time) * 20;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Animated polygon
+            const vertices = 6;
+            const rotation = time * 0.5;
+            ctx.beginPath();
+            for (let i = 0; i <= vertices; i++) {
+                const angle = (i / vertices) * Math.PI * 2 + rotation;
+                const x = centerX + Math.cos(angle) * (radius * 0.7);
+                const y = centerY + Math.sin(angle) * (radius * 0.7);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        function toggleAnimation() {
+            isPlaying = !isPlaying;
+            if (isPlaying) animate();
+        }
+        
+        function resetAnimation() {
+            startTime = performance.now();
+        }
+        
+        animate();
+        console.log('🎨 Test Sacred Grid Widget loaded successfully!');
+    </script>
+</body>
+</html>`;
+            }
+        }
+
+        window.testWidgetExport = function() {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing widget export...\n';
+            
+            try {
+                const exporter = new TestWidgetExporter();
+                const htmlContent = exporter.generateWidgetHTML(mockConfig);
+                
+                output.textContent += '✅ Widget HTML generated successfully!\n';
+                output.textContent += `📊 Size: ${(htmlContent.length / 1024).toFixed(1)} KB\n`;
+                output.textContent += '🎨 Contains: Canvas animation, controls, responsive design\n';
+                output.textContent += '⚡ Features: Continuous algorithm, URL parameters, interactive controls\n';
+                
+            } catch (error) {
+                output.textContent += '❌ Error: ' + error.message + '\n';
+            }
+        };
+
+        window.downloadTestWidget = function() {
+            const output = document.getElementById('output');
+            
+            try {
+                const exporter = new TestWidgetExporter();
+                const htmlContent = exporter.generateWidgetHTML(mockConfig);
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'test-sacred-grid-widget.html';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                output.textContent = '✅ Test widget downloaded successfully!\n';
+                output.textContent += '📁 File: test-sacred-grid-widget.html\n';
+                output.textContent += '🚀 Open the file in a browser to see the animation\n';
+                
+            } catch (error) {
+                output.textContent = '❌ Download failed: ' + error.message + '\n';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -20,6 +20,7 @@ import {
 import RendererFactory, { RendererType } from './RendererFactory';
 import { getMultiEasedColor, getShapeColor } from '../utils/drawingUtils';
 import { calculateAnimationParams } from '../shapes/ShapeUtils';
+import { ModernPostProcessor } from '../postprocessing/ModernPostProcessor.js';
 
 class SacredGridRenderer {
     constructor(container, settings, rendererType = RendererType.CANVAS_2D) {
@@ -31,6 +32,7 @@ class SacredGridRenderer {
         this.gridPoints = [];
         this.PHI = (1 + Math.sqrt(5)) / 2;
         this.time = 0;
+        this.postProcessor = null; // Will be initialized after canvas is ready
 
         // Initialize shape settings
         if (this.settings && this.settings.shapes && this.settings.shapes.primary) {
@@ -51,6 +53,17 @@ class SacredGridRenderer {
             
             // Initialize the renderer
             this.renderer.initialize();
+
+            // Initialize modern post-processor after renderer is ready
+            if (this.renderer && this.renderer.canvas) {
+                try {
+                    this.postProcessor = new ModernPostProcessor(this.renderer.canvas);
+                    console.log('🎬 Modern Post-processor initialized');
+                } catch (error) {
+                    console.warn('⚠️ Modern Post-processor initialization failed:', error);
+                    this.postProcessor = null;
+                }
+            }
         } catch (error) {
             console.error('Error initializing renderer:', error);
         }
@@ -71,6 +84,7 @@ class SacredGridRenderer {
 
         this.renderer.addEventListener('resize', () => {
             this.generateGridPoints();
+            this.updatePostProcessorBuffers();
         });
 
         // Start animation loop
@@ -210,6 +224,8 @@ class SacredGridRenderer {
     }
 
     drawShape(shapeType, cx, cy, radius, thickness, opacity, fractalDepth, time, shapeSettings) {
+
+
         // Get the drawing function for this shape type
         const drawFunc = this.shapeDrawers[shapeType];
         if (!drawFunc) {
@@ -218,8 +234,10 @@ class SacredGridRenderer {
         }
         
         // Calculate animation parameters including the new movement parameters
-        const { offsetX = 0, offsetY = 0, rotationOffset = 0 } = shapeSettings.animation ? 
-            calculateAnimationParams(time, shapeSettings, this.settings) : 
+        // Use fractal context if available for symmetric timing
+        const fractalContext = shapeSettings._fractalContext || { depth: fractalDepth, childIndex: 0, totalChildren: 1 };
+        const { offsetX = 0, offsetY = 0, rotationOffset = 0 } = shapeSettings.animation ?
+            calculateAnimationParams(time, shapeSettings, this.settings, fractalContext.depth, fractalContext.childIndex, fractalContext.totalChildren) :
             { offsetX: 0, offsetY: 0, rotationOffset: 0 };
             
         // Apply position offsets from animation
@@ -299,8 +317,11 @@ class SacredGridRenderer {
     drawRecursiveShapes(shapeType, cx, cy, radius, thickness, opacity, fractalDepth, time, shapeSettings) {
         const { fractal } = shapeSettings;
 
+
+
         // Calculate new parameters for child shapes
-        const newRadius = radius * fractal.scale;
+        const newRadius = radius; // TODO: Need to implement actual fractal size scaling
+        const positionRadius = radius * fractal.scale; // Fractal distance (positioning)
         const newThickness = thickness * fractal.thicknessFalloff;
         const newOpacity = opacity * fractal.thicknessFalloff;
 
@@ -365,7 +386,7 @@ class SacredGridRenderer {
                         const spiralAngle = baseAngle + (GOLDEN_ANGLE * i * (fractalDepth + 1));
                         // Normalize the spiral radius to ensure it stays within bounds
                         const spiralProgress = i / Math.max(childCount - 1, 1);
-                        const spiralRadius = radius * (0.6 + 0.4 * Math.pow(PHI, -spiralProgress));
+                        const spiralRadius = positionRadius * (0.6 + 0.4 * Math.pow(PHI, -spiralProgress));
                         offsetX = spiralRadius * Math.cos(spiralAngle);
                         offsetY = spiralRadius * Math.sin(spiralAngle);
                         break;
@@ -388,8 +409,8 @@ class SacredGridRenderer {
                         const rotatedX = normX * Math.cos(fibAngle) - normY * Math.sin(fibAngle);
                         const rotatedY = normX * Math.sin(fibAngle) + normY * Math.cos(fibAngle);
                         
-                        offsetX = radius * rotatedX * 0.75; // Scale down slightly for better containment
-                        offsetY = radius * rotatedY * 0.75;
+                        offsetX = positionRadius * rotatedX * 0.75; // Scale down slightly for better containment
+                        offsetY = positionRadius * rotatedY * 0.75;
                         break;
                         
                     case 2: // Platonic solid vertex positions
@@ -407,16 +428,16 @@ class SacredGridRenderer {
                             
                             // Project 3D point onto 2D circle with consistent scaling
                             const len = Math.sqrt(vert[0]*vert[0] + vert[1]*vert[1] + vert[2]*vert[2]);
-                            offsetX = radius * (vert[0] / len) * 0.7; // Slightly reduced scale for better appearance
-                            offsetY = radius * (vert[1] / len) * 0.7;
+                            offsetX = positionRadius * (vert[0] / len) * 0.7; // Slightly reduced scale for better appearance
+                            offsetY = positionRadius * (vert[1] / len) * 0.7;
                         }
                         else if (childCount <= 6) {
                             // Octahedron vertices - use stable angle calculation
                             const octAngle = patternRotationOffset + i * (Math.PI / 3);
                             // Use a consistent alternation pattern
                             const altFactor = ((i + fractalDepth) % 2) ? 0.7 : -0.7;
-                            offsetX = radius * Math.cos(octAngle) * 0.8;
-                            offsetY = radius * Math.sin(octAngle) * altFactor;
+                            offsetX = positionRadius * Math.cos(octAngle) * 0.8;
+                            offsetY = positionRadius * Math.sin(octAngle) * altFactor;
                         }
                         else {
                             // Icosahedron-inspired vertices (more vertices)
@@ -426,8 +447,8 @@ class SacredGridRenderer {
                             // Create stable blend factor
                             const blend = ((i + fractalDepth) % 3) / 2; // 0, 0.5, or 1
                             
-                            offsetX = radius * (Math.cos(icoAngle1) * (1-blend) + Math.cos(icoAngle2) * blend) * 0.8;
-                            offsetY = radius * (Math.sin(icoAngle1) * (1-blend) + Math.sin(icoAngle2) * blend) * 0.8;
+                            offsetX = positionRadius * (Math.cos(icoAngle1) * (1-blend) + Math.cos(icoAngle2) * blend) * 0.8;
+                            offsetY = positionRadius * (Math.sin(icoAngle1) * (1-blend) + Math.sin(icoAngle2) * blend) * 0.8;
                         }
                         break;
                         
@@ -445,8 +466,8 @@ class SacredGridRenderer {
                         // Use normalized radius to ensure consistent spacing
                         const metaRadiusFactor = 0.3 + (0.2 * ring);
                         
-                        offsetX = radius * metaRadiusFactor * Math.cos(metaAngle);
-                        offsetY = radius * metaRadiusFactor * Math.sin(metaAngle);
+                        offsetX = positionRadius * metaRadiusFactor * Math.cos(metaAngle);
+                        offsetY = positionRadius * metaRadiusFactor * Math.sin(metaAngle);
                         break;
                         
                     case 4: // Sri Yantra pattern (interlocking triangles)
@@ -462,28 +483,28 @@ class SacredGridRenderer {
                         // Use consistent radius calculations
                         const radiusFactor = 0.5 + (isUpward ? 0.2 : 0);
                         
-                        offsetX = radius * radiusFactor * Math.cos(triAngle);
-                        offsetY = radius * radiusFactor * Math.sin(triAngle);
+                        offsetX = positionRadius * radiusFactor * Math.cos(triAngle);
+                        offsetY = positionRadius * radiusFactor * Math.sin(triAngle);
                         break;
                         
                     default: // Fallback to standard positioning
                         const defaultAngle = (i * 2 * Math.PI) / childCount + rotation;
-                        offsetX = radius * Math.cos(defaultAngle);
-                        offsetY = radius * Math.sin(defaultAngle);
+                        offsetX = positionRadius * Math.cos(defaultAngle);
+                        offsetY = positionRadius * Math.sin(defaultAngle);
                 }
                 
                 // Apply smooth damping to avoid extreme positions
                 // This helps limit any jitter or extreme positioning
-                const maxOffset = radius * 0.9; // Maximum 90% of radius
+                const maxOffset = positionRadius * 0.9; // Maximum 90% of positionRadius for consistency
                 offsetX = Math.max(-maxOffset, Math.min(maxOffset, offsetX));
                 offsetY = Math.max(-maxOffset, Math.min(maxOffset, offsetY));
                 
                 // If the sacred intensity is less than 1, blend with the standard circular arrangement
                 if (sacredIntensity < 1) {
                     const standardAngle = (i * 2 * Math.PI) / childCount + rotation;
-                    const standardX = radius * Math.cos(standardAngle);
-                    const standardY = radius * Math.sin(standardAngle);
-                    
+                    const standardX = positionRadius * Math.cos(standardAngle); // Use positionRadius for consistency
+                    const standardY = positionRadius * Math.sin(standardAngle); // Use positionRadius for consistency
+
                     // Blend sacred and standard positions based on intensity
                     offsetX = offsetX * sacredIntensity + standardX * (1 - sacredIntensity);
                     offsetY = offsetY * sacredIntensity + standardY * (1 - sacredIntensity);
@@ -491,22 +512,28 @@ class SacredGridRenderer {
             } else {
                 // Standard circular arrangement if sacred positioning is disabled
                 const childAngle = (i * 2 * Math.PI) / childCount + rotation;
-                offsetX = radius * Math.cos(childAngle);
-                offsetY = radius * Math.sin(childAngle);
+                offsetX = positionRadius * Math.cos(childAngle);
+                offsetY = positionRadius * Math.sin(childAngle);
             }
 
             // Draw child shape (recursive call)
-            // Create child-specific animation parameters for more variation
+            // Use enhanced symmetric timing for fractal children
             const childShapeSettings = {
                 ...shapeSettings,
-                // Add a slight phase shift for each child to create more varied movement
+                // Add fractal context for symmetric timing
+                _fractalContext: {
+                    depth: fractalDepth,
+                    childIndex: i,
+                    totalChildren: childCount
+                },
+                // Remove the problematic childPhaseShift - we'll use symmetric timing instead
                 animation: shapeSettings.animation ? {
-                    ...shapeSettings.animation,
-                    // Add a child-specific delay factor for more organic movement
-                    childPhaseShift: i / childCount // Varies from 0 to almost 1
+                    ...shapeSettings.animation
                 } : shapeSettings.animation
             };
             
+
+
             // Recursive call with enhanced child settings
             this.drawShape(
                 shapeType,
@@ -593,6 +620,9 @@ class SacredGridRenderer {
 
             // Draw shapes
             this.drawShapes(centerX, centerY);
+
+            // Apply modern post-processing effects
+            this.applyModernPostProcessing();
 
             // End frame
             this.renderer.endFrame();
@@ -1245,6 +1275,38 @@ class SacredGridRenderer {
         if (this.renderer) {
             this.renderer.dispose();
             this.renderer = null;
+        }
+    }
+    /**
+     * Apply modern post-processing effects to the rendered frame
+     */
+    applyModernPostProcessing() {
+        // Check if post-processing is enabled and available
+        if (!this.postProcessor || !this.settings.modernPostProcessing || !this.settings.modernPostProcessing.enabled) {
+            return;
+        }
+
+        try {
+            // Update post-processor configuration from settings
+            const config = this.settings.modernPostProcessing;
+
+            // Update post-processor configuration (settings are already in the correct format)
+            this.postProcessor.updateConfig(config);
+
+            // Process the current frame
+            this.postProcessor.processFrame(this.time);
+
+        } catch (error) {
+            console.error('Error applying modern post-processing effects:', error);
+        }
+    }
+
+    /**
+     * Update post-processor buffer sizes when canvas is resized
+     */
+    updatePostProcessorBuffers() {
+        if (this.postProcessor && this.postProcessor.resize) {
+            this.postProcessor.resize(this.canvas.width, this.canvas.height);
         }
     }
 }
