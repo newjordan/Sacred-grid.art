@@ -1,0 +1,19 @@
+# Security headers for GitHub Pages
+/*
+  # Force HTTPS
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  
+  # Prevent clickjacking
+  X-Frame-Options: DENY
+  
+  # Prevent MIME type sniffing
+  X-Content-Type-Options: nosniff
+  
+  # XSS Protection
+  X-XSS-Protection: 1; mode=block
+  
+  # Referrer Policy
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # Content Security Policy (relaxed for Canvas2D and inline styles)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; media-src 'self'; worker-src 'self' blob:; child-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
