@@ -27,10 +27,10 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
     setExportOptions(prev => ({ ...prev, ...updates }));
   };
 
-  // Format options - PNG and Standalone
+  // Format options - PNG only (HTML export coming soon)
   const formatOptions = [
     { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
-    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file' }
+    { value: 'standalone', label: 'Standalone HTML (Coming Soon)', description: 'Self-contained interactive HTML file - Currently being refined', disabled: true }
   ];
 
   // Dimension presets
@@ -122,25 +122,30 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
               <label
                 key={format.value}
                 style={{
-                  background: exportOptions.format === format.value 
-                    ? 'rgba(0, 119, 255, 0.1)' 
-                    : 'rgba(255, 255, 255, 0.05)',
-                  border: exportOptions.format === format.value
-                    ? '2px solid rgba(0, 119, 255, 0.5)'
-                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: format.disabled
+                    ? 'rgba(255, 255, 255, 0.02)'
+                    : exportOptions.format === format.value
+                      ? 'rgba(0, 119, 255, 0.1)'
+                      : 'rgba(255, 255, 255, 0.05)',
+                  border: format.disabled
+                    ? '1px solid rgba(255, 255, 255, 0.05)'
+                    : exportOptions.format === format.value
+                      ? '2px solid rgba(0, 119, 255, 0.5)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '8px',
                   padding: '12px',
-                  cursor: 'pointer',
+                  cursor: format.disabled ? 'not-allowed' : 'pointer',
                   transition: 'all 0.2s ease',
-                  display: 'block'
+                  display: 'block',
+                  opacity: format.disabled ? 0.5 : 1
                 }}
                 onMouseEnter={(e) => {
-                  if (exportOptions.format !== format.value) {
+                  if (!format.disabled && exportOptions.format !== format.value) {
                     e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (exportOptions.format !== format.value) {
+                  if (!format.disabled && exportOptions.format !== format.value) {
                     e.target.style.background = 'rgba(255, 255, 255, 0.05)';
                   }
                 }}
@@ -149,8 +154,9 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
                   type="radio"
                   name="format"
                   value={format.value}
-                  checked={exportOptions.format === format.value}
-                  onChange={(e) => updateOptions({ format: e.target.value })}
+                  checked={exportOptions.format === format.value && !format.disabled}
+                  onChange={(e) => !format.disabled && updateOptions({ format: e.target.value })}
+                  disabled={format.disabled}
                   style={{ display: 'none' }}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
