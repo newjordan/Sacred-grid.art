@@ -60,7 +60,7 @@ export class ExportManager {
 
     onProgress?.(0.3, 'Configuring export settings...');
     
-    // Create export configuration
+    // Create export configuration with proper resolution handling
     const config = {
       format: 'png',
       quality: options.quality || 1,
@@ -70,6 +70,19 @@ export class ExportManager {
       transparent: options.transparent ?? true,
       backgroundColor: options.transparent ? undefined : '#000000'
     };
+
+    console.log('🎯 PNG Export Configuration:', {
+      sourceCanvas: {
+        width: this.canvas.width,
+        height: this.canvas.height,
+        displaySize: this.canvas.getBoundingClientRect()
+      },
+      exportConfig: config,
+      finalDimensions: {
+        width: config.width * config.scale,
+        height: config.height * config.scale
+      }
+    });
 
     onProgress?.(0.5, 'Rendering PNG...');
 

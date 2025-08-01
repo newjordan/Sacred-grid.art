@@ -1072,11 +1072,32 @@ const SacredGrid = () => {
 
     // Legacy export handler for backward compatibility
     const handleExportImage = () => {
+        // Get the actual canvas dimensions from the renderer
+        const canvas = rendererRef.current?.canvas;
+        if (!canvas) {
+            console.error('Canvas not available for export');
+            return;
+        }
+
+        // Use the actual canvas display size for perfect resolution matching
+        const canvasRect = canvas.getBoundingClientRect();
+        const actualWidth = Math.round(canvasRect.width);
+        const actualHeight = Math.round(canvasRect.height);
+
+        console.log('🎯 Exporting with actual display dimensions:', {
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            displayWidth: actualWidth,
+            displayHeight: actualHeight,
+            devicePixelRatio: window.devicePixelRatio
+        });
+
         handleExport({
             format: 'png',
-            quality: 0.9,
-            width: 1920,
-            height: 1080,
+            quality: 1.0,
+            width: actualWidth,
+            height: actualHeight,
+            scale: window.devicePixelRatio || 1, // Use device pixel ratio for crisp exports
             transparent: false
         });
     };
