@@ -334,7 +334,6 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                     value={settings.shapes.primary.thickness}
                     onChange={(e) => {
                         const value = parseFloat(e.target.value);
-                        console.log("Setting primary thickness to:", value);
                         setSettings.setPrimaryThickness(value);
                     }}
                 />
@@ -343,11 +342,8 @@ const PrimaryShapeSection = ({ settings, setSettings }) => {
                         label="Use Line Factory Effects"
                         value={settings.shapes.primary.useLineFactory}
                         onChange={(value) => {
-                            console.log("TOGGLING LINE FACTORY", value);
                             if (setSettings.setUsePrimaryLineFactory) {
                                 setSettings.setUsePrimaryLineFactory(value);
-                            } else {
-                                console.error("setUsePrimaryLineFactory is not defined!");
                             }
                         }}
                     />

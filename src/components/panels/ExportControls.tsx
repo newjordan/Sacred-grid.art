@@ -45,10 +45,10 @@ const ExportControls: React.FC<ExportControlsProps> = ({
     { name: 'Facebook Cover (1200×630)', width: 1200, height: 630 }
   ];
 
-  // Format options - PNG only (HTML export coming soon)
+  // Format options
   const formatOptions = [
     { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
-    { value: 'standalone', label: 'Standalone HTML (Coming Soon)', description: 'Self-contained interactive HTML file - Currently being refined', disabled: true }
+    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file you can share' }
   ];
 
   const updateOptions = (updates: Partial<ExportOptions>) => {
@@ -374,7 +374,6 @@ const ExportControls: React.FC<ExportControlsProps> = ({
             variant="outline"
             onClick={() => {
               // Copy current view to clipboard
-              console.log('Copy to clipboard functionality would go here');
             }}
             leftIcon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

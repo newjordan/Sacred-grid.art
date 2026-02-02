@@ -143,7 +143,7 @@ const Slider: React.FC<SliderProps> = ({
 
   // Generate tick marks
   const generateTicks = () => {
-    const ticks = [];
+    const ticks: React.ReactNode[] = [];
     for (let i = 0; i < tickCount; i++) {
       const tickValue = min + (i / (tickCount - 1)) * (max - min);
       const tickPercentage = ((tickValue - min) / (max - min)) * 100;

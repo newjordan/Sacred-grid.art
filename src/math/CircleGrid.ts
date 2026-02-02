@@ -196,7 +196,7 @@ export class CircleGrid {
 
     // Generate fractal iterations (simplified version)
     for (let iter = 0; iter < iterations; iter++) {
-      const newCircles = [];
+      const newCircles: Array<{ center: Vector2D; radius: number; curvature: number; generation: number }> = [];
       
       for (let i = 0; i < circles.length - 2; i++) {
         for (let j = i + 1; j < circles.length - 1; j++) {

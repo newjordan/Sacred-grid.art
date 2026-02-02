@@ -55,9 +55,7 @@ export function useEnhancedAnimation(config: EnhancedAnimationHookConfig = {}) {
   useEffect(() => {
     animationSystemRef.current = new EnhancedAnimationSystem(config.animationConfig);
     frameManagerRef.current = new EnhancedFrameManager(config.frameConfig);
-    
-    console.log('🎬 Enhanced Animation Hook initialized');
-    
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -108,8 +106,7 @@ export function useEnhancedAnimation(config: EnhancedAnimationHookConfig = {}) {
   // Start animation
   const startAnimation = useCallback(() => {
     if (animationFrameRef.current) return; // Already running
-    
-    console.log('▶️ Starting enhanced animation');
+
     animationFrameRef.current = requestAnimationFrame(animate);
   }, [animate]);
   
@@ -121,7 +118,6 @@ export function useEnhancedAnimation(config: EnhancedAnimationHookConfig = {}) {
     }
     
     setAnimationState(prev => ({ ...prev, isPlaying: false }));
-    console.log('⏸️ Enhanced animation stopped');
   }, []);
   
   // Reset animation
@@ -132,8 +128,6 @@ export function useEnhancedAnimation(config: EnhancedAnimationHookConfig = {}) {
     if (frameManagerRef.current) {
       frameManagerRef.current.reset();
     }
-    
-    console.log('🔄 Enhanced animation reset');
   }, []);
   
   // Get enhanced color with smooth interpolation
@@ -201,8 +195,6 @@ export function useEnhancedAnimation(config: EnhancedAnimationHookConfig = {}) {
     if (newConfig.animationConfig && animationSystemRef.current) {
       animationSystemRef.current.updateConfig(newConfig.animationConfig);
     }
-    
-    console.log('⚙️ Enhanced animation config updated');
   }, []);
   
   return {

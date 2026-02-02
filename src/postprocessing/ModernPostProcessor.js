@@ -162,8 +162,6 @@ export class ModernPostProcessor {
    * Initialize the post-processing system
    */
   initialize() {
-    console.log('🎬 Initializing Modern Post-Processing System...');
-    
     // Check WebGL support
     this.initializeWebGL();
     
@@ -172,8 +170,6 @@ export class ModernPostProcessor {
     
     // Setup performance monitoring
     this.initializePerformanceMonitoring();
-    
-    console.log(`✅ Modern Post-Processor initialized (WebGL: ${this.webglSupported})`);
   }
   
   /**
@@ -207,15 +203,11 @@ export class ModernPostProcessor {
       
       if (this.gl) {
         this.webglSupported = true;
-        console.log('🚀 WebGL acceleration enabled');
-        
+
         // Initialize WebGL resources
         this.initializeWebGLResources();
-      } else {
-        console.warn('⚠️ WebGL not supported, falling back to CSS filters');
       }
     } catch (error) {
-      console.warn('⚠️ WebGL initialization failed:', error);
       this.webglSupported = false;
     }
   }
@@ -274,8 +266,6 @@ export class ModernPostProcessor {
     this.registerEffect('chromaticAberration', this.createChromaticAberrationEffect());
     this.registerEffect('vignette', this.createVignetteEffect());
     this.registerEffect('filmGrain', this.createFilmGrainEffect());
-    
-    console.log(`📦 Registered ${this.effects.size} post-processing effects`);
   }
   
   /**
@@ -453,8 +443,6 @@ export class ModernPostProcessor {
     
     // Reset canvas styles
     this.canvas.style.filter = '';
-    
-    console.log('🧹 Modern Post-Processor disposed');
   }
 
   // ===== EFFECT CREATION METHODS =====

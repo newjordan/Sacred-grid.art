@@ -60,7 +60,6 @@ export class ExportManager {
       onProgress?.(1, `${options.format.toUpperCase()} export complete!`);
 
     } catch (error) {
-      console.error(`${options.format} export failed:`, error);
       throw error;
     }
   }

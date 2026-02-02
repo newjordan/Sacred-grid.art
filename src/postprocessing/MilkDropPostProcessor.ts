@@ -116,6 +116,9 @@ export class MilkDropPostProcessor {
   // Performance tracking
   private processingTime: number = 0;
   private effectsEnabled: number = 0;
+
+  // Warp cache for performance optimization
+  private warpCache: Map<string, { x: number; y: number }[]> = new Map();
   
   constructor(canvas: HTMLCanvasElement, config: Partial<PostProcessingConfig> = {}) {
     this.canvas = canvas;
@@ -212,8 +215,6 @@ export class MilkDropPostProcessor {
       },
       ...config
     };
-    
-    console.log('🌈 MilkDrop Post-Processor initialized with', this.countEnabledEffects(), 'effects');
   }
   
   /**
@@ -407,7 +408,6 @@ export class MilkDropPostProcessor {
    */
   updateConfig(newConfig: Partial<PostProcessingConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    console.log('🔧 Post-processing config updated:', this.countEnabledEffects(), 'effects enabled');
   }
   
   /**
@@ -432,8 +432,6 @@ export class MilkDropPostProcessor {
     [this.fb1Ctx, this.fb2Ctx, this.feedbackCtx, this.bloomCtx].forEach(ctx => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     });
-    
-    console.log('🔄 MilkDrop Post-Processor reset');
   }
 
   /**
@@ -761,5 +759,105 @@ export class MilkDropPostProcessor {
       g: Math.round((g + m) * 255),
       b: Math.round((b + m) * 255)
     };
+  }
+
+  /**
+   * Apply screen warp effect (placeholder)
+   */
+  private applyWarp(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply trails effect (placeholder)
+   */
+  private applyTrails(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply motion blur effect (placeholder)
+   */
+  private applyMotionBlur(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply bloom effect (placeholder)
+   */
+  private applyBloom(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply chromatic aberration effect (placeholder)
+   */
+  private applyChromaticAberration(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply color shift effect (placeholder)
+   */
+  private applyColorShift(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply LUT (Look-Up Table) color grading effect (placeholder)
+   */
+  private applyLUT(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply pixelation effect (placeholder)
+   */
+  private applyPixelation(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply scanlines effect (placeholder)
+   */
+  private applyScanlines(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
+  }
+
+  /**
+   * Apply vignette effect (placeholder)
+   */
+  private applyVignette(source: HTMLCanvasElement, target: HTMLCanvasElement): void {
+    // Stub implementation - copy source to target without modification
+    const targetCtx = target.getContext('2d')!;
+    targetCtx.clearRect(0, 0, target.width, target.height);
+    targetCtx.drawImage(source, 0, 0);
   }
 }

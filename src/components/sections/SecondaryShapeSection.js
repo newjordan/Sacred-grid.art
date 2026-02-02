@@ -6,26 +6,6 @@ import ToggleSwitch from '../controls/ToggleSwitch';
 import { ShapeType, AnimationMode } from '../../constants/ShapeTypes';
 import PolygonEditorControl from '../PolygonEditorControl';
 
-// Test component for debugging toggle issues
-const TestToggle = () => {
-    const [testValue, setTestValue] = useState(false);
-    
-    return (
-        <div style={{ marginBottom: '10px', padding: '5px', border: '1px solid red' }}>
-            <p>Debug Toggle Test:</p>
-            <ToggleSwitch
-                label="Test Toggle"
-                value={testValue}
-                onChange={(val) => {
-                    console.log("Test toggle changed to:", val);
-                    setTestValue(val);
-                }}
-            />
-            <p>Current value: {testValue ? 'true' : 'false'}</p>
-        </div>
-    );
-};
-
 const SecondaryShapeSection = ({ settings, setSettings }) => {
     // Local state for math settings that will be independent of the main settings object
     const [useHarmonicRatio, setUseHarmonicRatio] = useState(false);
@@ -571,7 +551,6 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                             label="Use Harmonic Ratios"
                             value={useHarmonicRatio}
                             onChange={(value) => {
-                                console.log("Setting harmonic ratio to:", value);
                                 setUseHarmonicRatio(value);
                             }}
                         />
@@ -599,7 +578,6 @@ const SecondaryShapeSection = ({ settings, setSettings }) => {
                             label="Use Symmetry Group"
                             value={useSymmetryGroup}
                             onChange={(value) => {
-                                console.log("Setting symmetry group to:", value);
                                 setUseSymmetryGroup(value);
                             }}
                         />

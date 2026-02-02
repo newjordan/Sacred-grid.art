@@ -6,8 +6,6 @@ export class PackageOptimizer {
    * Optimize an application snapshot for minimal size
    */
   static optimizeSnapshot(snapshot, options) {
-    console.log('🔧 Starting package optimization...');
-    
     const originalSnapshot = JSON.stringify(snapshot);
     const originalSize = originalSnapshot.length;
     const removedElements = [];
@@ -42,9 +40,7 @@ export class PackageOptimizer {
     
     const optimizedSize = JSON.stringify(optimizedSnapshot).length;
     const compressionRatio = ((originalSize - optimizedSize) / originalSize) * 100;
-    
-    console.log(`✅ Optimization complete: ${compressionRatio.toFixed(1)}% size reduction`);
-    
+
     return {
       snapshot: optimizedSnapshot,
       result: {

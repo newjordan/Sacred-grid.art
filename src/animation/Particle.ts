@@ -57,6 +57,12 @@ export class Particle {
   // Unique identifier
   public id: string;
 
+  // Color transition properties
+  private targetColor: string | null = null;
+  private sourceColor: string | null = null;
+  private colorTransitionDuration: number = 0;
+  private colorTransitionProgress: number = 0;
+
   constructor(config: ParticleConfig) {
     // Position and motion
     this.position = { ...config.position };
@@ -119,6 +125,9 @@ export class Particle {
     // Update age and lifecycle
     this.age += deltaTime;
     this.updateLifecycle();
+
+    // Update color transition if active
+    this.updateColorTransition(deltaTime);
 
     // Clear forces for next frame
     this.forces = [];
@@ -318,11 +327,71 @@ export class Particle {
   }
 
   /**
-   * Set particle color with optional fade
+   * Set particle color with optional fade transition
    */
   setColor(color: string, fadeTime?: number): void {
-    this.color = color;
-    // TODO: Implement color transition animation if fadeTime is provided
+    if (fadeTime && fadeTime > 0) {
+      // Start a color transition
+      this.sourceColor = this.color;
+      this.targetColor = color;
+      this.colorTransitionDuration = fadeTime;
+      this.colorTransitionProgress = 0;
+    } else {
+      // Instant color change
+      this.color = color;
+      this.targetColor = null;
+      this.sourceColor = null;
+    }
+  }
+
+  /**
+   * Update color transition progress
+   */
+  private updateColorTransition(deltaTime: number): void {
+    if (!this.targetColor || !this.sourceColor) return;
+
+    this.colorTransitionProgress += deltaTime / this.colorTransitionDuration;
+
+    if (this.colorTransitionProgress >= 1) {
+      // Transition complete
+      this.color = this.targetColor;
+      this.targetColor = null;
+      this.sourceColor = null;
+      this.colorTransitionProgress = 0;
+    } else {
+      // Interpolate between colors
+      this.color = this.interpolateColor(
+        this.sourceColor,
+        this.targetColor,
+        this.easeInOutCubic(this.colorTransitionProgress)
+      );
+    }
+  }
+
+  /**
+   * Interpolate between two hex colors
+   */
+  private interpolateColor(color1: string, color2: string, t: number): string {
+    const r1 = parseInt(color1.slice(1, 3), 16);
+    const g1 = parseInt(color1.slice(3, 5), 16);
+    const b1 = parseInt(color1.slice(5, 7), 16);
+
+    const r2 = parseInt(color2.slice(1, 3), 16);
+    const g2 = parseInt(color2.slice(3, 5), 16);
+    const b2 = parseInt(color2.slice(5, 7), 16);
+
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+
+  /**
+   * Easing function for smooth transitions
+   */
+  private easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   /**
