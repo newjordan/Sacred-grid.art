@@ -149,12 +149,6 @@ export class ImageExporter {
     const exportWidth = fullConfig.width * fullConfig.scale;
     const exportHeight = fullConfig.height * fullConfig.scale;
 
-    console.log('🎯 ImageExporter: Setting up export canvas:', {
-      source: { width: sourceCanvas.width, height: sourceCanvas.height },
-      config: fullConfig,
-      export: { width: exportWidth, height: exportHeight }
-    });
-
     this.canvas.width = exportWidth;
     this.canvas.height = exportHeight;
 
@@ -177,7 +171,6 @@ export class ImageExporter {
       0, 0, exportWidth, exportHeight
     );
 
-    console.log('✅ ImageExporter: Canvas rendered, converting to blob...');
     return this.canvasToBlob(fullConfig);
   }
 

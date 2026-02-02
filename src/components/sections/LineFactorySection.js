@@ -11,9 +11,7 @@ const LineFactorySection = ({ settings, setSettings }) => {
     // Check for WebGL renderer to show warnings
     const isWebGL = settings.rendererType === 'webgl';
     
-    if (isWebGL) {
-        console.warn("LineFactorySection: Using WebGL renderer with improved triangle strip-based rendering");
-    }
+    // WebGL mode uses improved triangle strip-based rendering
     const lineStyleOptions = Object.entries(LineStyleType).map(([key, value]) => ({
         value,
         label: key.toLowerCase()

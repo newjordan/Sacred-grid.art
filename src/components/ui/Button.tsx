@@ -4,7 +4,7 @@ import React, { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
 import '../../styles/glassmorphism.css';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
+  children?: ReactNode;
   variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'ghost' | 'outline';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   shape?: 'rectangle' | 'square' | 'circle' | 'pill';

@@ -239,7 +239,7 @@ export async function morphShapes(
 export async function performMatrixOperations(
   config: {
     operation: 'multiply' | 'invert' | 'transform';
-    matrices: number[][];
+    matrices: number[][][];
     vectors?: Vector3D[];
   },
   onProgress?: (progress: number) => void
@@ -268,7 +268,7 @@ export async function performMatrixOperations(
   }
   
   onProgress?.(1);
-  return matrices[0] || [];
+  return matrices.length > 0 ? matrices[0] : [[]];
 }
 
 // Helper functions

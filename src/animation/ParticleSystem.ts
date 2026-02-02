@@ -49,14 +49,7 @@ export class ParticleSystem {
   private maxFrameHistory: number = 60;
 
   constructor(config: ParticleSystemConfig) {
-    this.config = {
-      maxParticles: 1000,
-      emissionRate: 10,
-      autoEmit: true,
-      collisionDetection: false,
-      boundaryCollision: true,
-      ...config
-    };
+    this.config = { ...config };
 
     this.stats = {
       activeParticles: 0,

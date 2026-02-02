@@ -8,6 +8,7 @@ import { RendererType } from './renderers/RendererFactory';
 import { ShapeType, AnimationMode, LineStyleType, TaperType, SineWaveType } from './constants/ShapeTypes';
 import { ExportManager } from './export/ExportManager.js';
 import { StateDuplicator } from './utils/StateDuplicator';
+import { logger } from './utils/logger';
 // import { deepMerge } from './utils/deepMerge'; // Removed as it's not currently used
 
 // Add a small CSS snippet to ensure full-screen display
@@ -707,19 +708,16 @@ const SacredGrid = () => {
         setFilmGrainColored,
     };
 
-    // 🌸 Load Green Flower pattern on startup - SIMPLE VERSION
+    // Load Green Flower pattern on startup
     useEffect(() => {
-        console.log('🌸 Loading Green Flower pattern...');
-
         // Import and load the green flower settings directly
         import('./green_flower_2.json')
             .then(greenFlowerModule => {
                 const jsonString = JSON.stringify(greenFlowerModule.default);
                 handleImportSettings(jsonString);
-                console.log('✅ Green Flower pattern loaded!');
             })
             .catch(error => {
-                console.error('❌ Failed to load green flower:', error);
+                console.error('Failed to load green flower:', error);
             });
     }, []); // Run once on mount
 
@@ -936,23 +934,6 @@ const SacredGrid = () => {
                 throw new Error('Canvas not available for export. Make sure the Sacred Grid is fully loaded.');
             }
 
-            console.log('🎯 Canvas found for export:', {
-                width: canvas.width,
-                height: canvas.height,
-                element: canvas
-            });
-
-            // DEBUG: Show current UI state values
-            console.clear();
-            console.log('🚨 EXPORT DEBUG - Current UI State:');
-            console.log('Grid Size:', gridSize);
-            console.log('Show Vertices:', showVertices);
-            console.log('Show XY Grid:', showXYGrid);
-            console.log('Use Gradient Lines:', useGradientLines);
-            console.log('Primary Type:', primaryType);
-            console.log('Primary Size:', primarySize);
-            console.log('Background Color:', backgroundColor);
-
             // Capture ALL current settings from the application state
             const comprehensiveSettings = {
                 // Grid Settings
@@ -1069,16 +1050,11 @@ const SacredGrid = () => {
                 showControls
             };
 
-            console.log('📊 Exporting with comprehensive settings:');
-            console.log(`🎯 Total settings captured: ${Object.keys(comprehensiveSettings).length}`);
-
             await exportManagerRef.current.export(
                 comprehensiveSettings,
                 canvas,
                 exportOptions,
-                progressCallback || ((progress, message) => {
-                    console.log(`Export progress: ${Math.round(progress * 100)}% - ${message}`);
-                })
+                progressCallback
             );
         } catch (error) {
             console.error('Export failed:', error);
@@ -1100,14 +1076,6 @@ const SacredGrid = () => {
         const actualWidth = Math.round(canvasRect.width);
         const actualHeight = Math.round(canvasRect.height);
 
-        console.log('🎯 Exporting with actual display dimensions:', {
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            displayWidth: actualWidth,
-            displayHeight: actualHeight,
-            devicePixelRatio: window.devicePixelRatio
-        });
-
         handleExport({
             format: 'png',
             quality: 1.0,
@@ -1121,8 +1089,6 @@ const SacredGrid = () => {
     // State duplication functionality
     const createApplicationSnapshot = async () => {
         try {
-            console.log('📸 Creating application snapshot...');
-
             const canvas = rendererRef.current?.canvas || null;
 
             // Gather current application state
@@ -1159,20 +1125,15 @@ const SacredGrid = () => {
                 additionalState
             );
 
-            console.log('✅ Application snapshot created successfully');
-            console.log(StateDuplicator.getSnapshotSummary(snapshot));
-
             return snapshot;
         } catch (error) {
-            console.error('❌ Failed to create application snapshot:', error);
+            console.error('Failed to create application snapshot:', error);
             throw error;
         }
     };
 
     const restoreFromSnapshot = async (snapshot) => {
         try {
-            console.log('🔄 Restoring application from snapshot...');
-
             const canvas = rendererRef.current?.canvas || null;
 
             const success = await StateDuplicator.restoreFromSnapshot(
@@ -1186,15 +1147,13 @@ const SacredGrid = () => {
                 }
             );
 
-            if (success) {
-                console.log('✅ Application restored from snapshot successfully');
-            } else {
+            if (!success) {
                 throw new Error('Failed to restore application state');
             }
 
             return success;
         } catch (error) {
-            console.error('❌ Failed to restore from snapshot:', error);
+            console.error('Failed to restore from snapshot:', error);
             throw error;
         }
     };

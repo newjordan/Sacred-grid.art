@@ -50,7 +50,6 @@ class Canvas2DRenderer extends BaseRenderer {
         this._handleResize();
 
         this.initialized = true;
-        console.log("Canvas2DRenderer initialized, canvas:", this.canvas);
         return this.canvas;
     }
 
@@ -126,20 +125,16 @@ class Canvas2DRenderer extends BaseRenderer {
 
         // Make sure we have valid dimensions
         if (rect.width === 0 || rect.height === 0) {
-            console.warn('_handleResize: Container has zero width or height:', rect);
-            
             // Try to get dimensions from parent element if container dimensions are zero
             if (this.container.parentNode) {
                 const parentRect = this.container.parentNode.getBoundingClientRect();
                 if (parentRect.width > 0 && parentRect.height > 0) {
-                    console.log('Using parent dimensions instead:', parentRect);
                     rect.width = parentRect.width;
                     rect.height = parentRect.height;
                 } else {
                     // Last resort: use viewport dimensions
                     rect.width = window.innerWidth;
                     rect.height = window.innerHeight;
-                    console.log('Using viewport dimensions as fallback:', rect);
                 }
             }
         }
@@ -148,19 +143,7 @@ class Canvas2DRenderer extends BaseRenderer {
         const pixelRatio = window.devicePixelRatio || 1;
         const displayWidth = Math.max(10, Math.floor(rect.width));  // Ensure minimum size of 10px
         const displayHeight = Math.max(10, Math.floor(rect.height)); // Ensure minimum size of 10px
-        
-        console.log('Canvas resizing with dimensions:', {
-            displayWidth, 
-            displayHeight, 
-            pixelRatio,
-            currentWidth: this.canvas.width,
-            currentHeight: this.canvas.height,
-            containerRect: {
-                width: rect.width,
-                height: rect.height
-            }
-        });
-        
+
         // Always save context state before resizing
         if (this.ctx) {
             try {
@@ -193,15 +176,6 @@ class Canvas2DRenderer extends BaseRenderer {
                 // Restore saved state
                 this.ctx.restore();
             }
-            
-            console.log('Canvas resized successfully to:', {
-                canvasWidth: this.canvas.width,
-                canvasHeight: this.canvas.height,
-                logicalWidth: this.width,
-                logicalHeight: this.height,
-                styleWidth: this.canvas.style.width,
-                styleHeight: this.canvas.style.height
-            });
         } catch (e) {
             console.error('Error during canvas resize:', e);
         }

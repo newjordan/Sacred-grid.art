@@ -7,7 +7,7 @@ import { ExportOptions } from '../types';
 
 export class ExportSystemTest {
   private exportManager: ExportManager;
-  private testCanvas: HTMLCanvasElement;
+  private testCanvas!: HTMLCanvasElement;
   private testSettings: any;
 
   constructor() {
@@ -304,7 +304,7 @@ export class ExportSystemTest {
       { name: 'Standalone Export', test: () => this.testStandaloneExport() }
     ];
 
-    const results = [];
+    const results: Array<{ test: string; passed: boolean }> = [];
     let passed = 0;
     let failed = 0;
 
