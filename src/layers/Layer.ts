@@ -5,7 +5,7 @@ import { Vector2D } from '../types';
 /**
  * Layer blend modes
  */
-export type BlendMode = 
+export type BlendMode =
   | 'normal'
   | 'multiply'
   | 'screen'
@@ -18,6 +18,17 @@ export type BlendMode =
   | 'lighten'
   | 'difference'
   | 'exclusion';
+
+/**
+ * Convert BlendMode to canvas GlobalCompositeOperation
+ * 'normal' maps to 'source-over' which is the canvas equivalent
+ */
+function blendModeToCompositeOperation(blendMode: BlendMode): GlobalCompositeOperation {
+  if (blendMode === 'normal') {
+    return 'source-over';
+  }
+  return blendMode;
+}
 
 /**
  * Layer transform properties
@@ -170,8 +181,8 @@ export class Layer {
 
     targetCtx.save();
     
-    // Set blend mode
-    targetCtx.globalCompositeOperation = this.config.blendMode;
+    // Set blend mode (convert 'normal' to 'source-over' for canvas API)
+    targetCtx.globalCompositeOperation = blendModeToCompositeOperation(this.config.blendMode);
     
     // Set layer opacity
     targetCtx.globalAlpha = this.config.transform.opacity;

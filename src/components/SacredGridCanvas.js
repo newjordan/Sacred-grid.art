@@ -7,19 +7,9 @@ const SacredGridCanvas = forwardRef(({
     onExport,
     rendererType = RendererType.CANVAS_2D
 }, ref) => {
-    console.log('SacredGridCanvas rendering with settings:', settings);
-    
     const containerRef = useRef(null);
     const rendererInstanceRef = useRef(null);
 
-    // Check if container is properly created
-    useEffect(() => {
-        console.log('Container ref state:', {
-            exists: !!containerRef.current,
-            element: containerRef.current
-        });
-    }, [containerRef.current]);
-    
     // Force explicit dimensions on component mount and window resize
     useEffect(() => {
         const updateDimensions = () => {
@@ -27,22 +17,15 @@ const SacredGridCanvas = forwardRef(({
             if (containerRef.current && containerRef.current.parentNode) {
                 const parentWidth = containerRef.current.parentNode.clientWidth || window.innerWidth;
                 const parentHeight = containerRef.current.parentNode.clientHeight || window.innerHeight;
-                
-                console.log('SacredGridCanvas updating container dimensions:', {
-                    parentWidth,
-                    parentHeight,
-                    parentElement: containerRef.current.parentNode
-                });
-                
+
                 // Set explicit dimensions in pixels instead of percentages
                 containerRef.current.style.width = `${parentWidth}px`;
                 containerRef.current.style.height = `${parentHeight}px`;
                 
                 // Force renderer resize if it exists
-                if (rendererInstanceRef.current && 
-                    rendererInstanceRef.current.renderer && 
+                if (rendererInstanceRef.current &&
+                    rendererInstanceRef.current.renderer &&
                     typeof rendererInstanceRef.current.renderer._handleResize === 'function') {
-                    console.log('Forcing renderer resize after dimension update');
                     rendererInstanceRef.current.renderer._handleResize();
                 }
             }
@@ -75,7 +58,6 @@ const SacredGridCanvas = forwardRef(({
             return null;
         },
         updateSettings: (newSettings) => {
-            console.log('updateSettings called through ref with', newSettings);
             if (rendererInstanceRef.current) {
                 rendererInstanceRef.current.updateSettings(newSettings);
             }

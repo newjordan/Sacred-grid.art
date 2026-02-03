@@ -137,11 +137,13 @@ export class Timeline {
   play(): void {
     if (this.state === 'playing') return;
 
+    const wasPaused = this.state === 'paused';
     this.state = 'playing';
-    this.startTime = performance.now() - this.currentTime;
-    
-    if (this.state === 'paused') {
+
+    if (wasPaused) {
       this.startTime = performance.now() - this.pauseTime;
+    } else {
+      this.startTime = performance.now() - this.currentTime;
     }
 
     this.eventListeners.play?.();

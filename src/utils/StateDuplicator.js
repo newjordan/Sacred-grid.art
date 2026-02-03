@@ -6,8 +6,6 @@ export class StateDuplicator {
    * Create a complete snapshot of the current application state
    */
   static async createSnapshot(canvas, settings, additionalState = {}) {
-    console.log('📸 Creating application state snapshot...');
-    
     // Capture canvas state
     const canvasState = await this.captureCanvasState(canvas);
     
@@ -43,11 +41,7 @@ export class StateDuplicator {
         }
       }
     };
-    
-    console.log('✅ Snapshot created successfully');
-    console.log(`📊 Settings keys captured: ${Object.keys(clonedSettings).length}`);
-    console.log(`🎨 Canvas size: ${canvasState.width}x${canvasState.height}`);
-    
+
     return snapshot;
   }
   
@@ -81,7 +75,6 @@ export class StateDuplicator {
         dataURL
       };
     } catch (error) {
-      console.warn('Failed to capture canvas state:', error);
       return {
         width: canvas.width,
         height: canvas.height
@@ -190,11 +183,9 @@ export class StateDuplicator {
       if (!snapshot.canvas.width || !snapshot.canvas.height) {
         return false;
       }
-      
-      console.log('✅ Snapshot validation passed');
+
       return true;
     } catch (error) {
-      console.error('❌ Snapshot validation failed:', error);
       return false;
     }
   }
@@ -223,8 +214,6 @@ export class StateDuplicator {
    */
   static async restoreFromSnapshot(snapshot, canvas, updateSettings, updateUI) {
     try {
-      console.log('🔄 Restoring application state from snapshot...');
-      
       // Validate snapshot first
       if (!this.validateSnapshot(snapshot)) {
         throw new Error('Invalid snapshot data');
@@ -244,11 +233,9 @@ export class StateDuplicator {
       if (updateUI) {
         updateUI(snapshot.ui);
       }
-      
-      console.log('✅ Application state restored successfully');
+
       return true;
     } catch (error) {
-      console.error('❌ Failed to restore application state:', error);
       return false;
     }
   }
@@ -311,7 +298,6 @@ export class StateDuplicator {
         throw new Error('Invalid snapshot format');
       }
     } catch (error) {
-      console.error('Failed to import snapshot:', error);
       return null;
     }
   }

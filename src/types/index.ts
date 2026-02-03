@@ -259,8 +259,10 @@ export enum RendererType {
 }
 
 // Export/Import Types
+export type ExportFormat = 'png' | 'jpg' | 'svg' | 'gif' | 'webm' | 'standalone' | 'widget';
+
 export interface ExportOptions {
-  format: 'png' | 'standalone';
+  format: ExportFormat;
   quality: number;
   width: number;
   height: number;

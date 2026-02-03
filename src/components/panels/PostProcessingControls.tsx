@@ -3,10 +3,10 @@
 
 import React, { useState, useCallback } from 'react';
 import { PostProcessingConfig } from '../../postprocessing/MilkDropPostProcessor';
-import { Toggle } from '../ui/Toggle';
-import { Slider } from '../ui/Slider';
-import { Select } from '../ui/Select';
-import { Button } from '../ui/Button';
+import Toggle from '../ui/Toggle';
+import Slider from '../ui/Slider';
+// import { Select } from '../ui/Select'; // Module doesn't exist
+import Button from '../ui/Button';
 
 interface PostProcessingControlsProps {
   config: PostProcessingConfig;
@@ -121,20 +121,22 @@ export const PostProcessingControls: React.FC<PostProcessingControlsProps> = ({
           
           {expanded.warp && (
             <div className="section-content">
-              <Select
-                value={config.warp?.type || 'radial'}
-                onChange={(type) => updateWarpConfig({ type: type as any })}
-                options={[
-                  { value: 'radial', label: 'Radial Push/Pull' },
-                  { value: 'spiral', label: 'Spiral Twist' },
-                  { value: 'wave', label: 'Wave Distortion' },
-                  { value: 'tunnel', label: 'Tunnel Effect' },
-                  { value: 'kaleidoscope', label: 'Kaleidoscope' },
-                  { value: 'fisheye', label: 'Fisheye Lens' },
-                  { value: 'ripple', label: 'Ripple Waves' }
-                ]}
-                label="Warp Type"
-              />
+              <div className="select-wrapper">
+                <label className="select-label">Warp Type</label>
+                <select
+                  value={config.warp?.type || 'radial'}
+                  onChange={(e) => updateWarpConfig({ type: e.target.value as any })}
+                  className="glass-select"
+                >
+                  <option value="radial">Radial Push/Pull</option>
+                  <option value="spiral">Spiral Twist</option>
+                  <option value="wave">Wave Distortion</option>
+                  <option value="tunnel">Tunnel Effect</option>
+                  <option value="kaleidoscope">Kaleidoscope</option>
+                  <option value="fisheye">Fisheye Lens</option>
+                  <option value="ripple">Ripple Waves</option>
+                </select>
+              </div>
               
               <Slider
                 value={config.warp?.intensity || 0.5}
@@ -350,7 +352,7 @@ export const PostProcessingControls: React.FC<PostProcessingControlsProps> = ({
                   key={preset}
                   onClick={() => onPresetLoad(preset)}
                   variant="secondary"
-                  size="small"
+                  size="sm"
                   className="preset-button"
                 >
                   {preset}
@@ -374,7 +376,7 @@ export const PostProcessingControls: React.FC<PostProcessingControlsProps> = ({
                   }
                 }}
                 variant="primary"
-                size="small"
+                size="sm"
                 disabled={!customPresetName.trim()}
               >
                 Save Preset

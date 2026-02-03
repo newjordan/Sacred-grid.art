@@ -86,8 +86,6 @@ export class EnhancedFrameManager {
     };
     
     this.renderQuality = this.getQualitySettings('high');
-    
-    console.log('🎬 Enhanced Frame Manager initialized:', this.config);
   }
   
   /**
@@ -192,8 +190,6 @@ export class EnhancedFrameManager {
       this.metrics.qualityLevel = newQualityLevel;
       this.renderQuality = this.getQualitySettings(newQualityLevel);
       this.qualityAdjustmentCooldown = currentTime;
-      
-      console.log(`🎨 Quality adjusted to ${newQualityLevel} (${avgFPS.toFixed(1)} FPS)`);
     }
   }
   
@@ -252,8 +248,6 @@ export class EnhancedFrameManager {
     this.metrics.qualityLevel = level;
     this.renderQuality = this.getQualitySettings(level);
     this.qualityAdjustmentCooldown = performance.now() + this.qualityAdjustmentDelay;
-    
-    console.log(`🎨 Quality manually set to ${level}`);
   }
   
   /**
@@ -261,13 +255,11 @@ export class EnhancedFrameManager {
    */
   setAdaptiveQuality(enabled: boolean): void {
     this.config.adaptiveQuality = enabled;
-    
+
     if (!enabled) {
       // Reset to high quality when disabled
       this.setQualityLevel('high');
     }
-    
-    console.log(`🔧 Adaptive quality ${enabled ? 'enabled' : 'disabled'}`);
   }
   
   /**
@@ -310,7 +302,5 @@ export class EnhancedFrameManager {
     };
     
     this.renderQuality = this.getQualitySettings('high');
-    
-    console.log('🔄 Enhanced Frame Manager reset');
   }
 }

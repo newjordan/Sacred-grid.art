@@ -61,8 +61,6 @@ export class EnhancedAnimationSystem {
       frameCount: 0,
       actualFPS: this.config.targetFPS
     };
-    
-    console.log('🎬 Enhanced Animation System initialized:', this.config);
   }
   
   /**
@@ -341,8 +339,6 @@ export class EnhancedAnimationSystem {
     this.frameTimeHistory = [];
     this.colorCache.clear();
     this.colorParseCache.clear();
-    
-    console.log('🔄 Enhanced Animation System reset');
   }
   
   /**
@@ -351,7 +347,5 @@ export class EnhancedAnimationSystem {
   updateConfig(newConfig: Partial<AnimationConfig>): void {
     this.config = { ...this.config, ...newConfig };
     this.targetFrameTime = 1000 / this.config.targetFPS;
-    
-    console.log('⚙️ Enhanced Animation System config updated:', this.config);
   }
 }

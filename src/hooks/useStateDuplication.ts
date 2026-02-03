@@ -28,9 +28,7 @@ export const useStateDuplication = (): StateDuplicationHook => {
   const createSnapshot = useCallback(async (canvas?: HTMLCanvasElement | null): Promise<ApplicationSnapshot> => {
     try {
       setLoading(true);
-      
-      console.log('📸 Creating application snapshot...');
-      
+
       // Gather additional state information
       const additionalState = {
         performance: state.performance,
@@ -42,18 +40,14 @@ export const useStateDuplication = (): StateDuplicationHook => {
       
       // Create the snapshot
       const snapshot = await StateDuplicator.createSnapshot(
-        canvas,
+        canvas ?? null,
         state.settings,
         additionalState
       );
-      
-      console.log('✅ Snapshot created successfully');
-      console.log(StateDuplicator.getSnapshotSummary(snapshot));
-      
+
       return snapshot;
     } catch (error) {
-      console.error('❌ Failed to create snapshot:', error);
-      setError(`Failed to create snapshot: ${error.message}`);
+      setError(`Failed to create snapshot: ${(error as Error).message}`);
       throw error;
     } finally {
       setLoading(false);
@@ -69,31 +63,24 @@ export const useStateDuplication = (): StateDuplicationHook => {
   ): Promise<boolean> => {
     try {
       setLoading(true);
-      
-      console.log('🔄 Restoring from snapshot...');
-      console.log(StateDuplicator.getSnapshotSummary(snapshot));
-      
+
       // Restore the application state
       const success = await StateDuplicator.restoreFromSnapshot(
         snapshot,
-        canvas,
+        canvas ?? null,
         updateSettings,
         (uiState) => {
           // Update UI state if needed
-          console.log('Restoring UI state:', uiState);
         }
       );
       
-      if (success) {
-        console.log('✅ Application state restored successfully');
-      } else {
+      if (!success) {
         throw new Error('Failed to restore application state');
       }
       
       return success;
     } catch (error) {
-      console.error('❌ Failed to restore snapshot:', error);
-      setError(`Failed to restore snapshot: ${error.message}`);
+      setError(`Failed to restore snapshot: ${(error as Error).message}`);
       return false;
     } finally {
       setLoading(false);
@@ -114,7 +101,7 @@ export const useStateDuplication = (): StateDuplicationHook => {
     try {
       return StateDuplicator.importSnapshot(jsonString);
     } catch (error) {
-      setError(`Failed to import snapshot: ${error.message}`);
+      setError(`Failed to import snapshot: ${(error as Error).message}`);
       return null;
     }
   }, [setError]);

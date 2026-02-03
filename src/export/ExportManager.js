@@ -14,8 +14,6 @@ export class ExportManager {
     this.canvas = canvas;
     this.ctx = canvas?.getContext('2d');
 
-    console.log(`🚀 Starting ${options.format} export with options:`, options);
-
     let blob;
     let filename;
 
@@ -44,7 +42,6 @@ export class ExportManager {
     this.downloadBlob(blob, filename);
     onProgress?.(1.0, 'Export complete!');
 
-    console.log(`✅ ${options.format.toUpperCase()} export complete: ${filename}`);
     return blob;
   }
 
@@ -70,19 +67,6 @@ export class ExportManager {
       transparent: options.transparent ?? true,
       backgroundColor: options.transparent ? undefined : '#000000'
     };
-
-    console.log('🎯 PNG Export Configuration:', {
-      sourceCanvas: {
-        width: this.canvas.width,
-        height: this.canvas.height,
-        displaySize: this.canvas.getBoundingClientRect()
-      },
-      exportConfig: config,
-      finalDimensions: {
-        width: config.width * config.scale,
-        height: config.height * config.scale
-      }
-    });
 
     onProgress?.(0.5, 'Rendering PNG...');
 
@@ -199,7 +183,6 @@ export class ExportManager {
       onProgress?.(0.9, 'Standalone export complete');
       return blob;
     } catch (error) {
-      console.error('Standalone export failed:', error);
       throw error;
     }
   }
