@@ -38,7 +38,7 @@ interface AppState {
 
 // Initial State
 const initialState: AppState = {
-  settings: DEFAULT_SETTINGS as SacredGridSettings,
+  settings: DEFAULT_SETTINGS as unknown as SacredGridSettings,
   performance: {
     fps: 0,
     frameTime: 0,
@@ -66,7 +66,7 @@ const initialState: AppState = {
   ],
   history: {
     past: [],
-    present: DEFAULT_SETTINGS as SacredGridSettings,
+    present: DEFAULT_SETTINGS as unknown as SacredGridSettings,
     future: []
   }
 };
@@ -90,10 +90,10 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'RESET_SETTINGS':
       return {
         ...state,
-        settings: DEFAULT_SETTINGS as SacredGridSettings,
+        settings: DEFAULT_SETTINGS as unknown as SacredGridSettings,
         history: {
           past: [...state.history.past, state.history.present].slice(-50),
-          present: DEFAULT_SETTINGS as SacredGridSettings,
+          present: DEFAULT_SETTINGS as unknown as SacredGridSettings,
           future: []
         }
       };

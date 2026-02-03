@@ -8,8 +8,6 @@ export class StandaloneExporter {
    * Export an application snapshot as a standalone HTML file
    */
   static async exportStandalone(snapshot, config) {
-    console.log('🚀 Creating standalone HTML file...');
-
     // Optimize the snapshot first
     let optimizationOptions;
     if (!config.optimize) {
@@ -30,11 +28,6 @@ export class StandaloneExporter {
     const { snapshot: optimizedSnapshot, result: optimizationResult } =
       PackageOptimizer.optimizeSnapshot(snapshot, optimizationOptions);
 
-    if (config.optimize) {
-      console.log('🔧 Package optimization results:');
-      console.log(PackageOptimizer.generateOptimizationReport(optimizationResult));
-    }
-
     // Generate the complete HTML content
     let htmlContent = this.generateStandaloneHTML(optimizedSnapshot, config);
 
@@ -45,9 +38,6 @@ export class StandaloneExporter {
 
     // Create blob
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-
-    console.log('✅ Standalone HTML file created');
-    console.log(`📊 File size: ${(blob.size / 1024).toFixed(1)} KB`);
 
     return blob;
   }
@@ -82,10 +72,7 @@ export class StandaloneExporter {
         // Embedded application snapshot
         const SACRED_GRID_SNAPSHOT = ${snapshotJSON};
         const EXPORT_CONFIG = ${JSON.stringify(config, null, 2)};
-        
-        console.log('🎨 Sacred Grid Standalone Player loaded!');
-        console.log('📊 Snapshot:', SACRED_GRID_SNAPSHOT);
-        
+
         ${this.generateCoreRenderer()}
         ${this.generateApplicationLogic(config)}
         ${config.customJS || ''}
@@ -286,7 +273,6 @@ export class StandaloneExporter {
                 // Mouse tracking
                 this.mousePos = { x: -1000, y: -1000 };
 
-                console.log('🎨 Standalone renderer initialized with settings:', this.settings);
                 this.generateGridPoints();
                 this.setupEventListeners();
                 this.start();
@@ -308,7 +294,6 @@ export class StandaloneExporter {
                         });
                     }
                 }
-                console.log('Generated ' + this.gridPoints.length + ' grid points');
             }
 
             setupEventListeners() {
@@ -771,8 +756,6 @@ export class StandaloneExporter {
                 fullscreenBtn.addEventListener('click', () => renderer.toggleFullscreen());
             }
             ` : ''}
-            
-            console.log('✅ Sacred Grid Standalone Player ready!');
         });
     `;
   }

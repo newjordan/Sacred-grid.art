@@ -58,9 +58,7 @@ class SacredGridRenderer {
             if (this.renderer && this.renderer.canvas) {
                 try {
                     this.postProcessor = new ModernPostProcessor(this.renderer.canvas);
-                    console.log('🎬 Modern Post-processor initialized');
                 } catch (error) {
-                    console.warn('⚠️ Modern Post-processor initialization failed:', error);
                     this.postProcessor = null;
                 }
             }
@@ -130,8 +128,6 @@ class SacredGridRenderer {
     }
 
     startAnimation() {
-        console.log('SacredGridRenderer startAnimation called');
-        
         // Stop existing animation if any
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
@@ -189,7 +185,6 @@ class SacredGridRenderer {
             return dataURL;
         }
 
-        console.warn('Export not fully implemented for this renderer type');
         return null;
     }
 
@@ -229,7 +224,6 @@ class SacredGridRenderer {
         // Get the drawing function for this shape type
         const drawFunc = this.shapeDrawers[shapeType];
         if (!drawFunc) {
-            console.warn(`Shape type '${shapeType}' not found`);
             return;
         }
         
@@ -320,7 +314,10 @@ class SacredGridRenderer {
 
 
         // Calculate new parameters for child shapes
-        const newRadius = radius; // TODO: Need to implement actual fractal size scaling
+        // Size scaling: child shapes are sized proportionally to their fractal depth
+        // Using fractal.scale for both positioning and sizing creates harmonious proportions
+        const sizeScaleFactor = fractal.sizeFalloff || fractal.scale || 0.5;
+        const newRadius = radius * sizeScaleFactor;
         const positionRadius = radius * fractal.scale; // Fractal distance (positioning)
         const newThickness = thickness * fractal.thicknessFalloff;
         const newOpacity = opacity * fractal.thicknessFalloff;
@@ -566,7 +563,6 @@ class SacredGridRenderer {
                 
                 // Force resize to try to recover
                 if (typeof this.renderer._handleResize === 'function') {
-                    console.log('Attempting to force resize to recover from invalid dimensions');
                     this.renderer._handleResize();
                 }
                 
@@ -586,25 +582,7 @@ class SacredGridRenderer {
 
             const centerX = this.renderer.width / 2;
             const centerY = this.renderer.height / 2;
-            
-            // These debug statements confirm the renderer is properly initialized
-            console.log('Rendering with dimensions:', {
-                width: this.renderer.width,
-                height: this.renderer.height,
-                canvasWidth: this.renderer.canvas ? this.renderer.canvas.width : 'unknown',
-                canvasHeight: this.renderer.canvas ? this.renderer.canvas.height : 'unknown',
-                container: this.renderer.container ? {
-                    width: this.renderer.container.clientWidth,
-                    height: this.renderer.container.clientHeight,
-                    style: {
-                        display: this.renderer.container.style.display,
-                        position: this.renderer.container.style.position,
-                        width: this.renderer.container.style.width,
-                        height: this.renderer.container.style.height
-                    }
-                } : 'unknown'
-            });
-            
+
             // Draw XY grid (below sacred grid)
             if (this.settings.xyGrid && this.settings.xyGrid.show) {
                 this.drawXYGrid(centerX, centerY);

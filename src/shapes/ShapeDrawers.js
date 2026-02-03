@@ -164,18 +164,12 @@ function drawShapeTemplate(ctx, params, templateFn, isClosedPath) {
     if (typeof ctx.beginPath !== 'function') {
         // If we have a WebGL context, try to use specialized WebGL drawing methods
         if (typeof ctx.drawCircle === 'function' && templateFn === ShapeTemplate.CIRCLE) {
-            // Special handling for circles in WebGL
-            console.log('WebGL drawing circle directly, radius:', dynamicRadius);
             ctx.drawCircle(cx, cy, dynamicRadius, strokeColor);
             return;
         } else if (typeof ctx.drawPolygon === 'function' && ctx.isWebGLContext === true) {
-            // We are in WebGL mode but don't have a specific implementation
-            // This would use the generic polygon approach
-            console.log('WebGL template drawing for', templateFn.name || 'unnamed shape');
             return;
         }
-        
-        console.warn('drawShapeTemplate called with non-Canvas2D context');
+
         return;
     }
     
@@ -186,7 +180,7 @@ function drawShapeTemplate(ctx, params, templateFn, isClosedPath) {
     try {
         templateFn(ctx, cx, cy, dynamicRadius);
     } catch (err) {
-        console.error('Error executing shape template:', err);
+        // Template execution error
     }
     
     // If the shape isn't automatically closed and should be, close it
@@ -584,22 +578,14 @@ function drawShapeWithLineFactory(ctx, params, vertices, globalSettings) {
 
 export function drawPolygon(ctx, params) {
     const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
-    
-    // EMERGENCY DEBUG PRINT FOR WebGL TRACING
-    console.log("SHAPE DRAWER: drawPolygon called", {
-        cx, cy, radius, thickness, 
-        isWebGL: ctx.isWebGLContext === true,
-        transparency: globalSettings.colors.scheme.opacity
-    });
 
     // Calculate animation parameters with special handling for WebGL
     const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
     let finalOpacity;
-    
+
     if (isWebGL) {
         // Force maximum opacity in WebGL mode to ensure visibility
         finalOpacity = 1.0;
-        console.log("FORCING FULL OPACITY FOR WEBGL POLYGON");
     } else {
         // Use normal opacity calculation for Canvas2D
         finalOpacity = calculateAnimationParams(time, shapeSettings, globalSettings).finalOpacity;
@@ -688,20 +674,16 @@ export function drawPolygon(ctx, params) {
         if (isWebGL) {
             // WebGL drawing - use the drawPolygon method directly
             if (ctx.drawPolygon && vertices && vertices.length > 2) {
-                // EMERGENCY: Force bright color and thick lines for WebGL
+                // Force bright color and thick lines for WebGL
                 const webglColor = "#FF00FF"; // Bright magenta
                 const webglThickness = Math.max(thickness * 5, 5); // Much thicker
-                
-                console.log("EMERGENCY: WebGL polygon forced to magenta with thickness:", webglThickness);
-                
+
                 // For WebGL, need to pass line settings when useLineFactory is true
                 if (shapeSettings.useLineFactory && globalSettings.lineFactory) {
                     ctx.drawPolygon(vertices, null, webglColor, webglThickness, globalSettings.lineFactory);
                 } else {
                     ctx.drawPolygon(vertices, null, webglColor, webglThickness);
                 }
-            } else {
-                console.error('Cannot draw polygon in WebGL - missing method or insufficient vertices');
             }
         } else {
             // Standard Canvas2D drawing
@@ -724,13 +706,6 @@ export function drawPolygon(ctx, params) {
 
 export function drawFlowerOfLife(ctx, params) {
     const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
-
-    // Debug info
-    console.log('drawFlowerOfLife called with:', 
-        'cx:', cx, 
-        'cy:', cy, 
-        'radius:', radius, 
-        'ctx type:', typeof ctx.beginPath === 'function' ? 'Canvas2D' : 'WebGL');
 
     // Calculate animation parameters
     const { dynamicRadius, finalOpacity } = calculateAnimationParams(
@@ -800,9 +775,7 @@ export function drawFlowerOfLife(ctx, params) {
         const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
         
         if (isWebGL) {
-            console.log('Using WebGL mode for Flower of Life');
             // WebGL drawing - use drawCircle directly
-            
             if (typeof ctx.drawCircle === 'function') {
                 // Draw the central circle
                 ctx.drawCircle(cx, cy, dynamicRadius, strokeColor);
@@ -814,8 +787,6 @@ export function drawFlowerOfLife(ctx, params) {
                     const y = cy + dynamicRadius * Math.sin(angle);
                     ctx.drawCircle(x, y, dynamicRadius, strokeColor);
                 }
-            } else {
-                console.error('WebGL context has no drawCircle method');
             }
         } else {
             // Canvas2D mode
@@ -1072,10 +1043,7 @@ export function drawStar(ctx, params) {
         } else if (ctx.isWebGLContext === true && ctx.drawPolygon) {
             // WebGL drawing - use the drawPolygon method directly
             if (vertices && vertices.length > 2) {
-                console.log('Drawing star with WebGL, vertices:', vertices.length);
                 ctx.drawPolygon(vertices, null, strokeColor, thickness);
-            } else {
-                console.error('Cannot draw star in WebGL - insufficient vertices');
             }
         }
     }
@@ -1141,10 +1109,7 @@ export function drawLissajous(ctx, params) {
         } else if (ctx.isWebGLContext === true && ctx.drawPolygon) {
             // WebGL drawing - use the drawPolygon method directly
             if (vertices && vertices.length > 2) {
-                console.log('Drawing lissajous with WebGL, vertices:', vertices.length);
                 ctx.drawPolygon(vertices, null, strokeColor, thickness);
-            } else {
-                console.error('Cannot draw lissajous in WebGL - insufficient vertices');
             }
         }
     }

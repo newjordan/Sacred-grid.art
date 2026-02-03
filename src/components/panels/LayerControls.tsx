@@ -314,7 +314,6 @@ const LayerControls: React.FC<LayerControlsProps> = ({
             variant="outline"
             onClick={() => {
               // Merge all visible layers
-              console.log('Merge layers functionality would go here');
             }}
             leftIcon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +330,6 @@ const LayerControls: React.FC<LayerControlsProps> = ({
             variant="outline"
             onClick={() => {
               // Flatten all layers
-              console.log('Flatten layers functionality would go here');
             }}
             leftIcon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

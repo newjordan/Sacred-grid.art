@@ -12,26 +12,13 @@ import { RendererType } from '../renderers/RendererFactory';
  * @returns {Object} - Object containing animation controls and state
  */
 const useSacredGridAnimation = (containerRef, settings, rendererType = RendererType.CANVAS_2D, rendererInstanceRef = null) => {
-    console.log('useSacredGridAnimation called with', { 
-        hasContainer: !!containerRef.current,
-        settings, 
-        rendererType
-    });
-
     // Keep a local ref to the renderer if an external one is not provided
     const localRendererRef = useRef(null);
     const rendererRef = rendererInstanceRef || localRendererRef;
 
     // Initialize and clean up the renderer
     useEffect(() => {
-        console.log('useSacredGridAnimation effect triggered', { 
-            hasContainer: !!containerRef.current,
-            settings,
-            rendererType
-        });
-        
         if (!containerRef.current) {
-            console.error('Container ref is not available');
             return;
         }
 
@@ -51,13 +38,7 @@ const useSacredGridAnimation = (containerRef, settings, rendererType = RendererT
         // Initialize the renderer
         try {
             renderer.initialize();
-            console.log('Successfully initialized renderer with dimensions:', {
-                width: renderer.renderer ? renderer.renderer.width : 'unknown',
-                height: renderer.renderer ? renderer.renderer.height : 'unknown',
-                containerWidth: containerRef.current.clientWidth,
-                containerHeight: containerRef.current.clientHeight
-            });
-            
+
             // Force multiple redraws after initialization to ensure canvas is visible
             // First immediate draw attempt
             renderer.drawFrame();
@@ -76,7 +57,7 @@ const useSacredGridAnimation = (containerRef, settings, rendererType = RendererT
                 }, delay);
             });
         } catch (error) {
-            console.error('Failed to initialize renderer:', error);
+            // Initialization failed
         }
 
         // Save the renderer reference
@@ -93,7 +74,6 @@ const useSacredGridAnimation = (containerRef, settings, rendererType = RendererT
 
     // Update settings when they change
     useEffect(() => {
-        console.log('Settings changed in useSacredGridAnimation', settings);
         if (rendererRef.current) {
             rendererRef.current.updateSettings(settings);
         }

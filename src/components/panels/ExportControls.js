@@ -27,10 +27,10 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
     setExportOptions(prev => ({ ...prev, ...updates }));
   };
 
-  // Format options - PNG only (HTML export coming soon)
+  // Format options
   const formatOptions = [
     { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
-    { value: 'standalone', label: 'Standalone HTML (Coming Soon)', description: 'Self-contained interactive HTML file - Currently being refined', disabled: true }
+    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file you can share' }
   ];
 
   // Dimension presets
@@ -54,7 +54,6 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
       // Show progress updates
       const progressCallback = (progress, message, validationData) => {
         setExportProgress(progress * 100);
-        console.log(`Export: ${Math.round(progress * 100)}% - ${message}`);
 
         // Capture validation report if provided
         if (validationData && validationData.validation) {
@@ -65,9 +64,6 @@ const ExportControls = ({ onExport, isExporting = false, className = '' }) => {
       const result = await onExport(exportOptions, progressCallback);
       setExportProgress(100);
       setExportSuccess(true);
-
-      // Show success message
-      console.log('🎉 PNG exported successfully! Check your downloads folder.');
 
       // Reset progress and success after a delay
       setTimeout(() => {

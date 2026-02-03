@@ -30,8 +30,6 @@ export class PackageOptimizer {
     snapshot: ApplicationSnapshot,
     options: OptimizationOptions
   ): { snapshot: ApplicationSnapshot; result: OptimizationResult } {
-    console.log('🔧 Starting package optimization...');
-    
     const originalSnapshot = JSON.stringify(snapshot);
     const originalSize = originalSnapshot.length;
     const removedElements: string[] = [];
@@ -66,9 +64,7 @@ export class PackageOptimizer {
     
     const optimizedSize = JSON.stringify(optimizedSnapshot).length;
     const compressionRatio = ((originalSize - optimizedSize) / originalSize) * 100;
-    
-    console.log(`✅ Optimization complete: ${compressionRatio.toFixed(1)}% size reduction`);
-    
+
     return {
       snapshot: optimizedSnapshot,
       result: {
@@ -131,26 +127,26 @@ export class PackageOptimizer {
     // Check grid settings
     if (settings.grid) {
       if (settings.grid.noiseIntensity === 0) {
-        delete settings.grid.noiseIntensity;
+        delete (settings.grid as any).noiseIntensity;
         removed.push('grid.noiseIntensity (default value)');
       }
-      
+
       if (settings.grid.breathingIntensity === 0) {
-        delete settings.grid.breathingIntensity;
+        delete (settings.grid as any).breathingIntensity;
         removed.push('grid.breathingIntensity (default value)');
       }
-      
+
       if (!settings.grid.showVertices) {
         // Remove vertex-related settings if vertices are not shown
-        if (settings.grid.vertexSize) {
-          delete settings.grid.vertexSize;
+        if ((settings.grid as any).vertexSize) {
+          delete (settings.grid as any).vertexSize;
           removed.push('grid.vertexSize (vertices not shown)');
         }
       }
     }
-    
+
     // Remove unused animation settings
-    if (settings.animation && !settings.animation.enabled) {
+    if (settings.animation && !(settings.animation as any).enabled) {
       const animationKeys = Object.keys(settings.animation).filter(key => key !== 'enabled');
       animationKeys.forEach(key => {
         delete settings.animation[key];
@@ -159,14 +155,14 @@ export class PackageOptimizer {
     }
     
     // Remove unused fractal settings if no fractals are enabled
-    if (settings.fractals && !this.hasFractalsEnabled(settings)) {
-      delete settings.fractals;
+    if ((settings as any).fractals && !this.hasFractalsEnabled(settings)) {
+      delete (settings as any).fractals;
       removed.push('fractals (no fractals enabled)');
     }
-    
+
     // Remove unused mouse settings if mouse interaction is disabled
     if (settings.mouse && settings.mouse.influenceRadius === 0) {
-      delete settings.mouse.maxScale;
+      delete (settings.mouse as any).maxScale;
       removed.push('mouse.maxScale (mouse influence disabled)');
     }
     
@@ -203,15 +199,15 @@ export class PackageOptimizer {
     const optimized = this.deepClone(snapshot);
     
     // Remove performance metrics if not needed
-    if (optimized.performance) {
-      delete optimized.performance;
+    if ((optimized as any).performance) {
+      delete (optimized as any).performance;
       removed.push('performance metrics');
     }
-    
+
     // Remove detailed metadata
     if (optimized.metadata) {
-      delete optimized.metadata.userAgent;
-      delete optimized.metadata.screenResolution;
+      delete (optimized.metadata as any).userAgent;
+      delete (optimized.metadata as any).screenResolution;
       removed.push('detailed metadata');
     }
     
