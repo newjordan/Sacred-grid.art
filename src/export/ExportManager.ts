@@ -51,6 +51,20 @@ export class ExportManager {
             'sacred-grid-standalone.html';
           break;
 
+        case 'wallpaper':
+          // Wallpaper mode automatically enables wallpaperMode
+          blob = await this.exportStandalone(settings, canvas, {
+            ...options,
+            wallpaperMode: true,
+            includeControls: false,
+            showInfo: false,
+            animationSpeed: options.animationSpeed ?? 0.5
+          }, onProgress);
+          filename = options.standaloneTitle ?
+            `${options.standaloneTitle.toLowerCase().replace(/\s+/g, '-')}-wallpaper.html` :
+            'sacred-grid-wallpaper.html';
+          break;
+
         default:
           throw new Error(`Unsupported export format: ${options.format}`);
       }
@@ -138,17 +152,36 @@ export class ExportManager {
     onProgress?.(0.6, 'Generating standalone HTML...');
 
     // Create standalone export configuration
-    const config: StandaloneExportConfig = {
-      title: options.standaloneTitle || 'Sacred Grid Player',
-      width: options.width || canvas?.width || 1920,
-      height: options.height || canvas?.height || 1080,
-      includeControls: options.includeControls ?? true,
-      backgroundColor: settings.colors?.background || '#000000',
-      enableFullscreen: options.enableFullscreen ?? true,
-      showInfo: options.showInfo ?? true,
-      customCSS: options.customCSS || '',
-      customJS: options.customJS || ''
-    };
+    // Use wallpaper preset if wallpaperMode is enabled
+    const isWallpaper = options.wallpaperMode ?? false;
+    const config: StandaloneExportConfig = isWallpaper
+      ? {
+          ...StandaloneExporter.getWallpaperConfig(
+            options.width || canvas?.width || 1920,
+            options.height || canvas?.height || 1080
+          ),
+          title: options.standaloneTitle || 'Sacred Grid Wallpaper',
+          backgroundColor: settings.colors?.background || '#000000',
+          scale: options.scale ?? 1,
+          animationSpeed: options.animationSpeed ?? 0.5,
+          customCSS: options.customCSS || '',
+          customJS: options.customJS || ''
+        }
+      : {
+          title: options.standaloneTitle || 'Sacred Grid Player',
+          width: options.width || canvas?.width || 1920,
+          height: options.height || canvas?.height || 1080,
+          includeControls: options.includeControls ?? true,
+          backgroundColor: settings.colors?.background || '#000000',
+          enableFullscreen: options.enableFullscreen ?? true,
+          showInfo: options.showInfo ?? true,
+          customCSS: options.customCSS || '',
+          customJS: options.customJS || '',
+          wallpaperMode: false,
+          scale: options.scale ?? 1,
+          animationSpeed: options.animationSpeed ?? 1,
+          disableMouseInteraction: options.disableMouseInteraction ?? false
+        };
 
     onProgress?.(0.8, 'Creating standalone file...');
 
