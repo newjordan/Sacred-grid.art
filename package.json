@@ -4,7 +4,7 @@
   "description": "A Canvas2D implementation of Sacred Geometry patterns with interactive visualization",
   "author": "SacredGrid Contributors",
   "license": "MIT",
-  "homepage": "https://sacred-grid.art",
+  "homepage": "https://newjordan.github.io/Sacred-grid.art",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sacredgrid/sacred-grid.art.git"
@@ -37,6 +37,7 @@
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "gh-pages": "^6.3.0",
     "typescript": "^4.9.5"
   },
   "scripts": {
@@ -48,6 +49,8 @@
     "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx,css}",
     "typecheck": "tsc --noEmit",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "prepublishOnly": "npm run build"
   },
   "eslintConfig": {
