@@ -28,7 +28,11 @@ const ExportControls: React.FC<ExportControlsProps> = ({
     standaloneTitle: 'Sacred Grid Player',
     includeControls: true,
     enableFullscreen: true,
-    showInfo: true
+    showInfo: true,
+    // Wallpaper mode defaults
+    wallpaperMode: false,
+    scale: 1,
+    animationSpeed: 1
   });
 
   const [customDimensions, setCustomDimensions] = useState(false);
@@ -48,7 +52,8 @@ const ExportControls: React.FC<ExportControlsProps> = ({
   // Format options
   const formatOptions = [
     { value: 'png', label: 'PNG', description: 'High-quality image with transparency support' },
-    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file you can share' }
+    { value: 'standalone', label: 'Standalone HTML', description: 'Self-contained interactive HTML file you can share' },
+    { value: 'wallpaper', label: 'Wallpaper Mode', description: 'Optimized for desktop wallpapers (Lively, Plash, Komorebi)' }
   ];
 
   const updateOptions = (updates: Partial<ExportOptions>) => {
@@ -265,7 +270,51 @@ const ExportControls: React.FC<ExportControlsProps> = ({
           </div>
         )}
 
+        {/* Wallpaper Mode Options */}
+        {exportOptions.format === 'wallpaper' && (
+          <div className="space-y-4 p-4 glass-card">
+            <h4 className="text-sm font-semibold text-white/90 mb-3">Wallpaper Settings</h4>
 
+            <div>
+              <label className="block text-xs text-white/70 mb-1">Title (optional)</label>
+              <input
+                type="text"
+                value={exportOptions.standaloneTitle || 'Sacred Grid Wallpaper'}
+                onChange={(e) => updateOptions({ standaloneTitle: e.target.value })}
+                className="glass-input w-full text-sm"
+                placeholder="Sacred Grid Wallpaper"
+              />
+            </div>
+
+            <Slider
+              label="Zoom Level"
+              value={(exportOptions.scale || 1) * 100}
+              onChange={(value) => updateOptions({ scale: value / 100 })}
+              min={50}
+              max={200}
+              step={10}
+              formatValue={(val) => `${val}%`}
+              description="Adjust the view zoom (50% = zoomed out, 200% = zoomed in)"
+            />
+
+            <Slider
+              label="Animation Speed"
+              value={(exportOptions.animationSpeed || 1) * 100}
+              onChange={(value) => updateOptions({ animationSpeed: value / 100 })}
+              min={10}
+              max={100}
+              step={5}
+              formatValue={(val) => `${val}%`}
+              description="Slower = more meditative (default: 50%)"
+            />
+
+            <div className="text-xs text-white/50 p-2 bg-purple-500/10 rounded border border-purple-500/20">
+              🖼️ <strong>Wallpaper Mode:</strong> No mouse interaction, no controls - just pure animation.
+              <br/>Works with <a href="https://www.rocksdanister.com/lively/" target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">Lively Wallpaper</a> (Windows),{' '}
+              <a href="https://github.com/sindresorhus/Plash" target="_blank" rel="noreferrer" className="text-purple-400 hover:underline">Plash</a> (macOS), and similar tools.
+            </div>
+          </div>
+        )}
 
         {/* Dimensions */}
         <div>
