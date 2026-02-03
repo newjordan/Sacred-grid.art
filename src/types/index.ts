@@ -259,7 +259,7 @@ export enum RendererType {
 }
 
 // Export/Import Types
-export type ExportFormat = 'png' | 'jpg' | 'svg' | 'gif' | 'webm' | 'standalone' | 'widget';
+export type ExportFormat = 'png' | 'jpg' | 'svg' | 'gif' | 'webm' | 'standalone' | 'wallpaper' | 'widget';
 
 export interface ExportOptions {
   format: ExportFormat;
@@ -275,6 +275,10 @@ export interface ExportOptions {
   showInfo?: boolean;
   customCSS?: string;
   customJS?: string;
+  // Wallpaper mode options
+  wallpaperMode?: boolean;
+  animationSpeed?: number;
+  disableMouseInteraction?: boolean;
   // Optimization options
   optimize?: boolean;
   optimizationLevel?: 'conservative' | 'default' | 'aggressive';

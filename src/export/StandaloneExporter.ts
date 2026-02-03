@@ -13,6 +13,11 @@ export interface StandaloneExportConfig {
   customJS?: string;
   enableFullscreen?: boolean;
   showInfo?: boolean;
+  // Wallpaper mode options
+  wallpaperMode?: boolean;
+  scale?: number; // Zoom level (0.5 = 50%, 1 = 100%, 2 = 200%)
+  animationSpeed?: number; // Speed multiplier (0.5 = half speed, 1 = normal)
+  disableMouseInteraction?: boolean;
 }
 
 export class StandaloneExporter {
@@ -67,7 +72,7 @@ export class StandaloneExporter {
         const SACRED_GRID_SNAPSHOT = ${snapshotJSON};
         const EXPORT_CONFIG = ${JSON.stringify(config, null, 2)};
 
-        ${this.generateCoreRenderer()}
+        ${this.generateCoreRenderer(config)}
         ${this.generateApplicationLogic(config)}
         ${config.customJS || ''}
     </script>
@@ -79,13 +84,16 @@ export class StandaloneExporter {
    * Generate CSS styles for the standalone application
    */
   private static generateCSS(config: StandaloneExportConfig): string {
+    const isWallpaper = config.wallpaperMode;
+    const scale = config.scale || 1;
+
     return `
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             background: ${config.backgroundColor};
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -96,22 +104,35 @@ export class StandaloneExporter {
             align-items: center;
             justify-content: center;
         }
-        
+
         #sacred-grid-container {
             position: relative;
+            ${isWallpaper ? `
+            width: 100vw;
+            height: 100vh;
+            ` : `
             width: ${config.width}px;
             height: ${config.height}px;
             max-width: 100vw;
             max-height: 100vh;
+            `}
+            transform: scale(${scale});
+            transform-origin: center center;
         }
-        
+
         #sacred-grid-canvas {
             display: block;
             width: 100%;
             height: 100%;
+            ${isWallpaper ? `
+            cursor: default;
+            border-radius: 0;
+            box-shadow: none;
+            ` : `
             cursor: crosshair;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            `}
         }
         
         .controls {
@@ -264,7 +285,10 @@ export class StandaloneExporter {
   /**
    * Generate the core Sacred Grid renderer (simplified version)
    */
-  private static generateCoreRenderer(): string {
+  private static generateCoreRenderer(config: StandaloneExportConfig): string {
+    const isWallpaper = config.wallpaperMode || config.disableMouseInteraction;
+    const animationSpeed = config.animationSpeed || 1;
+
     return `
         // Sacred Grid Standalone Renderer
         class StandaloneSacredGridRenderer {
@@ -277,28 +301,46 @@ export class StandaloneExporter {
                 this.time = 0;
                 this.startTime = performance.now();
                 this.animationFrame = null;
-                
-                // Mouse tracking
+                this.animationSpeed = ${animationSpeed};
+                this.isWallpaperMode = ${isWallpaper ? 'true' : 'false'};
+
+                // Mouse tracking (disabled in wallpaper mode)
                 this.mousePos = { x: -1000, y: -1000 };
 
                 this.setupEventListeners();
+                this.resizeToFit();
                 this.start();
             }
-            
+
+            resizeToFit() {
+                // In wallpaper mode, resize canvas to fill screen
+                if (this.isWallpaperMode) {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+
+                    window.addEventListener('resize', () => {
+                        this.canvas.width = window.innerWidth;
+                        this.canvas.height = window.innerHeight;
+                    });
+                }
+            }
+
             setupEventListeners() {
-                // Mouse tracking
-                this.canvas.addEventListener('mousemove', (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    this.mousePos.x = e.clientX - rect.left;
-                    this.mousePos.y = e.clientY - rect.top;
-                });
-                
-                this.canvas.addEventListener('mouseleave', () => {
-                    this.mousePos.x = -1000;
-                    this.mousePos.y = -1000;
-                });
-                
-                // Keyboard controls
+                // Mouse tracking (only if not in wallpaper mode)
+                if (!this.isWallpaperMode) {
+                    this.canvas.addEventListener('mousemove', (e) => {
+                        const rect = this.canvas.getBoundingClientRect();
+                        this.mousePos.x = e.clientX - rect.left;
+                        this.mousePos.y = e.clientY - rect.top;
+                    });
+
+                    this.canvas.addEventListener('mouseleave', () => {
+                        this.mousePos.x = -1000;
+                        this.mousePos.y = -1000;
+                    });
+                }
+
+                // Keyboard controls (minimal in wallpaper mode)
                 document.addEventListener('keydown', (e) => {
                     switch(e.code) {
                         case 'Space':
@@ -306,10 +348,10 @@ export class StandaloneExporter {
                             this.togglePlayPause();
                             break;
                         case 'KeyR':
-                            this.reset();
+                            if (!this.isWallpaperMode) this.reset();
                             break;
                         case 'KeyF':
-                            this.toggleFullscreen();
+                            if (!this.isWallpaperMode) this.toggleFullscreen();
                             break;
                     }
                 });
@@ -323,10 +365,11 @@ export class StandaloneExporter {
             
             animate() {
                 if (!this.isPlaying) return;
-                
-                this.time = (performance.now() - this.startTime) * 0.001;
+
+                // Apply animation speed multiplier
+                this.time = (performance.now() - this.startTime) * 0.001 * this.animationSpeed;
                 this.render();
-                
+
                 this.animationFrame = requestAnimationFrame(() => this.animate());
             }
             
@@ -457,7 +500,30 @@ export class StandaloneExporter {
       includeControls: true,
       backgroundColor: '#000000',
       enableFullscreen: true,
-      showInfo: true
+      showInfo: true,
+      wallpaperMode: false,
+      scale: 1,
+      animationSpeed: 1,
+      disableMouseInteraction: false
+    };
+  }
+
+  /**
+   * Get wallpaper-optimized export configuration
+   */
+  static getWallpaperConfig(width: number = 1920, height: number = 1080): StandaloneExportConfig {
+    return {
+      title: 'Sacred Grid Wallpaper',
+      width,
+      height,
+      includeControls: false,
+      backgroundColor: '#000000',
+      enableFullscreen: true,
+      showInfo: false,
+      wallpaperMode: true,
+      scale: 1,
+      animationSpeed: 0.5, // Slower, more meditative
+      disableMouseInteraction: true
     };
   }
 }
