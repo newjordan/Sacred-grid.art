@@ -4,7 +4,7 @@
   "description": "A Canvas2D implementation of Sacred Geometry patterns with interactive visualization",
   "author": "SacredGrid Contributors",
   "license": "MIT",
-  "homepage": "https://newjordan.github.io/Sacred-grid.art",
+  "homepage": "https://sacred-grid.art",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sacredgrid/sacred-grid.art.git"
