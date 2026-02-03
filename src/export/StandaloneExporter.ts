@@ -2,6 +2,7 @@
 // Converts application snapshots into self-contained HTML files
 
 import { ApplicationSnapshot } from '../utils/StateDuplicator';
+import { generateWallpaperRenderer } from './WallpaperRenderer';
 
 export interface StandaloneExportConfig {
   title: string;
@@ -72,8 +73,8 @@ export class StandaloneExporter {
         const SACRED_GRID_SNAPSHOT = ${snapshotJSON};
         const EXPORT_CONFIG = ${JSON.stringify(config, null, 2)};
 
-        ${this.generateCoreRenderer(config)}
-        ${this.generateApplicationLogic(config)}
+        ${config.wallpaperMode ? generateWallpaperRenderer() : this.generateCoreRenderer(config)}
+        ${!config.wallpaperMode ? this.generateApplicationLogic(config) : ''}
         ${config.customJS || ''}
     </script>
 </body>
