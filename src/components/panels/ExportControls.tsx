@@ -413,7 +413,11 @@ const ExportControls: React.FC<ExportControlsProps> = ({
             </svg>
           }
         >
-          {isExporting ? 'Exporting...' : `Export ${exportOptions.format.toUpperCase()}`}
+          {isExporting ? 'Exporting...' : `Export ${
+            exportOptions.format === 'standalone' ? 'HTML' :
+            exportOptions.format === 'wallpaper' ? 'Wallpaper' :
+            exportOptions.format.toUpperCase()
+          }`}
         </Button>
 
         {/* Quick Actions */}
