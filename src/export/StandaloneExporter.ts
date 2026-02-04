@@ -2,7 +2,7 @@
 // Converts application snapshots into self-contained HTML files
 
 import { ApplicationSnapshot } from '../utils/StateDuplicator';
-import { generateWallpaperRenderer } from './WallpaperRenderer';
+import { getBundledRendererClasses, generateRendererInit } from './WallpaperRenderer';
 
 export interface StandaloneExportConfig {
   title: string;
@@ -73,8 +73,8 @@ export class StandaloneExporter {
         const SACRED_GRID_SNAPSHOT = ${snapshotJSON};
         const EXPORT_CONFIG = ${JSON.stringify(config, null, 2)};
 
-        ${generateWallpaperRenderer()}
-        ${!config.wallpaperMode ? this.generateApplicationLogic(config) : ''}
+        ${getBundledRendererClasses()}
+        ${generateRendererInit()}
         ${config.customJS || ''}
     </script>
 </body>
@@ -280,38 +280,6 @@ export class StandaloneExporter {
                 Created: ${new Date(snapshot.metadata.timestamp).toLocaleDateString()}
             </div>
         </div>
-    `;
-  }
-  
-  /**
-   * Generate application logic and initialization
-   */
-  private static generateApplicationLogic(config: StandaloneExportConfig): string {
-    return `
-        // Initialize the standalone application
-        document.addEventListener('DOMContentLoaded', () => {
-            const canvas = document.getElementById('sacred-grid-canvas');
-            const renderer = new StandaloneSacredGridRenderer(canvas, SACRED_GRID_SNAPSHOT);
-            
-            // Setup control buttons
-            ${config.includeControls ? `
-            const playPauseBtn = document.getElementById('play-pause-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const fullscreenBtn = document.getElementById('fullscreen-btn');
-            
-            if (playPauseBtn) {
-                playPauseBtn.addEventListener('click', () => renderer.togglePlayPause());
-            }
-            
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => renderer.reset());
-            }
-            
-            if (fullscreenBtn) {
-                fullscreenBtn.addEventListener('click', () => renderer.toggleFullscreen());
-            }
-            ` : ''}
-        });
     `;
   }
   
