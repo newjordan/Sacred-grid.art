@@ -7,13 +7,13 @@ import { getBundledCanvas2DRenderer } from './BundledCanvas2DRenderer';
 import { getBundledSacredGridRenderer } from './BundledSacredGridRenderer';
 
 /**
- * Generate the complete wallpaper renderer with all dependencies bundled
- * This produces an exact replica of the main application's rendering
+ * Generate the bundled renderer classes (no initialization)
+ * This produces the class definitions needed for rendering
  */
-export function generateWallpaperRenderer(): string {
+export function getBundledRendererClasses(): string {
   return `
 // ============================================
-// SACRED GRID WALLPAPER RENDERER
+// SACRED GRID RENDERER - BUNDLED CLASSES
 // Complete Self-Contained Rendering Engine
 // ============================================
 
@@ -22,15 +22,22 @@ ${getBundledShapeDrawers()}
 ${getBundledCanvas2DRenderer()}
 
 ${getBundledSacredGridRenderer()}
+`;
+}
 
+/**
+ * Generate initialization code for the renderer
+ * Handles both wallpaper and standalone modes based on EXPORT_CONFIG
+ */
+export function generateRendererInit(): string {
+  return `
 // ============================================
-// WALLPAPER INITIALIZATION
+// SACRED GRID INITIALIZATION
 // ============================================
 
 (function() {
   'use strict';
 
-  // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById('sacred-grid-canvas');
     if (!canvas) {
@@ -47,30 +54,26 @@ ${getBundledSacredGridRenderer()}
       return;
     }
 
-    // Apply wallpaper-specific settings
     var settings = snapshot.settings;
 
-    // Disable mouse interaction in wallpaper mode
+    // Disable mouse interaction if configured
     if (config.wallpaperMode || config.disableMouseInteraction) {
       settings.mouse = settings.mouse || {};
       settings.mouse.influenceRadius = 0;
       settings.mouse.maxScale = 1;
     }
 
-    // Apply animation speed modifier
     var animationSpeed = config.animationSpeed || 1;
 
     // Create the renderer
     var renderer = new SacredGridRenderer(container, settings);
 
     // Override the time calculation to apply speed modifier
-    var originalStartAnimation = renderer.startAnimation.bind(renderer);
     renderer.startAnimation = function() {
       var startTime = performance.now();
       var self = this;
 
       function animate() {
-        // Apply animation speed multiplier
         self.time = (performance.now() - startTime) * 0.001 * animationSpeed;
         self.drawFrame();
         self.animationFrame = requestAnimationFrame(animate);
@@ -98,11 +101,69 @@ ${getBundledSacredGridRenderer()}
       resizeCanvas();
     }
 
+    // Wire up controls if present (standalone mode)
+    var playPauseBtn = document.getElementById('play-pause-btn');
+    var resetBtn = document.getElementById('reset-btn');
+    var fullscreenBtn = document.getElementById('fullscreen-btn');
+
+    var isPlaying = true;
+
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', function() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          renderer.startAnimation();
+          playPauseBtn.textContent = '⏸️';
+        } else {
+          if (renderer.animationFrame) {
+            cancelAnimationFrame(renderer.animationFrame);
+          }
+          playPauseBtn.textContent = '▶️';
+        }
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        renderer.initialize();
+      });
+    }
+
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (playPauseBtn) playPauseBtn.click();
+      } else if (e.code === 'KeyF') {
+        if (fullscreenBtn) fullscreenBtn.click();
+      } else if (e.code === 'KeyR') {
+        if (resetBtn) resetBtn.click();
+      }
+    });
+
     // Store renderer globally for debugging
     window.sacredGridRenderer = renderer;
   });
 })();
 `;
+}
+
+/**
+ * Generate the complete wallpaper renderer with all dependencies bundled
+ * (Legacy function - combines classes + init for backward compatibility)
+ */
+export function generateWallpaperRenderer(): string {
+  return getBundledRendererClasses() + generateRendererInit();
 }
 
 /**
