@@ -86,6 +86,7 @@ const SacredGrid = () => {
     const [useLineFactoryForGrid, setUseLineFactoryForGrid] = useState(false);
 
     // Mouse settings
+    const [mouseEnabled, setMouseEnabled] = useState(true);
     const [mouseInfluenceRadius, setMouseInfluenceRadius] = useState(200);
     const [maxMouseScale, setMaxMouseScale] = useState(2);
 
@@ -95,7 +96,7 @@ const SacredGrid = () => {
     const [lineColor, setLineColor] = useState('#0077ff');
     const [useGradientLines, setUseGradientLines] = useState(false);
     const [gradientColorsLines, setGradientColorsLines] = useState([
-        '#ff0000', '#ff7700', '#00ff00', '#0000ff',
+        '#8a2be2', '#0077ff', '#00cc88', '#00ffff',
     ]);
     const [useGradientDots, setUseGradientDots] = useState(false);
     const [gradientColorsDots, setGradientColorsDots] = useState([
@@ -273,6 +274,7 @@ const SacredGrid = () => {
 
         // Mouse interaction settings
         mouse: {
+            enabled: mouseEnabled,
             influenceRadius: mouseInfluenceRadius,
             maxScale: maxMouseScale,
             position: { x: 0, y: 0 }, // This will be updated by the renderer
@@ -528,6 +530,7 @@ const SacredGrid = () => {
         setUseLineFactoryForGrid,
 
         // Mouse setters
+        setMouseEnabled,
         setMouseInfluenceRadius,
         setMaxMouseScale,
 
@@ -753,6 +756,7 @@ const SacredGrid = () => {
 
             // Mouse settings (position is handled internally, only update influence/scale)
             if (importedSettings.mouse) {
+                setMouseEnabled(importedSettings.mouse.enabled ?? mouseEnabled);
                 setMouseInfluenceRadius(importedSettings.mouse.influenceRadius ?? mouseInfluenceRadius);
                 setMaxMouseScale(importedSettings.mouse.maxScale ?? maxMouseScale);
             }
@@ -974,6 +978,7 @@ const SacredGrid = () => {
                 useLineFactoryForGrid,
 
                 // Mouse Settings
+                mouseEnabled,
                 mouseInfluenceRadius,
                 maxMouseScale,
 

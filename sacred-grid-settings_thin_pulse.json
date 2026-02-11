@@ -27,17 +27,17 @@
       "lines": {
         "enabled": true,
         "colors": [
-          "#ff0000",
-          "#ff7700",
-          "#00ff00",
-          "#0000ff"
+          "#8a2be2",
+          "#0077ff",
+          "#00cc88",
+          "#00ffff"
         ]
       },
       "dots": {
         "enabled": false,
         "colors": [
-          "#ff00ff",
-          "#ff0077",
+          "#8a2be2",
+          "#461cba",
           "#0077ff",
           "#00ffff"
         ]
