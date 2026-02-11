@@ -6,6 +6,28 @@ function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+}
+
+function smoothstep(edge0, edge1, x) {
+    if (edge0 === edge1) {
+        return x < edge0 ? 0 : 1;
+    }
+    const t = clamp01((x - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+}
+
+function calculateFadeEnvelope(progress, fadeIn = 0, fadeOut = 0) {
+    const safeFadeIn = clamp01(fadeIn || 0);
+    const safeFadeOut = clamp01(fadeOut || 0);
+
+    const fadeInWeight = safeFadeIn > 0 ? smoothstep(0, safeFadeIn, progress) : 1;
+    const fadeOutWeight = safeFadeOut > 0 ? 1 - smoothstep(1 - safeFadeOut, 1, progress) : 1;
+
+    return clamp01(fadeInWeight * fadeOutWeight);
+}
+
 function easeOutElastic(t) {
     const c4 = (2 * Math.PI) / 3;
     return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
@@ -70,6 +92,8 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
 
     // Apply reverse animation if configured
     const progress = animation.reverse ? 1 - rawProgress : rawProgress;
+    const fadeEnvelope = calculateFadeEnvelope(progress, animation.fadeIn, animation.fadeOut);
+    const shapeOpacity = typeof shapeSettings.opacity === 'number' ? shapeSettings.opacity : 1;
 
     let dynamicRadius, finalOpacity;
     // Additional movement parameters for the new animation modes
@@ -80,15 +104,7 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
     // Apply different animation modes with enhanced effects
     if (animation.mode === AnimationMode.GROW) {
         dynamicRadius = shapeSettings.size * progress;
-        let fadeValue;
-        if (progress < animation.fadeIn) {
-            fadeValue = progress / animation.fadeIn;
-        } else if (progress > 1 - animation.fadeOut) {
-            fadeValue = (1 - progress) / animation.fadeOut;
-        } else {
-            fadeValue = 1;
-        }
-        finalOpacity = Math.max(0, Math.min(1, shapeSettings.opacity * fadeValue));
+        finalOpacity = shapeOpacity;
     } else if (animation.mode === AnimationMode.PULSE) {
         // Enhanced pulsing with harmonic variations
         const basePhase = progress * 2 * Math.PI;
@@ -109,13 +125,13 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         
         // Vary opacity slightly with pulse for more dynamic effect
         const opacityPulse = 1 + (Math.sin(breathingPhase * 1.3) * 0.15);
-        finalOpacity = Math.min(1, shapeSettings.opacity * opacityPulse);
+        finalOpacity = Math.min(1, shapeOpacity * opacityPulse);
     } else if (animation.mode === AnimationMode.ORBIT) {
         // Orbital motion animation - with circular path
         const orbitPhase = adjustedTime * animation.speed;
         const baseRadius = shapeSettings.size * (0.8 + 0.2 * Math.sin(orbitPhase * 0.5));
         dynamicRadius = baseRadius;
-        finalOpacity = shapeSettings.opacity;
+        finalOpacity = shapeOpacity;
         
         // Add orbital movement - shapes move in a circular pattern
         const orbitRadius = shapeSettings.size * 0.3 * animation.intensity;
@@ -140,7 +156,7 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         
         // Subtle opacity oscillation for waveform mode
         const opacityWave = 1 + (Math.sin(wavePhase * 1.7) * 0.1);
-        finalOpacity = Math.min(1, shapeSettings.opacity * opacityWave);
+        finalOpacity = Math.min(1, shapeOpacity * opacityWave);
         
         // Add wavy motion along an axis
         offsetX = Math.sin(wavePhase) * shapeSettings.size * 0.2 * animation.intensity;
@@ -151,7 +167,7 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         
         // Radius calculation with spiral effect
         dynamicRadius = shapeSettings.size * (0.9 + 0.1 * Math.sin(spiralPhase * 0.5));
-        finalOpacity = shapeSettings.opacity * (0.8 + 0.2 * Math.sin(spiralPhase * 0.75));
+        finalOpacity = shapeOpacity * (0.8 + 0.2 * Math.sin(spiralPhase * 0.75));
         
         // Create spiral motion - increasing radius as the shape rotates
         const angle = spiralPhase * 2;
@@ -180,7 +196,7 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         
         // Harmonically varying opacity
         const opacityHarmonic = 0.85 + Math.sin(harmonicPhase * 1.3) * 0.15;
-        finalOpacity = shapeSettings.opacity * opacityHarmonic;
+        finalOpacity = shapeOpacity * opacityHarmonic;
         
         // Create Lissajous pattern movement
         const a = 3; // X frequency
@@ -225,7 +241,7 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         dynamicRadius = shapeSettings.size * (0.95 + 0.05 * Math.sin(swarmPhase * randBase2 * 2));
         
         // Vary opacity 
-        finalOpacity = shapeSettings.opacity * (0.9 + 0.1 * Math.sin(swarmPhase * randBase3));
+        finalOpacity = shapeOpacity * (0.9 + 0.1 * Math.sin(swarmPhase * randBase3));
         
         // Random rotation
         rotationOffset = Math.sin(swarmPhase * randBase1) * 25;
@@ -246,15 +262,18 @@ export function calculateAnimationParams(time, shapeSettings, globalSettings, fr
         offsetY = Math.sin(pulseDir) * (breatheEased * 0.1) * shapeSettings.size * animation.intensity;
         
         // Opacity changes with breath
-        finalOpacity = shapeSettings.opacity * (0.8 + 0.2 * breatheEased);
+        finalOpacity = shapeOpacity * (0.8 + 0.2 * breatheEased);
         
         // Subtle rotation with breathing
         rotationOffset = (breatheEased - 0.5) * 5 * animation.intensity;
     } else {
         // Fallback to basic animation
         dynamicRadius = shapeSettings.size;
-        finalOpacity = shapeSettings.opacity;
+        finalOpacity = shapeOpacity;
     }
+
+    // Apply a smooth fade envelope consistently across all modes
+    finalOpacity = clamp01(finalOpacity * fadeEnvelope);
 
     return {
         dynamicRadius,

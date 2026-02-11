@@ -264,7 +264,7 @@ export const DEFAULT_SETTINGS = {
     gradient: {
       lines: {
         enabled: true,
-        colors: ['#ff0000', '#ff7700', '#00ff00', '#0000ff']
+        colors: ['#8a2be2', '#0077ff', '#00cc88', '#00ffff']
       },
       dots: {
         enabled: true,

@@ -243,11 +243,18 @@ class SacredGridRenderer {
         if (rotationOffset) {
             adjustedRotation += rotationOffset;
         }
+
+        // Respect caller-provided opacity (used by stacked/fractal layers) while keeping values safe.
+        const fallbackOpacity = typeof shapeSettings.opacity === 'number' ? shapeSettings.opacity : 1;
+        const effectiveOpacity = Number.isFinite(opacity)
+            ? Math.max(0, Math.min(1, opacity))
+            : fallbackOpacity;
         
         // Create a modified shape settings object with the adjusted rotation
         const adjustedSettings = {
             ...shapeSettings,
-            rotation: adjustedRotation
+            rotation: adjustedRotation,
+            opacity: effectiveOpacity
         };
 
         // Draw the shape with adjusted position
@@ -734,10 +741,10 @@ class SacredGridRenderer {
                         lineCenter.x - mouse.position.x,
                         lineCenter.y - mouse.position.y
                     );
-                    const lineMouseInfluence = Math.max(
+                    const lineMouseInfluence = mouse.enabled !== false ? Math.max(
                         0,
                         1 - lineMouseDist / mouse.influenceRadius
-                    );
+                    ) : 0;
                     const finalOpacity = baseOpacity * (1 + lineMouseInfluence);
                     const lineWidth = (0.5 + lineMouseInfluence) * grid.lineWidthMultiplier;
 
@@ -854,10 +861,10 @@ class SacredGridRenderer {
                 point.x - mouse.position.x,
                 point.y - mouse.position.y
             );
-            const mouseInfluence = Math.max(
+            const mouseInfluence = mouse.enabled !== false ? Math.max(
                 0,
                 1 - distanceFromMouse / mouse.influenceRadius
-            );
+            ) : 0;
             
             // Calculate dot size with breathing effect
             const breathePhase = this.time * grid.breathingSpeed + point.noiseOffset;
@@ -1284,7 +1291,13 @@ class SacredGridRenderer {
      */
     updatePostProcessorBuffers() {
         if (this.postProcessor && this.postProcessor.resize) {
-            this.postProcessor.resize(this.canvas.width, this.canvas.height);
+            const canvas = this.renderer?.canvas;
+            const width = canvas?.width || this.renderer?.width;
+            const height = canvas?.height || this.renderer?.height;
+
+            if (width && height) {
+                this.postProcessor.resize(width, height);
+            }
         }
     }
 }

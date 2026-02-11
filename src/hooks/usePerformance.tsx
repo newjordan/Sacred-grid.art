@@ -1,6 +1,6 @@
 // src/hooks/usePerformance.ts - Performance monitoring foundation
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PerformanceMetrics } from '../types';
 
 interface PerformanceHookOptions {
