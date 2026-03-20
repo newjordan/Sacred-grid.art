@@ -1,14 +1,43 @@
-// src/App.js
-import React from 'react';
+import React, { useState } from 'react';
 import SacredGrid from './SacredGrid';
+import SacredGridAudio from './SacredGridAudio';
 import './App.css';
 
 function App() {
-    return (
-        <div className="App">
-            <SacredGrid />
-        </div>
-    );
+  const [audioMode, setAudioMode] = useState(false);
+  const [fs, setFs] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setFs(true);
+    } else {
+      document.exitFullscreen();
+      setFs(false);
+    }
+  };
+
+  const btn = {
+    display: 'block', width: '100%', marginBottom: '6px',
+    background: 'rgba(0,0,0,0.7)', color: '#00ffcc',
+    border: '1px solid rgba(0,200,200,0.4)',
+    borderRadius: '6px', cursor: 'pointer', fontSize: '13px',
+    padding: '8px 16px',
+  };
+
+  return (
+    <div className="App">
+      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
+        <button style={btn} onClick={toggleFullscreen}>
+          {fs ? '✕ Exit Fullscreen' : '⛶ Fullscreen'}
+        </button>
+        <button style={{ ...btn, marginBottom: 0 }} onClick={() => setAudioMode(!audioMode)}>
+          {audioMode ? '⬡ Grid Mode' : '◎ Audio Mode'}
+        </button>
+      </div>
+      {audioMode ? <SacredGridAudio /> : <SacredGrid />}
+    </div>
+  );
 }
 
 export default App;
