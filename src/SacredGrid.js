@@ -253,7 +253,7 @@ const SacredGrid = () => {
     const [filmGrainColored, setFilmGrainColored] = useState(false);
 
     // Control panel visibility
-    const [showControls, setShowControls] = useState(true);
+    const [showControls, setShowControls] = useState(false);
     const toggleControls = () => setShowControls(prev => !prev);
 
     // Build the structured settings object from all the state variables
