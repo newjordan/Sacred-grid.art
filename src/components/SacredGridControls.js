@@ -13,7 +13,7 @@ import ExportControls from './panels/ExportControls.js';
 import PostProcessingSection from './sections/PostProcessingSection.js';
 
 // Accept onImportSettings and onExport props
-const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType, onImportSettings, onExport }) => {
+const SacredGridControls = ({ settings, setSettings, toggleControls, rendererType, onImportSettings, onExport, onReset }) => {
 
     // Ref for the hidden file input
     const fileInputRef = useRef(null);
@@ -33,8 +33,9 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
             // Create a temporary anchor element to trigger the download
             const link = document.createElement('a');
             link.href = url;
-            // Suggest a filename for the download
-            link.download = 'sacred-grid-settings.json'; 
+            const name = prompt('Save as:', 'sacred-grid-settings');
+            if (!name) return;
+            link.download = name.endsWith('.json') ? name : name + '.json'; 
             
             // Append the link to the body (required for Firefox)
             document.body.appendChild(link);
@@ -179,6 +180,26 @@ const SacredGridControls = ({ settings, setSettings, toggleControls, rendererTyp
                         }}
                     >
                         Export
+                    </button>
+                    {/* Reset Button */}
+                    <button
+                        onClick={onReset}
+                        title="Reset to default"
+                        style={{
+                            background: "rgba(255, 255, 255, 0.08)",
+                            backdropFilter: "blur(8px)",
+                            WebkitBackdropFilter: "blur(8px)",
+                            border: "1px solid rgba(255, 255, 255, 0.15)",
+                            color: "#00ffcc",
+                            padding: "8px 14px",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                            transition: "all 0.2s ease"
+                        }}
+                    >
+                        Reset
                     </button>
                     {/* Hide Button */}
                     <button
