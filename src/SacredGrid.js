@@ -1,6 +1,6 @@
 // src/components/SacredGrid.js
 // Main component for Canvas2D-only version
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
 import MandalaDesigner from './components/MandalaDesigner';
@@ -22,7 +22,7 @@ html, body, #root {
 }
 `;
 
-const SacredGrid = () => {
+const SacredGrid = forwardRef(({ defaultShowControls = true }, ref) => {
     // Add useEffect to inject the fullscreen styles
     useEffect(() => {
         // Create and inject a style tag with our fullscreen CSS
@@ -253,7 +253,7 @@ const SacredGrid = () => {
     const [filmGrainColored, setFilmGrainColored] = useState(false);
 
     // Control panel visibility
-    const [showControls, setShowControls] = useState(true);
+    const [showControls, setShowControls] = useState(defaultShowControls);
     const toggleControls = () => setShowControls(prev => !prev);
 
     // Build the structured settings object from all the state variables
@@ -1163,6 +1163,14 @@ const SacredGrid = () => {
         }
     };
 
+
+    useImperativeHandle(ref, () => ({
+        updateSettings: (s) => {
+            if (rendererRef.current) rendererRef.current.updateSettings(s);
+        },
+        getSettings: () => settings,
+    }));
+
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <SacredGridCanvas
@@ -1228,6 +1236,6 @@ const SacredGrid = () => {
             )}
         </div>
     );
-};
+});
 
 export default SacredGrid;
