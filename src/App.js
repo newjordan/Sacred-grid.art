@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SacredGrid from './SacredGrid';
 import SacredGridAudio from './SacredGridAudio';
 import './App.css';
@@ -7,13 +7,17 @@ function App() {
   const [audioMode, setAudioMode] = useState(false);
   const [fs, setFs] = useState(false);
 
+  useEffect(() => {
+    const handler = () => setFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setFs(true);
+      document.documentElement.requestFullscreen().catch(console.error);
     } else {
-      document.exitFullscreen();
-      setFs(false);
+      document.exitFullscreen().catch(console.error);
     }
   };
 
