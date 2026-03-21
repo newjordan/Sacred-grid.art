@@ -111,7 +111,7 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
         />
       )}
 
-      <SacredGrid ref={gridRef} />
+      <SacredGrid ref={gridRef} defaultShowControls={false} />
     </animated.div>
   );
 };
