@@ -22,7 +22,7 @@ html, body, #root {
 }
 `;
 
-const SacredGrid = forwardRef((props, ref) => {
+const SacredGrid = forwardRef(({ defaultShowControls = true }, ref) => {
     // Add useEffect to inject the fullscreen styles
     useEffect(() => {
         // Create and inject a style tag with our fullscreen CSS
@@ -253,7 +253,7 @@ const SacredGrid = forwardRef((props, ref) => {
     const [filmGrainColored, setFilmGrainColored] = useState(false);
 
     // Control panel visibility
-    const [showControls, setShowControls] = useState(false);
+    const [showControls, setShowControls] = useState(defaultShowControls);
     const toggleControls = () => setShowControls(prev => !prev);
 
     // Build the structured settings object from all the state variables
