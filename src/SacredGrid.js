@@ -1,6 +1,6 @@
 // src/components/SacredGrid.js
 // Main component for Canvas2D-only version
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
 import MandalaDesigner from './components/MandalaDesigner';
@@ -22,7 +22,7 @@ html, body, #root {
 }
 `;
 
-const SacredGrid = () => {
+const SacredGrid = forwardRef((props, ref) => {
     // Add useEffect to inject the fullscreen styles
     useEffect(() => {
         // Create and inject a style tag with our fullscreen CSS
@@ -1163,6 +1163,14 @@ const SacredGrid = () => {
         }
     };
 
+
+    useImperativeHandle(ref, () => ({
+        updateSettings: (s) => {
+            if (rendererRef.current) rendererRef.current.updateSettings(s);
+        },
+        getSettings: () => settings,
+    }));
+
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <SacredGridCanvas
@@ -1228,6 +1236,6 @@ const SacredGrid = () => {
             )}
         </div>
     );
-};
+});
 
 export default SacredGrid;
