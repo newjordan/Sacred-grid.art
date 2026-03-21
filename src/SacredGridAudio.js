@@ -13,8 +13,7 @@ const MODES = [
 ];
 
 const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
-  const [gridSettings, setGridSettings] = useState(null);
-  const [gridRef, setGridRef] = useState(null);
+  const gridRef = useRef(null);
   const [audioEl, setAudioEl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState('react');
@@ -47,10 +46,6 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
     if (f) setLocalUrl(URL.createObjectURL(f));
   };
 
-  const onSettings = (settings, ref) => {
-    setGridSettings(settings);
-    if (!gridRef && ref) setGridRef(ref);
-  };
 
   const updateSettings = (s) => {
     if (s._beat) {
@@ -105,10 +100,10 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
         </div>
       </div>
 
-      {gridSettings && mode !== 'none' && (
+      {mode !== 'none' && (
         <GridAudioConnector
           audioElement={audioEl}
-          gridSettings={gridSettings}
+          gridSettings={gridRef.current?.getSettings() || {}}
           onUpdateSettings={updateSettings}
           responseIntensity={intensity}
           beatMultiplier={beatMultiplier}
@@ -116,7 +111,7 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
         />
       )}
 
-      <SacredGrid ref={gridRef} onSettingsUpdate={onSettings} />
+      <SacredGrid ref={gridRef} />
     </animated.div>
   );
 };
