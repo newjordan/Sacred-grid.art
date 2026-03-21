@@ -1,8 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
-test('renders Sacred Grid controls', () => {
+test('grid mode renders canvas and hides audio UI', () => {
   render(<App />);
-  const controlsHeading = screen.getByText(/Sacred Grid Controls/i);
-  expect(controlsHeading).toBeInTheDocument();
+  expect(screen.queryByText(/Audio Visualization/i)).not.toBeInTheDocument();
+});
+
+test('audio mode toggle switches to audio UI', () => {
+  render(<App />);
+  fireEvent.click(screen.getByText(/Audio Mode/i));
+  expect(screen.getByText(/Audio Visualization/i)).toBeInTheDocument();
 });
