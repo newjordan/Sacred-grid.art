@@ -710,19 +710,14 @@ const SacredGrid = forwardRef(({ defaultShowControls = true }, ref) => {
         setFilmGrainLuminance,
         setFilmGrainColored,
     };
-
-    // Load Green Flower pattern on startup
-    useEffect(() => {
-        // Import and load the green flower settings directly
+    const loadGreenFlower = () => {
         import('./green_flower_2.json')
-            .then(greenFlowerModule => {
-                const jsonString = JSON.stringify(greenFlowerModule.default);
-                handleImportSettings(jsonString);
-            })
-            .catch(error => {
-                console.error('Failed to load green flower:', error);
-            });
-    }, []); // Run once on mount
+            .then(m => handleImportSettings(JSON.stringify(m.default)))
+            .catch(console.error);
+    };
+    // Load Green Flower pattern on startup
+    useEffect(() => { loadGreenFlower(); }, []);
+     // Run once on mount
 
     // Handle importing settings from a JSON file
     const handleImportSettings = (jsonContent) => {
@@ -1187,6 +1182,7 @@ const SacredGrid = forwardRef(({ defaultShowControls = true }, ref) => {
                     toggleControls={toggleControls}
                     rendererType={rendererType}
                     onImportSettings={handleImportSettings} // Pass down the import handler
+                    onReset={loadGreenFlower}
                     onExport={handleExport} // Pass down the export handler
                     onCreateSnapshot={createApplicationSnapshot} // Pass down snapshot creation
                     onRestoreSnapshot={restoreFromSnapshot} // Pass down snapshot restoration
