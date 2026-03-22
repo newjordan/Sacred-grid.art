@@ -19,6 +19,7 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
   const [mode, setMode] = useState('react');
   const [intensity, setIntensity] = useState(responseIntensity);
   const [localUrl, setLocalUrl] = useState(null);
+  const [showPanel, setShowPanel] = useState(true);
   const rotRef = useRef(0);
 
   const [anim, api] = useSpring(() => ({
@@ -45,7 +46,6 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
     const f = e.target.files[0];
     if (f) setLocalUrl(URL.createObjectURL(f));
   };
-
 
   const updateSettings = (s) => {
     if (s._beat) {
@@ -81,24 +81,39 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
 
   return (
     <animated.div style={{ position: 'relative', width: '100%', height: '100%', ...anim }}>
-      <div style={panelStyle}>
-        <span style={{ color: '#00ffcc', fontWeight: 600, fontSize: 14 }}>Audio Visualization</span>
-        <span style={{ color: '#888', fontSize: 11 }}>hide controls ↑ for best view</span>
-        <input type="file" accept="audio/*" onChange={onFile} style={{ color: '#ccc', fontSize: 12 }} />
-        <button style={btnStyle} onClick={toggle}>{playing ? 'Pause' : 'Play'}</button>
-        <div>
-          <div style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Mode:</div>
-          <select style={selStyle} value={mode} onChange={e => setMode(e.target.value)}>
-            {MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-          </select>
+
+      {showPanel ? (
+        <div style={panelStyle}>
+          <span style={{ color: '#00ffcc', fontWeight: 600, fontSize: 14 }}>Audio Visualization</span>
+          <button
+            onClick={() => setShowPanel(false)}
+            style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#ccc', fontSize:12, fontWeight:500, cursor:'pointer', padding:'6px 14px', borderRadius:8, backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}
+          >
+            hide
+          </button>
+          <input type="file" accept="audio/*" onChange={onFile} style={{ color: '#ccc', fontSize: 12 }} />
+          <button style={btnStyle} onClick={toggle}>{playing ? 'Pause' : 'Play'}</button>
+          <div>
+            <div style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Mode:</div>
+            <select style={selStyle} value={mode} onChange={e => setMode(e.target.value)}>
+              {MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Intensity: {intensity.toFixed(1)}</div>
+            <input type="range" min="0.1" max="10" step="0.1" value={intensity}
+              onChange={e => setIntensity(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#00ffcc' }} />
+          </div>
         </div>
-        <div>
-          <div style={{ color: '#aaa', fontSize: 12, marginBottom: 4 }}>Intensity: {intensity.toFixed(1)}</div>
-          <input type="range" min="0.1" max="10" step="0.1" value={intensity}
-            onChange={e => setIntensity(parseFloat(e.target.value))}
-            style={{ width: '100%', accentColor: '#00ffcc' }} />
-        </div>
-      </div>
+      ) : (
+        <button
+          onClick={() => setShowPanel(true)}
+          style={{ position:'absolute', top:60, left:16, zIndex:100, background:'rgba(0,0,0,0.75)', border:'1px solid rgba(0,200,200,0.3)', borderRadius:8, padding:'6px 12px', cursor:'pointer', color:'#00ffcc', fontSize:12, fontWeight:600 }}
+        >
+          ◉ Audio
+        </button>
+      )}
 
       {mode !== 'none' && (
         <GridAudioConnector
