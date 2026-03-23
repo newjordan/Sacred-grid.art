@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SacredGrid from './SacredGrid';
 import SacredGridAudio from './SacredGridAudio';
 import './App.css';
@@ -6,6 +6,7 @@ import './App.css';
 function App() {
   const [audioMode, setAudioMode] = useState(false);
   const [fs, setFs] = useState(false);
+  const gridRef = useRef(null);
 
   useEffect(() => {
     const handler = () => setFs(!!document.fullscreenElement);
@@ -39,7 +40,11 @@ function App() {
           {audioMode ? '⬡ Grid Mode' : '◎ Audio Mode'}
         </button>
       </div>
-      {audioMode ? <SacredGridAudio /> : <SacredGrid />}
+
+      {/* always mounted — settings survive mode switches */}
+      <SacredGrid ref={gridRef} defaultShowControls={true} />
+
+      {audioMode && <SacredGridAudio gridRef={gridRef} />}
     </div>
   );
 }
