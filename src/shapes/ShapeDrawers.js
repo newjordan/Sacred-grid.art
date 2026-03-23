@@ -579,26 +579,17 @@ function drawShapeWithLineFactory(ctx, params, vertices, globalSettings) {
 export function drawPolygon(ctx, params) {
     const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
 
-    // Calculate animation parameters with special handling for WebGL
     const isWebGL = ctx.isWebGLContext === true || typeof ctx.beginPath !== 'function';
     let finalOpacity;
 
     if (isWebGL) {
-        // Force maximum opacity in WebGL mode to ensure visibility
         finalOpacity = 1.0;
     } else {
-        // Use normal opacity calculation for Canvas2D
         finalOpacity = calculateAnimationParams(time, shapeSettings, globalSettings).finalOpacity;
     }
-    
-    // Use normal radius calculation
-    const { dynamicRadius } = calculateAnimationParams(
-        time,
-        shapeSettings,
-        globalSettings
-    );
 
-    // Set the stroke style
+    const { dynamicRadius } = calculateAnimationParams(time, shapeSettings, globalSettings);
+
     let strokeColor;
     if (globalSettings.colors.gradient.shapes.enabled) {
         strokeColor = getMultiEasedColor(
@@ -610,75 +601,53 @@ export function drawPolygon(ctx, params) {
         );
         ctx.globalAlpha = finalOpacity;
     } else {
-        // Apply opacity directly to the context for consistent handling between gradient/non-gradient modes
         ctx.globalAlpha = finalOpacity;
-        // Get the shape color without embedding opacity (pass 1.0 as alpha)
         strokeColor = getShapeColor(1.0, globalSettings.colors.scheme, ctx, { rendererType: globalSettings.rendererType });
     }
 
-    // Get the number of vertices (sides) and rotation angle
     const sides = shapeSettings.vertices || 3;
-    const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
+    const rotation = (shapeSettings.rotation * Math.PI) / 180;
 
-    // Generate vertices for the polygon
+    // per-vertex audio displacement
+    const vertexFreqs = shapeSettings.vertexFrequencies;
+    const audioIntensity = shapeSettings.vertexAudioIntensity || 0;
+
     let vertices = [];
-    
-    // Check if we're using custom vertices
+
     if (shapeSettings.useCustomVertices && shapeSettings.customVertices && shapeSettings.customVertices.length > 2) {
-        // Use custom vertices - scale them to match the current dynamic radius
-        // and adjust for center position
         const customVertices = shapeSettings.customVertices;
-        const maxCustomRadius = Math.max(...customVertices.map(v => 
-            Math.sqrt(v.x * v.x + v.y * v.y)
-        ));
-        
-        // Calculate scale factor to maintain relative size
+        const maxCustomRadius = Math.max(...customVertices.map(v => Math.sqrt(v.x * v.x + v.y * v.y)));
         const scaleFactor = maxCustomRadius > 0 ? dynamicRadius / maxCustomRadius : 1;
-        
-        // Create scaled and positioned vertices
         vertices = customVertices.map(v => ({
             x: cx + v.x * scaleFactor,
             y: cy + v.y * scaleFactor
         }));
     } else {
-        // Use standard polygon calculation based on sides
         for (let i = 0; i < sides; i++) {
             const angle = (i * 2 * Math.PI) / sides + rotation;
+            // modulate each vertex radius independently if audio data present
+            const freqBoost = vertexFreqs ? vertexFreqs[i % vertexFreqs.length] * audioIntensity : 0;
+            const r = dynamicRadius * (1 + freqBoost);
             vertices.push({
-                x: cx + dynamicRadius * Math.cos(angle),
-                y: cy + dynamicRadius * Math.sin(angle),
+                x: cx + r * Math.cos(angle),
+                y: cy + r * Math.sin(angle),
             });
         }
     }
-    
-    // ALWAYS ensure that the polygon path forms a complete loop
-    // This is critical for wave continuity at the joining point
-    if (vertices.length > 0) {
-        // Add first vertex again at the end (if not already there)
-        // First check if they're different
-        const firstV = vertices[0];
-        const lastV = vertices[vertices.length - 1];
-        
-        if (Math.abs(firstV.x - lastV.x) > 0.001 || Math.abs(firstV.y - lastV.y) > 0.001) {
-            // Add first vertex again to close the loop
-            vertices.push({...vertices[0]});
-        }
+
+    const firstV = vertices[0];
+    const lastV = vertices[vertices.length - 1];
+    if (Math.abs(firstV.x - lastV.x) > 0.001 || Math.abs(firstV.y - lastV.y) > 0.001) {
+        vertices.push({ ...vertices[0] });
     }
 
-    // Check if we should use enhanced line factory drawing
     if (ctx.drawLine && shapeSettings.useLineFactory && globalSettings.lineFactory) {
         drawShapeWithLineFactory(ctx, { thickness, strokeColor }, vertices, globalSettings);
     } else {
-        // Check if we're in WebGL mode
-        
         if (isWebGL) {
-            // WebGL drawing - use the drawPolygon method directly
             if (ctx.drawPolygon && vertices && vertices.length > 2) {
-                // Force bright color and thick lines for WebGL
-                const webglColor = "#FF00FF"; // Bright magenta
-                const webglThickness = Math.max(thickness * 5, 5); // Much thicker
-
-                // For WebGL, need to pass line settings when useLineFactory is true
+                const webglColor = "#FF00FF";
+                const webglThickness = Math.max(thickness * 5, 5);
                 if (shapeSettings.useLineFactory && globalSettings.lineFactory) {
                     ctx.drawPolygon(vertices, null, webglColor, webglThickness, globalSettings.lineFactory);
                 } else {
@@ -686,7 +655,6 @@ export function drawPolygon(ctx, params) {
                 }
             }
         } else {
-            // Standard Canvas2D drawing
             ctx.beginPath();
             ctx.moveTo(vertices[0].x, vertices[0].y);
             for (let i = 1; i < vertices.length; i++) {
@@ -694,16 +662,13 @@ export function drawPolygon(ctx, params) {
             }
             ctx.closePath();
             ctx.strokeStyle = strokeColor;
-            // BUGFIX: Ensure minimum line width for visibility - increase to 1.0 for better visibility
             ctx.lineWidth = Math.max(thickness, 1.0);
             ctx.stroke();
         }
     }
-    
-    // Reset global alpha
+
     ctx.globalAlpha = 1;
 }
-
 export function drawFlowerOfLife(ctx, params) {
     const { cx, cy, radius, thickness, shapeSettings, time, globalSettings } = params;
 
