@@ -34,4 +34,7 @@ yarn-error.log*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
+Thumbs.db*.bak
+*TEST.json
+*.bak
+*TEST.json
