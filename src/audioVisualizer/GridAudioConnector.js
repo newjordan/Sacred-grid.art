@@ -68,7 +68,7 @@ const GridAudioConnector = ({
 
     animationFrame = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animationFrame);
-  }, [analyzer, beatMultiplier, responseIntensity, visualizationMode, isBeat]);
+  }, [analyzer, beatMultiplier, responseIntensity, visualizationMode]);
 
   const getVertexFrequencies = (frequencyData, vertexCount) => {
     if (!frequencyData || !vertexCount) return null;

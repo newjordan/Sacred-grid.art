@@ -42,7 +42,7 @@ function App() {
       </div>
 
       {/* always mounted — settings survive mode switches */}
-      <SacredGrid ref={gridRef} defaultShowControls={true} />
+      <SacredGrid ref={gridRef} controlsVisible={!audioMode} />
 
       {audioMode && <SacredGridAudio gridRef={gridRef} />}
     </div>
