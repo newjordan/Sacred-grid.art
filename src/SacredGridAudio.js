@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import SacredGrid from './SacredGrid';
 import { GridAudioConnector } from './audioVisualizer';
 import { useSpring, animated } from '@react-spring/web';
 
@@ -12,8 +11,7 @@ const MODES = [
   { value: 'contour', label: 'Contour' },
 ];
 
-const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
-  const gridRef = useRef(null);
+const SacredGridAudio = ({ gridRef, responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
   const [audioEl, setAudioEl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState('react');
@@ -48,6 +46,7 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
   };
 
   const updateSettings = (s) => {
+    if (!s || Object.keys(s).length === 0) return;
     if (s._beat) {
       rotRef.current += 0.5;
       api.start({ transform: `rotate(${rotRef.current}deg)` });
@@ -60,8 +59,11 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
     if (gridRef?.current?.updateSettings) gridRef.current.updateSettings(s);
   };
 
+  // always returns live settings from the shared grid
+  const getSettings = () => gridRef?.current?.getSettings?.() || null;
+
   const panelStyle = {
-    position: 'absolute', top: 60, left: 16, zIndex: 100,
+    position: 'fixed', top: 60, left: 16, zIndex: 100,
     background: 'rgba(0,0,0,0.75)', border: '1px solid rgba(0,200,200,0.3)',
     borderRadius: 8, padding: 14, width: 220,
     display: 'flex', flexDirection: 'column', gap: 8,
@@ -80,14 +82,14 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
   };
 
   return (
-    <animated.div style={{ position: 'relative', width: '100%', height: '100%', ...anim }}>
+    <animated.div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', ...anim }}>
 
       {showPanel ? (
-        <div style={panelStyle}>
+        <div style={{ ...panelStyle, pointerEvents: 'auto' }}>
           <span style={{ color: '#00ffcc', fontWeight: 600, fontSize: 14 }}>Audio Visualization</span>
           <button
             onClick={() => setShowPanel(false)}
-            style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#ccc', fontSize:12, fontWeight:500, cursor:'pointer', padding:'6px 14px', borderRadius:8, backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }}
+            style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#ccc', fontSize:12, fontWeight:500, cursor:'pointer', padding:'6px 14px', borderRadius:8 }}
           >
             hide
           </button>
@@ -109,7 +111,7 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
       ) : (
         <button
           onClick={() => setShowPanel(true)}
-          style={{ position:'absolute', top:60, left:16, zIndex:100, background:'rgba(0,0,0,0.75)', border:'1px solid rgba(0,200,200,0.3)', borderRadius:8, padding:'6px 12px', cursor:'pointer', color:'#00ffcc', fontSize:12, fontWeight:600 }}
+          style={{ pointerEvents:'auto', position:'fixed', top:60, left:16, zIndex:100, background:'rgba(0,0,0,0.75)', border:'1px solid rgba(0,200,200,0.3)', borderRadius:8, padding:'6px 12px', cursor:'pointer', color:'#00ffcc', fontSize:12, fontWeight:600 }}
         >
           ◉ Audio
         </button>
@@ -118,15 +120,13 @@ const SacredGridAudio = ({ responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
       {mode !== 'none' && (
         <GridAudioConnector
           audioElement={audioEl}
-          gridSettings={gridRef.current?.getSettings() || {}}
+          getSettings={getSettings}
           onUpdateSettings={updateSettings}
           responseIntensity={intensity}
           beatMultiplier={beatMultiplier}
           visualizationMode={mode}
         />
       )}
-
-      <SacredGrid ref={gridRef} defaultShowControls={false} />
     </animated.div>
   );
 };
