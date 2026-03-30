@@ -620,6 +620,10 @@ export function drawPolygon(ctx, params) {
     const sides = shapeSettings.vertices || 3;
     const rotation = (shapeSettings.rotation * Math.PI) / 180; // Convert to radians
 
+    // Optional per-vertex audio modulation data from GridAudioConnector.
+    const vertexFreqs = shapeSettings.vertexFrequencies;
+    const audioIntensity = shapeSettings.vertexAudioIntensity || 0;
+
     // Generate vertices for the polygon
     let vertices = [];
     
@@ -644,9 +648,11 @@ export function drawPolygon(ctx, params) {
         // Use standard polygon calculation based on sides
         for (let i = 0; i < sides; i++) {
             const angle = (i * 2 * Math.PI) / sides + rotation;
+            const freqBoost = vertexFreqs ? vertexFreqs[i % vertexFreqs.length] * audioIntensity : 0;
+            const vertexRadius = dynamicRadius * (1 + freqBoost);
             vertices.push({
-                x: cx + dynamicRadius * Math.cos(angle),
-                y: cy + dynamicRadius * Math.sin(angle),
+                x: cx + vertexRadius * Math.cos(angle),
+                y: cy + vertexRadius * Math.sin(angle),
             });
         }
     }
