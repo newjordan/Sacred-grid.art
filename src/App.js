@@ -6,6 +6,7 @@ import './App.css';
 function App() {
   const [audioMode, setAudioMode] = useState(false);
   const [fs, setFs] = useState(false);
+  const [guiVisible, setGuiVisible] = useState(true);
   const gridRef = useRef(null);
 
   useEffect(() => {
@@ -33,18 +34,30 @@ function App() {
   return (
     <div className="App">
       <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
-        <button style={btn} onClick={toggleFullscreen}>
-          {fs ? '✕ Exit Fullscreen' : '⛶ Fullscreen'}
-        </button>
-        <button style={{ ...btn, marginBottom: 0 }} onClick={() => setAudioMode(!audioMode)}>
-          {audioMode ? '⬡ Grid Mode' : '◎ Audio Mode'}
+        {guiVisible && (
+          <>
+            <button style={btn} onClick={toggleFullscreen}>
+              {fs ? '✕ Exit Fullscreen' : '⛶ Fullscreen'}
+            </button>
+            <button style={{ ...btn, marginBottom: 0 }} onClick={() => setAudioMode(!audioMode)}>
+              {audioMode ? '⬡ Grid Mode' : '◎ Audio Mode'}
+            </button>
+          </>
+        )}
+
+        <button
+          aria-label="Toggle GUI"
+          style={{ ...btn, marginTop: guiVisible ? '8px' : 0, marginBottom: 0, fontWeight: 700 }}
+          onClick={() => setGuiVisible(!guiVisible)}
+        >
+          H
         </button>
       </div>
 
       {/* always mounted — settings survive mode switches */}
-      <SacredGrid ref={gridRef} controlsVisible={!audioMode} />
+      <SacredGrid ref={gridRef} controlsVisible={guiVisible && !audioMode} guiVisible={guiVisible} />
 
-      {audioMode && <SacredGridAudio gridRef={gridRef} />}
+      {audioMode && <SacredGridAudio gridRef={gridRef} guiVisible={guiVisible} />}
     </div>
   );
 }
