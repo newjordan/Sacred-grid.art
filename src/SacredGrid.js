@@ -22,7 +22,7 @@ html, body, #root {
 }
 `;
 
-const SacredGrid = forwardRef(({ controlsVisible = true }, ref) => {
+const SacredGrid = forwardRef(({ controlsVisible = true, guiVisible = true }, ref) => {
     // Add useEffect to inject the fullscreen styles
     useEffect(() => {
         // Create and inject a style tag with our fullscreen CSS
@@ -1180,7 +1180,7 @@ const SacredGrid = forwardRef(({ controlsVisible = true }, ref) => {
                 onExport={handleExportImage}
             />
             
-            {showControls &&
+            {guiVisible && showControls &&
                 <SacredGridControls
                     settings={settings}
                     setSettings={setSettings}
@@ -1198,9 +1198,9 @@ const SacredGrid = forwardRef(({ controlsVisible = true }, ref) => {
             <MandalaDesigner
                 settings={settings}
                 setSettings={setSettings}
-                isVisible={settings.shapes.primary.type === ShapeType.CUSTOM_MANDALA}
+                isVisible={guiVisible && settings.shapes.primary.type === ShapeType.CUSTOM_MANDALA}
             />
-            {!showControls && (
+            {guiVisible && !showControls && (
                 <button
                     onClick={toggleControls}
                     style={{

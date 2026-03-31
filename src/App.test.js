@@ -37,3 +37,17 @@ test('audio mode shows intensity slider', () => {
   fireEvent.click(screen.getByText(/Audio Mode/i));
   expect(screen.getByText(/Intensity/i)).toBeInTheDocument();
 });
+
+test('H button toggles all GUI on and off', () => {
+  render(<App />);
+
+  const guiToggle = screen.getByRole('button', { name: /toggle gui/i });
+  expect(screen.getByText(/Sacred Grid Controls/i)).toBeInTheDocument();
+
+  fireEvent.click(guiToggle);
+  expect(screen.queryByText(/Sacred Grid Controls/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Audio Mode/i)).not.toBeInTheDocument();
+
+  fireEvent.click(guiToggle);
+  expect(screen.getByText(/Sacred Grid Controls/i)).toBeInTheDocument();
+});

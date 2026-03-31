@@ -11,7 +11,7 @@ const MODES = [
   { value: 'contour', label: 'Contour' },
 ];
 
-const SacredGridAudio = ({ gridRef, responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
+const SacredGridAudio = ({ gridRef, guiVisible = true, responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
   const [audioEl, setAudioEl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState('react');
@@ -84,7 +84,7 @@ const SacredGridAudio = ({ gridRef, responseIntensity = 0.5, beatMultiplier = 1.
   return (
     <animated.div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', ...anim }}>
 
-      {showPanel ? (
+      {guiVisible && (showPanel ? (
         <div style={{ ...panelStyle, pointerEvents: 'auto' }}>
           <span style={{ color: '#00ffcc', fontWeight: 600, fontSize: 14 }}>Audio Visualization</span>
           <button
