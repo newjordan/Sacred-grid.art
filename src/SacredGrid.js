@@ -1177,7 +1177,7 @@ const SacredGrid = forwardRef(({ controlsVisible = true, guiVisible = true }, re
                 settings={settings}
                 ref={rendererRef}
                 rendererType={rendererType}
-                onExport={handleExportImage}
+                onExport={guiVisible && showControls ? handleExportImage : undefined}
             />
             
             {guiVisible && showControls &&
