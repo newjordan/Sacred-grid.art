@@ -6,13 +6,17 @@ import AudioAnalyzer from './AudioAnalyzer';
 import WaveformVisualizer from './WaveformVisualizer';
 import FrequencyBars from './FrequencyBars';
 import GridAudioConnector from './GridAudioConnector';
+import F181HarmonicVisualizer from './F181HarmonicVisualizer';
+import * as F181HarmonicAddressing from './F181HarmonicAddressing';
 
 export {
   AudioVisualizer,
   AudioAnalyzer,
   WaveformVisualizer,
   FrequencyBars,
-  GridAudioConnector
+  GridAudioConnector,
+  F181HarmonicVisualizer,
+  F181HarmonicAddressing
 };
 
 export default AudioVisualizer;
