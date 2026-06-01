@@ -9,6 +9,7 @@ const MODES = [
   { value: 'pulse', label: 'Pulse' },
   { value: 'breathe', label: 'Breathe' },
   { value: 'contour', label: 'Contour' },
+  { value: 'harmonic', label: 'F181 Harmonic' },
 ];
 
 const SacredGridAudio = ({ gridRef, guiVisible = true, responseIntensity = 0.5, beatMultiplier = 1.5 }) => {
@@ -115,7 +116,7 @@ const SacredGridAudio = ({ gridRef, guiVisible = true, responseIntensity = 0.5, 
         >
           ◉ Audio
         </button>
-      )}
+      ))}
 
       {mode !== 'none' && (
         <GridAudioConnector

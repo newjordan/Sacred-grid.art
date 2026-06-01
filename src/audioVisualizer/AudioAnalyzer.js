@@ -48,6 +48,7 @@ class AudioAnalyzer {
     // Bind methods
     this.initialize = this.initialize.bind(this);
     this.connectAudio = this.connectAudio.bind(this);
+    this.connectStream = this.connectStream.bind(this);
     this.loadAudio = this.loadAudio.bind(this);
     this.analyzeBeat = this.analyzeBeat.bind(this);
     this.getAudioData = this.getAudioData.bind(this);
@@ -158,6 +159,46 @@ class AudioAnalyzer {
     
     return audio;
   }
+
+  /**
+   * Connect a MediaStream for analysis only.
+   * This intentionally avoids audioContext.destination to prevent feedback
+   * when the stream comes from tab/system capture.
+   * @param {MediaStream} stream - Stream containing at least one audio track
+   */
+  connectStream(stream) {
+    if (!this.isInitialized) {
+      if (!this.initialize()) return false;
+    }
+
+    try {
+      if (this.source) {
+        this.disconnectAudio();
+      }
+
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        this.config.onError('Stream contains no audio tracks.');
+        return false;
+      }
+
+      const audioOnly = new MediaStream(audioTracks);
+      this.source = this.audioContext.createMediaStreamSource(audioOnly);
+      this.source.connect(this.analyser);
+      this.audioElement = null;
+      this.capturedStream = stream;
+      this.isPlaying = true;
+
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+
+      return true;
+    } catch (error) {
+      this.config.onError('Error connecting stream:', error);
+      return false;
+    }
+  }
   
   /**
    * Disconnect and clean up audio source
@@ -166,6 +207,10 @@ class AudioAnalyzer {
     if (this.source) {
       this.source.disconnect();
       this.source = null;
+    }
+    if (this.capturedStream) {
+      this.capturedStream.getTracks().forEach((track) => track.stop());
+      this.capturedStream = null;
     }
     this.isPlaying = false;
   }

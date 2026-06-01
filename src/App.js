@@ -6,7 +6,7 @@ import './App.css';
 function App() {
   const [audioMode, setAudioMode] = useState(false);
   const [fs, setFs] = useState(false);
-  const [guiVisible, setGuiVisible] = useState(true);
+  const [guiVisible, setGuiVisible] = useState(false);
   const gridRef = useRef(null);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ function App() {
           style={{ ...btn, marginTop: guiVisible ? '8px' : 0, marginBottom: 0, fontWeight: 700 }}
           onClick={() => setGuiVisible(!guiVisible)}
         >
-          H
+          {guiVisible ? 'H' : 'Show Controls'}
         </button>
       </div>
 

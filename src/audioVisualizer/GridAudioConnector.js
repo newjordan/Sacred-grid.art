@@ -1,7 +1,16 @@
 // src/audioVisualizer/GridAudioConnector.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AudioAnalyzer from './AudioAnalyzer';
 import { useSpring } from '@react-spring/web';
+import {
+  extractAddressEnergy,
+  aggregateOrbitEnergy,
+  topKOrbits,
+  orbitsToGradientPalette,
+  chronoPhase,
+  TOTAL_ADDRESSES,
+  ORBIT_COUNT,
+} from './F181HarmonicAddressing';
 
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
@@ -18,6 +27,11 @@ const GridAudioConnector = ({
 }) => {
   const [analyzer, setAnalyzer] = useState(null);
   const [isBeat, setIsBeat] = useState(false);
+  const harmonicStateRef = useRef({
+    addressEnergy: new Float32Array(TOTAL_ADDRESSES),
+    orbitEnergy: new Float32Array(ORBIT_COUNT),
+    startMs: typeof performance !== 'undefined' ? performance.now() : Date.now(),
+  });
 
   const [, setBeatAnimation] = useSpring(() => ({
     scale: 1,
@@ -176,6 +190,99 @@ const GridAudioConnector = ({
           vertexAudioIntensity: r * 0.5,
         };
         break;
+
+      case 'harmonic': {
+        if (!analyzer?.audioContext || !frequencyData) break;
+
+        const hState = harmonicStateRef.current;
+        const addressEnergy = extractAddressEnergy(
+          frequencyData,
+          analyzer.audioContext.sampleRate,
+          analyzer.config.fftSize,
+          hState.addressEnergy
+        );
+        const orbitEnergy = aggregateOrbitEnergy(addressEnergy, hState.orbitEnergy);
+        const top = topKOrbits(orbitEnergy, 3);
+        const totalTopEnergy = top.reduce((sum, orbit) => sum + orbit.energy, 0);
+        const intensity = Math.min(1, totalTopEnergy / 6);
+        const tSec = ((typeof performance !== 'undefined' ? performance.now() : Date.now()) - hState.startMs) / 1000;
+        const phaseRad = chronoPhase(tSec, 1, 1);
+        const rotationDeg = ((phaseRad * 180 / Math.PI) % 360 + 360) % 360;
+
+        primaryDelta = {
+          ...primaryDelta,
+          vertices: 10,
+          rotation: rotationDeg,
+          opacity: clamp(0.5 + intensity * 0.4 * r, 0.3, 1),
+          animation: {
+            ...primary.animation,
+            speed: 0.0005 + intensity * 0.001 * r,
+            intensity: clamp(0.15 + midAtt * 0.2 * r, 0.05, 1),
+          },
+          vertexAudioIntensity: r,
+        };
+
+        onUpdateSettings({
+          ...gridSettings,
+          grid: {
+            ...gridSettings.grid,
+            breathingSpeed: 0.0006 + intensity * 0.001 * r,
+            breathingIntensity: 0.15 + bassAtt * 0.2 * r,
+            connectionOpacity: 0.1 + intensity * 0.15 * r,
+            lineWidthMultiplier: 1 + (data.isBeat ? 0.4 : 0) * r,
+          },
+          colors: {
+            ...gridSettings.colors,
+            gradient: {
+              ...gridSettings.colors?.gradient,
+              lines: {
+                ...gridSettings.colors?.gradient?.lines,
+                enabled: true,
+                colors: orbitsToGradientPalette(top, {
+                  saturation: 0.9,
+                  baseLightness: 0.5,
+                  energyBoost: 0.15,
+                }),
+              },
+              dots: {
+                ...gridSettings.colors?.gradient?.dots,
+                enabled: true,
+                colors: orbitsToGradientPalette(top, {
+                  saturation: 0.7,
+                  baseLightness: 0.4,
+                  energyBoost: 0.2,
+                }),
+              },
+              shapes: {
+                ...gridSettings.colors?.gradient?.shapes,
+                enabled: true,
+                colors: orbitsToGradientPalette(top, {
+                  saturation: 1,
+                  baseLightness: 0.55,
+                  energyBoost: 0.1,
+                }),
+              },
+            },
+          },
+          shapes: {
+            ...gridSettings.shapes,
+            primary: {
+              ...primary,
+              ...primaryDelta,
+            },
+          },
+          lineFactory: {
+            ...gridSettings.lineFactory,
+            glow: {
+              ...gridSettings.lineFactory?.glow,
+              intensity: (gridSettings.lineFactory?.glow?.intensity || 0) +
+                trebleAtt * 4 * r +
+                (data.isBeat ? 6 : 0),
+            },
+          },
+        });
+        return;
+      }
 
       default:
         break;
