@@ -46,7 +46,7 @@ function App() {
         )}
 
         <button
-          aria-label="Toggle GUI"
+          aria-label={guiVisible ? 'Hide GUI' : 'Show controls'}
           style={{ ...btn, marginTop: guiVisible ? '8px' : 0, marginBottom: 0, fontWeight: 700 }}
           onClick={() => setGuiVisible(!guiVisible)}
         >
