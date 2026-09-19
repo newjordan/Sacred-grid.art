@@ -30,6 +30,7 @@ class SacredGridRenderer {
         this.renderer = null;
         this.animationFrame = null;
         this.gridPoints = [];
+        this.gridConnections = [];
         this.PHI = (1 + Math.sqrt(5)) / 2;
         this.time = 0;
         this.postProcessor = null; // Will be initialized after canvas is ready
@@ -123,6 +124,44 @@ class SacredGridRenderer {
                     y: offsetY + y * spacing + trigCache[goldenOffset].cos * 2,
                     noiseOffset: Math.random() * 10,
                 });
+            }
+        }
+
+        // Connections depend only on point positions (which are fixed until
+        // the next regeneration), so build the list once here instead of
+        // re-deriving it with an O(n^2) scan every animation frame.
+        this.buildGridConnections(offsetX, offsetY);
+    }
+
+    // Determine which point pairs follow the golden-ratio spacing rule.
+    // Pure geometry (no time/noise/mouse), so it only needs to run whenever
+    // gridPoints changes, not on every drawGridLines() call.
+    buildGridConnections(centerX, centerY) {
+        this.gridConnections = [];
+        const maxDistance = Math.max(this.renderer.width, this.renderer.height) * 0.5;
+        const maxDistanceSquared = maxDistance * maxDistance;
+
+        for (let i = 0; i < this.gridPoints.length; i++) {
+            const point = this.gridPoints[i];
+            const distToCenter = Math.hypot(point.x - centerX, point.y - centerY);
+
+            for (let j = i + 1; j < this.gridPoints.length; j++) {
+                const otherPoint = this.gridPoints[j];
+
+                const dx = point.x - otherPoint.x;
+                const dy = point.y - otherPoint.y;
+                const distSquared = dx * dx + dy * dy;
+
+                if (distSquared > maxDistanceSquared) continue;
+
+                const dist = Math.sqrt(distSquared);
+
+                if (
+                    Math.abs(dist / distToCenter - 1 / this.PHI) < 0.1 ||
+                    Math.abs(dist / distToCenter - this.PHI) < 0.1
+                ) {
+                    this.gridConnections.push({ point1: point, point2: otherPoint, dist });
+                }
             }
         }
     }
@@ -598,7 +637,7 @@ class SacredGridRenderer {
             }
 
             // Draw sacred grid lines
-            this.drawGridLines(centerX, centerY);
+            this.drawGridLines();
 
             // Draw grid dots
             this.drawGridDots();
@@ -684,79 +723,54 @@ class SacredGridRenderer {
         this.renderer.resetGlobalAlpha();
     }
 
-    drawGridLines(centerX, centerY) {
+    drawGridLines() {
         const { grid, colors, mouse } = this.settings;
 
-        // Performance optimization: Create a connection map to avoid duplicate calculations
-        // and skip calculations for points that are too far apart
+        // Which pairs connect is fixed geometry, precomputed in
+        // buildGridConnections() whenever gridPoints changes. Only the
+        // animated properties (turbulence/opacity/width) need recomputing
+        // per frame.
         const connectionsToRender = [];
-        const maxDistance = Math.max(this.renderer.width, this.renderer.height) * 0.5;
 
-        // First pass: Calculate connections
-        for (let i = 0; i < this.gridPoints.length; i++) {
-            const point = this.gridPoints[i];
-            const distToCenter = Math.hypot(point.x - centerX, point.y - centerY);
+        for (const { point1: point, point2: otherPoint, dist } of this.gridConnections) {
             const pointTurbulence = this.noise(
                 point.x * 0.01,
                 point.y * 0.01,
                 this.time + point.noiseOffset
             );
+            const otherTurbulence = this.noise(
+                otherPoint.x * 0.01,
+                otherPoint.y * 0.01,
+                this.time + otherPoint.noiseOffset
+            );
+            const lineTurbulence = (pointTurbulence + otherTurbulence) * 0.5;
+            const breathingPhase =
+                this.time * grid.breathingSpeed + dist * 0.002 + lineTurbulence;
+            const baseOpacity =
+                grid.connectionOpacity *
+                (0.7 + Math.sin(breathingPhase) * 0.3 * grid.breathingIntensity);
 
-            for (let j = i + 1; j < this.gridPoints.length; j++) {
-                const otherPoint = this.gridPoints[j];
-                
-                // Quick distance check to skip calculations for points that are far apart
-                const dx = point.x - otherPoint.x;
-                const dy = point.y - otherPoint.y;
-                // Approximate squared distance check is faster than hypot for initial filtering
-                const distSquared = dx * dx + dy * dy;
-                
-                // Skip if points are too far apart (using squared distance for speed)
-                if (distSquared > maxDistance * maxDistance) continue;
-                
-                const dist = Math.sqrt(distSquared); // Now calculate actual distance
-                
-                // Check if this connection follows the golden ratio
-                if (
-                    Math.abs(dist / distToCenter - 1 / this.PHI) < 0.1 ||
-                    Math.abs(dist / distToCenter - this.PHI) < 0.1
-                ) {
-                    const otherTurbulence = this.noise(
-                        otherPoint.x * 0.01,
-                        otherPoint.y * 0.01,
-                        this.time + otherPoint.noiseOffset
-                    );
-                    const lineTurbulence = (pointTurbulence + otherTurbulence) * 0.5;
-                    const breathingPhase =
-                        this.time * grid.breathingSpeed + dist * 0.002 + lineTurbulence;
-                    const baseOpacity =
-                        grid.connectionOpacity *
-                        (0.7 + Math.sin(breathingPhase) * 0.3 * grid.breathingIntensity);
+            const lineCenter = {
+                x: (point.x + otherPoint.x) / 2,
+                y: (point.y + otherPoint.y) / 2,
+            };
+            const lineMouseDist = Math.hypot(
+                lineCenter.x - mouse.position.x,
+                lineCenter.y - mouse.position.y
+            );
+            const lineMouseInfluence = mouse.enabled !== false ? Math.max(
+                0,
+                1 - lineMouseDist / mouse.influenceRadius
+            ) : 0;
+            const finalOpacity = baseOpacity * (1 + lineMouseInfluence);
+            const lineWidth = (0.5 + lineMouseInfluence) * grid.lineWidthMultiplier;
 
-                    const lineCenter = {
-                        x: (point.x + otherPoint.x) / 2,
-                        y: (point.y + otherPoint.y) / 2,
-                    };
-                    const lineMouseDist = Math.hypot(
-                        lineCenter.x - mouse.position.x,
-                        lineCenter.y - mouse.position.y
-                    );
-                    const lineMouseInfluence = mouse.enabled !== false ? Math.max(
-                        0,
-                        1 - lineMouseDist / mouse.influenceRadius
-                    ) : 0;
-                    const finalOpacity = baseOpacity * (1 + lineMouseInfluence);
-                    const lineWidth = (0.5 + lineMouseInfluence) * grid.lineWidthMultiplier;
-
-                    // Store connection data for later rendering
-                    connectionsToRender.push({
-                        point1: point,
-                        point2: otherPoint,
-                        opacity: finalOpacity,
-                        width: lineWidth
-                    });
-                }
-            }
+            connectionsToRender.push({
+                point1: point,
+                point2: otherPoint,
+                opacity: finalOpacity,
+                width: lineWidth
+            });
         }
 
         // Second pass: Render all connections
@@ -1256,7 +1270,8 @@ class SacredGridRenderer {
         
         // Clear grid points to free memory
         this.gridPoints = [];
-        
+        this.gridConnections = [];
+
         if (this.renderer) {
             this.renderer.dispose();
             this.renderer = null;
