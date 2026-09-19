@@ -62,7 +62,10 @@ export function parseHexColor(hex) {
 // Eliminates color snapping by avoiding premature rounding
 export function getMultiEasedColor(time, colors, alpha, cycleDuration, easingType) {
     const n = colors.length;
-    let progress = (time % cycleDuration) / cycleDuration;
+    // JS's % keeps the sign of the dividend, so negative time (e.g. from a
+    // negative shape stacking.timeOffset) would otherwise yield a negative
+    // progress/index and an out-of-range colors[] lookup.
+    let progress = (((time % cycleDuration) + cycleDuration) % cycleDuration) / cycleDuration;
     const scaledProgress = progress * n;
     const index = Math.floor(scaledProgress);
     const nextIndex = (index + 1) % n;
