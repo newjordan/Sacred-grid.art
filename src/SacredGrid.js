@@ -1,6 +1,6 @@
 // src/components/SacredGrid.js
 // Main component for Canvas2D-only version
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import SacredGridCanvas from './components/SacredGridCanvas';
 import SacredGridControls from './components/SacredGridControls';
 import MandalaDesigner from './components/MandalaDesigner';
@@ -261,8 +261,11 @@ const SacredGrid = forwardRef(({ controlsVisible = true, guiVisible = true }, re
 
     const toggleControls = () => setShowControls(prev => !prev);
 
-    // Build the structured settings object from all the state variables
-    const settings = {
+    // Build the structured settings object from all the state variables.
+    // Memoized so a new settings reference (and the renderer.updateSettings()
+    // effect it triggers) is only produced when a value actually changes,
+    // not on every render of this component.
+    const settings = useMemo(() => ({
         // Grid and general settings
         grid: {
             size: gridSize,
@@ -518,7 +521,48 @@ const SacredGrid = forwardRef(({ controlsVisible = true, guiVisible = true }, re
                 }
             }
         }
-    };
+    }), [
+        animationSpeed, backgroundColor, baseDotSize, bloomEnabled, bloomExposure, bloomIntensity,
+        bloomQuality, bloomRadius, bloomSoftKnee, bloomThreshold, bloomToneMapping,
+        chromaticAberrationEnabled, chromaticAberrationIntensity, chromaticAberrationQuality,
+        chromaticAberrationRadial, colorCycleDuration, colorEasingType, colorGradingBlacks,
+        colorGradingContrast, colorGradingEnabled, colorGradingExposure, colorGradingGamma,
+        colorGradingHighlights, colorGradingSaturation, colorGradingShadows,
+        colorGradingTemperature, colorGradingTint, colorGradingVibrance, colorGradingWhites,
+        colorScheme, connectionOpacity, customMandalaData, dashOffset, dashPattern,
+        filmGrainColored, filmGrainEnabled, filmGrainIntensity, filmGrainLuminance, filmGrainSize,
+        gradientColorsDots, gradientColorsLines, gradientColorsShapes, gridBreathingIntensity,
+        gridBreathingSpeed, gridSize, gridSpacing, lineColor, lineGlow, lineGlowColor, lineOutline,
+        lineOutlineColor, lineOutlineWidth, lineStyle, lineTaper, lineWidthMultiplier,
+        maxMouseScale, modernPostProcessingEnabled, modernPostProcessingIntensity, mouseEnabled,
+        mouseInfluenceRadius, noiseIntensity, primaryAnimationFadeIn, primaryAnimationFadeOut,
+        primaryAnimationIntensity, primaryAnimationMode, primaryAnimationReverse,
+        primaryAnimationSpeed, primaryArms, primaryFractalChildCount, primaryFractalDepth,
+        primaryFractalSacredIntensity, primaryFractalSacredPositioning, primaryFractalScale,
+        primaryFractalThicknessFalloff, primaryMandalaComplexity, primaryMandalaLayers,
+        primaryMandalaPetals, primaryMandalaStyle, primaryMandalaSymmetry, primaryOffsetX,
+        primaryOffsetY, primaryOpacity, primaryRotation, primarySize, primarySpiralType,
+        primaryStackingCount, primaryStackingEnabled, primaryStackingInterval,
+        primaryStackingTimeOffset, primaryStaggerDelay, primaryThickness, primaryTurns,
+        primaryType, primaryVariableTiming, primaryVertices, randomSeedOffset, randomizerScale,
+        secondaryAnimationFadeIn, secondaryAnimationFadeOut, secondaryAnimationIntensity,
+        secondaryAnimationMode, secondaryAnimationReverse, secondaryAnimationSpeed, secondaryArms,
+        secondaryEnabled, secondaryFractalChildCount, secondaryFractalDepth,
+        secondaryFractalSacredIntensity, secondaryFractalSacredPositioning, secondaryFractalScale,
+        secondaryFractalThicknessFalloff, secondaryHarmonicRatio, secondaryMandalaComplexity,
+        secondaryMandalaLayers, secondaryMandalaPetals, secondaryMandalaStyle,
+        secondaryMandalaSymmetry, secondaryOffsetX, secondaryOffsetY, secondaryOpacity,
+        secondaryRotation, secondarySize, secondarySpiralType, secondaryStackingCount,
+        secondaryStackingEnabled, secondaryStackingInterval, secondaryStackingTimeOffset,
+        secondaryStaggerDelay, secondarySymmetryOperation, secondaryThickness, secondaryTurns,
+        secondaryType, secondaryUseHarmonicRatios, secondaryUseSymmetryGroup,
+        secondaryVariableTiming, secondaryVertices, showVertices, showXYGrid, showXYGridLabels,
+        sineAmplitude, sineFrequency, sinePhase, sineWaveType, taperEnd, taperStart,
+        useGradientDots, useGradientLines, useGradientShapes, useLineFactoryForGrid,
+        usePrimaryLineFactory, useRandomizer, useSecondaryLineFactory, vignetteEnabled,
+        vignetteIntensity, vignetteRoundness, vignetteSmoothness, xyGridColor, xyGridLineWidth,
+        xyGridOpacity, xyGridSize, xyGridSpacing,
+    ]);
 
     // Build setSettings object for callbacks
     const setSettings = {
