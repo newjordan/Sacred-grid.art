@@ -14,6 +14,13 @@ import {
 
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
+// Glow Intensity's own slider caps it at 0-20 (see LineFactorySection.js), so
+// derive it fresh from the current treble/beat energy each frame instead of
+// accumulating onto the previous value - an accumulator with no matching
+// decay only ever grows for as long as there's any treble energy at all.
+export const computeHarmonicGlowIntensity = (trebleAtt, isBeat, responseIntensity) =>
+  clamp(trebleAtt * 4 * responseIntensity + (isBeat ? 6 : 0), 0, 20);
+
 const GridAudioConnector = ({
   audioUrl = null,
   audioElement = null,
@@ -275,9 +282,7 @@ const GridAudioConnector = ({
             ...gridSettings.lineFactory,
             glow: {
               ...gridSettings.lineFactory?.glow,
-              intensity: (gridSettings.lineFactory?.glow?.intensity || 0) +
-                trebleAtt * 4 * r +
-                (data.isBeat ? 6 : 0),
+              intensity: computeHarmonicGlowIntensity(trebleAtt, data.isBeat, r),
             },
           },
         });
