@@ -227,34 +227,17 @@ class SacredGridRenderer {
         return null;
     }
 
-    // Faster noise function with cache for common values
+    // t is animation time (changes every frame) combined with a per-point
+    // noiseOffset, so the (x, y, t) triple is effectively unique on every
+    // call - a cache here never hits and just adds a string-allocation +
+    // Map lookup on top of two trig ops, on every grid connection, every
+    // frame. Compute directly instead.
     noise(x, y, t) {
-        // Cache key for common noise values to prevent recalculation
-        const cacheKey = `${Math.round(x*100)},${Math.round(y*100)},${Math.round(t*10)}`;
-        
-        // Use a static cache on the class (shared between all instances)
-        if (!SacredGridRenderer.noiseCache) {
-            SacredGridRenderer.noiseCache = new Map();
-        }
-        
-        // Return cached value if available
-        if (SacredGridRenderer.noiseCache.has(cacheKey)) {
-            return SacredGridRenderer.noiseCache.get(cacheKey);
-        }
-        
-        // Simplified noise calculation - reduce number of sine/cosine operations
-        const value = (
+        return (
             this.settings.grid.noiseIntensity *
             Math.sin(x * 0.3 + t * 0.002) *
             Math.cos(y * 0.3 - t * 0.003)
         );
-        
-        // Only cache if the Map is not too large (prevent memory leaks)
-        if (SacredGridRenderer.noiseCache.size < 10000) {
-            SacredGridRenderer.noiseCache.set(cacheKey, value);
-        }
-        
-        return value;
     }
 
     drawShape(shapeType, cx, cy, radius, thickness, opacity, fractalDepth, time, shapeSettings) {
@@ -816,9 +799,10 @@ class SacredGridRenderer {
             }
         } else {
             // Render all non-gradient lines
+            const colorSettings = { rendererType: this.rendererType };
             for (const conn of connectionsToRender) {
-                const lineColor = getShapeColor(conn.opacity, colors.scheme, this.renderer, { rendererType: this.rendererType });
-                
+                const lineColor = getShapeColor(conn.opacity, colors.scheme, this.renderer, colorSettings);
+
                 if (grid.useLineFactorySettings) {
                     this.renderer.drawLine(
                         conn.point1.x,
@@ -918,8 +902,9 @@ class SacredGridRenderer {
             this.renderer.resetGlobalAlpha();
         } else {
             // Render all regular dots
+            const colorSettings = { rendererType: this.rendererType };
             for (const dot of dotsToRender) {
-                const dotColor = getShapeColor(dot.alpha, colors.scheme, this.renderer, { rendererType: this.rendererType });
+                const dotColor = getShapeColor(dot.alpha, colors.scheme, this.renderer, colorSettings);
                 this.renderer.drawCircle(
                     dot.x,
                     dot.y,
