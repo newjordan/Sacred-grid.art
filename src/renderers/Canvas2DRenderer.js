@@ -40,6 +40,17 @@ class Canvas2DRenderer extends BaseRenderer {
         // Get 2D context
         this.ctx = this.canvas.getContext('2d');
 
+        // Expose drawLine on the context so shape drawers can use line factory
+        // features. Attached once for the context's lifetime: adding and
+        // deleting it around every drawCustomShape() call (hundreds of times
+        // per frame with fractals) changes the object's shape each time and
+        // slows every later ctx.* property lookup.
+        if (this.ctx) {
+            this.ctx.drawLine = (x1, y1, x2, y2, color, width, lineSettings) => {
+                this.drawLine(x1, y1, x2, y2, color, width, lineSettings);
+            };
+        }
+
         // Add event listeners
         this._setupEventListeners();
 
@@ -1032,18 +1043,9 @@ class Canvas2DRenderer extends BaseRenderer {
      */
     drawCustomShape(drawFunction, params) {
         if (typeof drawFunction === 'function') {
-            // Add drawLine method to the context so shape drawers can use line factory features
-            if (!this.ctx.drawLine) {
-                this.ctx.drawLine = (x1, y1, x2, y2, color, width, lineSettings) => {
-                    this.drawLine(x1, y1, x2, y2, color, width, lineSettings);
-                };
-            }
-            
-            // Pass the context and params to the custom drawing function
+            // Pass the context (with drawLine attached in initialize()) and
+            // params to the custom drawing function
             drawFunction(this.ctx, params);
-            
-            // Clean up afterwards to avoid memory leaks
-            delete this.ctx.drawLine;
         }
     }
 
