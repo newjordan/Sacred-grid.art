@@ -1257,6 +1257,11 @@ class SacredGridRenderer {
         this.gridPoints = [];
         this.gridConnections = [];
 
+        if (this.postProcessor) {
+            this.postProcessor.dispose();
+            this.postProcessor = null;
+        }
+
         if (this.renderer) {
             this.renderer.dispose();
             this.renderer = null;
