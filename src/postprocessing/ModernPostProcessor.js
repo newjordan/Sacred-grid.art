@@ -162,8 +162,9 @@ export class ModernPostProcessor {
    * Initialize the post-processing system
    */
   initialize() {
-    // Check WebGL support
-    this.initializeWebGL();
+    // WebGL is created on first use (see ensureWebGL), not here: its four
+    // full-canvas textures cost ~40MB of GPU memory on a phone, and
+    // post-processing is off by default.
     
     // Initialize effect pipeline
     this.initializeEffects();
@@ -212,6 +213,15 @@ export class ModernPostProcessor {
     }
   }
   
+  /**
+   * Create the WebGL context the first time post-processing actually runs
+   */
+  ensureWebGL() {
+    if (this.webglInitialized) return;
+    this.webglInitialized = true;
+    this.initializeWebGL();
+  }
+
   /**
    * Initialize WebGL resources (shaders, buffers, textures)
    */
@@ -309,6 +319,10 @@ export class ModernPostProcessor {
       this.adjustQualityBasedOnPerformance();
     }
     
+    if (this.config.performance.gpuAcceleration) {
+      this.ensureWebGL();
+    }
+
     // Apply effects based on method (CSS vs WebGL)
     if (this.webglSupported && this.config.performance.gpuAcceleration) {
       this.processFrameWebGL();
@@ -419,15 +433,31 @@ export class ModernPostProcessor {
    * Resize buffers when canvas size changes
    */
   resize(width, height) {
-    if (this.webglCanvas) {
-      this.webglCanvas.width = width;
-      this.webglCanvas.height = height;
-    }
+    // No WebGL yet: ensureWebGL() will size it from the canvas when needed
+    if (!this.webglCanvas) return;
+
+    this.webglCanvas.width = width;
+    this.webglCanvas.height = height;
     
-    // Recreate WebGL textures with new size
+    // Recreate WebGL textures with new size, freeing the old ones first
     if (this.webglSupported) {
+      this.releaseWebGLResources();
       this.initializeWebGLResources();
     }
+  }
+
+  /**
+   * Delete the quad buffer, frame buffers and textures
+   */
+  releaseWebGLResources() {
+    if (!this.gl) return;
+
+    (this.frameBuffers || []).forEach(fb => this.gl.deleteFramebuffer(fb));
+    (this.textures || []).forEach(tex => this.gl.deleteTexture(tex));
+    if (this.quadBuffer) this.gl.deleteBuffer(this.quadBuffer);
+    this.frameBuffers = [];
+    this.textures = [];
+    this.quadBuffer = null;
   }
   
   /**
@@ -435,10 +465,12 @@ export class ModernPostProcessor {
    */
   dispose() {
     if (this.gl) {
-      // Clean up WebGL resources
-      this.frameBuffers.forEach(fb => this.gl.deleteFramebuffer(fb));
-      this.textures.forEach(tex => this.gl.deleteTexture(tex));
-      if (this.quadBuffer) this.gl.deleteBuffer(this.quadBuffer);
+      // Clean up WebGL resources and free the context now rather than at GC
+      this.releaseWebGLResources();
+      const loseContext = this.gl.getExtension && this.gl.getExtension('WEBGL_lose_context');
+      if (loseContext) loseContext.loseContext();
+      this.gl = null;
+      this.webglSupported = false;
     }
     
     // Reset canvas styles
