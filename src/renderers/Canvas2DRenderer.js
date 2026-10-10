@@ -1,6 +1,10 @@
 // src/renderers/Canvas2DRenderer.js
 import BaseRenderer from './BaseRenderer';
 
+// Phones report DPR 3+; each step above 2 multiplies fill cost with no visible
+// gain for these soft, glowing line drawings, so cap the backing-store scale.
+export const MAX_PIXEL_RATIO = 2;
+
 /**
  * Canvas2DRenderer - Implementation of the BaseRenderer for Canvas 2D rendering
  */
@@ -151,7 +155,7 @@ class Canvas2DRenderer extends BaseRenderer {
         }
 
         // Resize canvas with proper DPI scaling
-        const pixelRatio = window.devicePixelRatio || 1;
+        const pixelRatio = Math.min(MAX_PIXEL_RATIO, window.devicePixelRatio || 1);
         const displayWidth = Math.max(10, Math.floor(rect.width));  // Ensure minimum size of 10px
         const displayHeight = Math.max(10, Math.floor(rect.height)); // Ensure minimum size of 10px
 
