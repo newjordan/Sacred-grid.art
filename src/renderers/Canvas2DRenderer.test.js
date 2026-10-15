@@ -1,5 +1,5 @@
 // src/renderers/Canvas2DRenderer.test.js
-import Canvas2DRenderer from './Canvas2DRenderer';
+import Canvas2DRenderer, { MAX_PIXEL_RATIO } from './Canvas2DRenderer';
 
 describe('Canvas2DRenderer ctx.drawLine', () => {
   let container;
@@ -89,5 +89,62 @@ describe('Canvas2DRenderer ctx.drawLine', () => {
 
     expect(() => renderer.initialize()).not.toThrow();
     expect(renderer.ctx).toBeNull();
+  });
+});
+
+describe('Canvas2DRenderer pixel ratio', () => {
+  let container;
+  let getContextSpy;
+  let ctx;
+  const originalDpr = window.devicePixelRatio;
+
+  beforeEach(() => {
+    const parent = document.createElement('div');
+    container = document.createElement('div');
+    parent.appendChild(container);
+    document.body.appendChild(parent);
+    // jsdom has no layout, so give the container a fixed size
+    container.getBoundingClientRect = () => ({ width: 400, height: 300 });
+    getContextSpy = jest
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockImplementation(() => {
+        ctx = { save: jest.fn(), restore: jest.fn(), setTransform: jest.fn(), scale: jest.fn() };
+        return ctx;
+      });
+  });
+
+  afterEach(() => {
+    getContextSpy.mockRestore();
+    Object.defineProperty(window, 'devicePixelRatio', { value: originalDpr, configurable: true });
+    document.body.innerHTML = '';
+  });
+
+  const initAt = (dpr) => {
+    Object.defineProperty(window, 'devicePixelRatio', { value: dpr, configurable: true });
+    const renderer = new Canvas2DRenderer(container);
+    renderer.initialize();
+    return renderer;
+  };
+
+  it.each([1, 1.5, 2])('uses the device pixel ratio as-is at DPR %p', (dpr) => {
+    const renderer = initAt(dpr);
+    expect(renderer.canvas.width).toBe(Math.floor(400 * dpr));
+    expect(renderer.canvas.height).toBe(Math.floor(300 * dpr));
+    expect(ctx.scale).toHaveBeenLastCalledWith(dpr, dpr);
+  });
+
+  it.each([2.625, 3, 4])('caps the backing store at MAX_PIXEL_RATIO on DPR %p', (dpr) => {
+    const renderer = initAt(dpr);
+    expect(renderer.canvas.width).toBe(400 * MAX_PIXEL_RATIO);
+    expect(renderer.canvas.height).toBe(300 * MAX_PIXEL_RATIO);
+    expect(ctx.scale).toHaveBeenLastCalledWith(MAX_PIXEL_RATIO, MAX_PIXEL_RATIO);
+  });
+
+  it('keeps the logical size and CSS size at the layout size', () => {
+    const renderer = initAt(3);
+    expect(renderer.width).toBe(400);
+    expect(renderer.height).toBe(300);
+    expect(renderer.canvas.style.width).toBe('400px');
+    expect(renderer.canvas.style.height).toBe('300px');
   });
 });
