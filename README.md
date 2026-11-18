@@ -43,15 +43,17 @@ View the live demo at: [https://sacred-grid.art](https://sacred-grid.art)
 
 ### Prerequisites
 
-- Node.js 16.x or higher
-- npm or yarn
+- Node.js 18 or higher
+- npm 9 or higher
 
 ### Setup
 
+The library is not published to npm yet, so use it from this repository:
+
 ```bash
 # Clone the repository
-git clone https://github.com/sacredgrid/sacred-grid.art.git
-cd sacred-grid.art
+git clone https://github.com/newjordan/Sacred-grid.art.git
+cd Sacred-grid.art
 
 # Install dependencies
 npm install
@@ -60,18 +62,32 @@ npm install
 npm start
 ```
 
+Other useful commands:
+
+```bash
+npm test -- --watchAll=false  # run the test suite once
+npm run build                 # production build into build/
+npm run lint                  # ESLint over src/
+npm run typecheck             # TypeScript check over src/
+```
+
 ## 🎮 Usage
+
+Components are imported from the source tree (paths below assume you are
+inside `src/`).
 
 ### Basic Example
 
 ```jsx
-import React from 'react';
-import SacredGrid from 'sacredgrid-canvas2d';
+import React, { useRef } from 'react';
+import SacredGrid from './SacredGrid';
 
 const App = () => {
+  const gridRef = useRef(null);
+
   return (
     <div style={{ width: '100%', height: '100vh' }}>
-      <SacredGrid />
+      <SacredGrid ref={gridRef} />
     </div>
   );
 };
@@ -81,30 +97,36 @@ export default App;
 
 ### Customizing Settings
 
+`SacredGrid` exposes an imperative API through its ref: `getSettings()`
+returns the live settings object, and `updateSettings(settings)` applies your
+changes. Mutate the object you get back and push it through
+`updateSettings()`:
+
 ```jsx
-import React from 'react';
-import SacredGrid from 'sacredgrid-canvas2d';
-import { ShapeType } from 'sacredgrid-canvas2d/constants';
+import React, { useEffect, useRef } from 'react';
+import SacredGrid from './SacredGrid';
+import { ShapeType } from './constants/ShapeTypes';
 
 const App = () => {
-  const customSettings = {
-    grid: {
-      size: 8,
-      spacing: 100,
-      baseDotSize: 3,
-    },
-    shapes: {
-      primary: {
-        type: ShapeType.FLOWER_OF_LIFE,
-        size: 400,
-        opacity: 0.8,
-      }
-    }
-  };
+  const gridRef = useRef(null);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const settings = grid.getSettings();
+    settings.grid.size = 8;
+    settings.grid.spacing = 100;
+    settings.grid.baseDotSize = 3;
+    settings.shapes.primary.type = ShapeType.FLOWER_OF_LIFE;
+    settings.shapes.primary.size = 400;
+    settings.shapes.primary.opacity = 0.8;
+    grid.updateSettings(settings);
+  }, []);
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
-      <SacredGrid initialSettings={customSettings} />
+      <SacredGrid ref={gridRef} />
     </div>
   );
 };
@@ -137,56 +159,38 @@ For complete API documentation, see the [full documentation](docs/API.md).
 
 ## 🎨 Examples
 
+Each example below tweaks the live settings object and applies it with
+`updateSettings()` (see above for the full ref setup).
+
 ### Basic Grid
 
-<!-- Example visualization of a basic grid -->
-
 ```jsx
-<SacredGrid 
-  initialSettings={{
-    grid: { size: 10, spacing: 80 },
-    colors: { lineColor: '#00ff00' }
-  }}
-/>
+const settings = gridRef.current.getSettings();
+settings.grid.size = 10;
+settings.grid.spacing = 80;
+settings.colors.lineColor = '#00ff00';
+gridRef.current.updateSettings(settings);
 ```
 
 ### Flower of Life
 
-<!-- Example visualization of the Flower of Life pattern -->
-
 ```jsx
-<SacredGrid 
-  initialSettings={{
-    shapes: {
-      primary: {
-        type: ShapeType.FLOWER_OF_LIFE,
-        size: 300,
-        opacity: 0.7
-      }
-    }
-  }}
-/>
+const settings = gridRef.current.getSettings();
+settings.shapes.primary.type = ShapeType.FLOWER_OF_LIFE;
+settings.shapes.primary.size = 300;
+settings.shapes.primary.opacity = 0.7;
+gridRef.current.updateSettings(settings);
 ```
 
 ### Fractal Star
 
-<!-- Example visualization of a fractal star pattern -->
-
 ```jsx
-<SacredGrid 
-  initialSettings={{
-    shapes: {
-      primary: {
-        type: ShapeType.STAR,
-        vertices: 5,
-        fractal: {
-          depth: 3,
-          scale: 0.5
-        }
-      }
-    }
-  }}
-/>
+const settings = gridRef.current.getSettings();
+settings.shapes.primary.type = ShapeType.STAR;
+settings.shapes.primary.vertices = 5;
+settings.shapes.primary.fractal.depth = 3;
+settings.shapes.primary.fractal.scale = 0.5;
+gridRef.current.updateSettings(settings);
 ```
 
 More examples can be found in the [examples directory](examples/).
@@ -202,7 +206,7 @@ More examples can be found in the [examples directory](examples/).
 - [ ] Timeline editor for creating animated sequences
 - [ ] Node-based editor for complex pattern creation
 
-See the [open issues](https://github.com/newjordan/sacred-grid.art/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/newjordan/Sacred-grid.art/issues) for a full list of proposed features and known issues.
 
 ## 👥 Contributing
 
@@ -243,7 +247,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Inspired by sacred geometry principles from various traditions
 - Built with React and modern JavaScript
-- Special thanks to Claude-Code and ChatGPT for AI assistance in development and documentation
 - Special thanks to all contributors and the open-source community
 
 ---

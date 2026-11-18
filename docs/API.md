@@ -9,7 +9,7 @@ This document provides detailed information about the SacredGrid Canvas2D API.
 - [Shape Types](#shape-types)
 - [Animation Modes](#animation-modes)
 - [Line Styles](#line-styles)
-- [Utility Functions](#utility-functions)
+- [Export](#export)
 
 ## SacredGrid Component
 
@@ -19,28 +19,31 @@ The main component that renders the sacred geometry visualization.
 
 | Prop | Type | Description | Default |
 |------|------|-------------|---------|
-| `initialSettings` | Object | Initial settings for the visualization | `{}` |
-| `width` | Number | Canvas width in pixels | `window.innerWidth` |
-| `height` | Number | Canvas height in pixels | `window.innerHeight` |
-| `autoResize` | Boolean | Auto-resize on window resize | `true` |
-| `onRender` | Function | Callback fired on each render frame | `null` |
-| `onMouseMove` | Function | Callback fired on mouse movement | `null` |
-| `className` | String | Additional CSS class names | `''` |
+| `controlsVisible` | Boolean | Show the settings panel | `true` |
+| `guiVisible` | Boolean | Show GUI overlays at all | `true` |
+| `ref` | Object | Imperative handle: `updateSettings(settings)` and `getSettings()` | - |
 
 ### Example
 
 ```jsx
-import SacredGrid from 'sacredgrid-canvas2d';
+import React, { useEffect, useRef } from 'react';
+import SacredGrid from './SacredGrid';
 
-const App = () => (
-  <SacredGrid 
-    initialSettings={{
-      grid: { size: 8 },
-      colors: { background: '#111122' }
-    }}
-    onRender={(stats) => console.log('FPS:', stats.fps)}
-  />
-);
+const App = () => {
+  const gridRef = useRef(null);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const settings = grid.getSettings();
+    settings.grid.size = 8;
+    settings.colors.background = '#111122';
+    grid.updateSettings(settings);
+  }, []);
+
+  return <SacredGrid ref={gridRef} />;
+};
 ```
 
 ## Settings Object
@@ -180,7 +183,8 @@ The settings object controls all aspects of the visualization. Below is the comp
 
 ## Shape Types
 
-The following shape types are available for use in the `type` property:
+The following shape types are available for use in the `type` property
+(see `ShapeType` in `src/constants/ShapeTypes.js`):
 
 | Value | Description |
 |-------|-------------|
@@ -191,66 +195,59 @@ The following shape types are available for use in the `type` property:
 | `MERKABA` | Sacred geometry Merkaba (Star Tetrahedron) |
 | `SPIRAL` | Logarithmic spiral |
 | `LISSAJOUS` | Lissajous pattern |
-| `GRID` | Grid pattern |
-| `CUSTOM` | Custom shape defined by points |
+| `HEXAGON` | Hexagon |
+| `PENTAGON` | Pentagon |
+| `METATRONS_CUBE` | Metatron's Cube pattern |
+| `TREE_OF_LIFE` | Tree of Life pattern |
+| `MANDALA` | Procedural mandala |
+| `CUSTOM_MANDALA` | Mandala defined by custom data |
 
 ## Animation Modes
 
-The following animation modes are available for shapes:
+The following animation modes are available for shapes
+(see `AnimationMode` in `src/constants/ShapeTypes.js`):
 
 | Value | Description |
 |-------|-------------|
-| `NONE` | No animation |
 | `GROW` | Shape grows and shrinks |
 | `PULSE` | Shape pulses opacity |
-| `ROTATE` | Shape rotates |
+| `ORBIT` | Shape orbits around its center |
+| `WAVEFORM` | Waveform-driven motion |
+| `SPIRAL` | Spiral motion |
+| `HARMONIC` | Harmonic ratio-driven motion |
+| `SWARM` | Swarm-like motion |
 | `BREATHE` | Combination of grow and pulse |
-| `MORPH` | Shape morphs between vertices counts |
 
 ## Line Styles
 
-The following line styles are available:
+The following line styles are available
+(see `LineStyleType` in `src/constants/ShapeTypes.js`):
 
 | Value | Description |
 |-------|-------------|
 | `SOLID` | Solid line |
 | `DASHED` | Dashed line |
 | `DOTTED` | Dotted line |
+| `WAVY` | Wavy line |
+| `ZIGZAG` | Zigzag line |
+| `SPIRAL` | Spiral line |
+| `RIBBON` | Ribbon line |
 | `DOUBLE` | Double line |
-| `GLOW` | Line with glow effect |
+| `COMPLEX` | Complex animated dash pattern |
 
-## Utility Functions
+## Export
 
-### `exportToPNG(settings, width, height)`
-
-Exports the current visualization to a PNG image.
-
-```javascript
-import { exportToPNG } from 'sacredgrid-canvas2d/utils';
-
-// Export current visualization
-const pngDataUrl = exportToPNG(currentSettings, 1920, 1080);
-```
-
-### `generateRandomSettings()`
-
-Generates random settings for the visualization.
+Exporting is handled by `ExportManager` (`src/export/ExportManager.js`), the
+same code behind the in-app Export panel. It produces a PNG of the current
+canvas or a standalone HTML file that re-renders your settings without a
+build step:
 
 ```javascript
-import { generateRandomSettings } from 'sacredgrid-canvas2d/utils';
+import { ExportManager } from './export/ExportManager.js';
 
-const randomSettings = generateRandomSettings();
-```
-
-### `interpolateSettings(settingsA, settingsB, progress)`
-
-Interpolates between two settings objects.
-
-```javascript
-import { interpolateSettings } from 'sacredgrid-canvas2d/utils';
-
-// Get settings halfway between A and B
-const midwaySettings = interpolateSettings(settingsA, settingsB, 0.5);
+const exportManager = new ExportManager();
+await exportManager.export(settings, canvas, { format: 'png' });
+await exportManager.export(settings, canvas, { format: 'standalone' });
 ```
 
 ## Advanced Usage

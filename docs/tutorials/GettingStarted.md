@@ -10,37 +10,17 @@ This tutorial will guide you through the process of setting up and using SacredG
 
 
 
-### Setup as a Project Dependency
-
-
-
-```bash
-
-# Using npm
-
-npm install sacredgrid-canvas2d
-
-
-
-# Using yarn
-
-yarn add sacredgrid-canvas2d
-
-```
-
-
-
 ### Setup From Source
 
-
+The library is not published to npm yet, so use it from this repository:
 
 ```bash
 
 # Clone the repository
 
-git clone https://github.com/sacredgrid/sacred-grid.art.git
+git clone https://github.com/newjordan/Sacred-grid.art.git
 
-cd sacred-grid.art
+cd Sacred-grid.art
 
 
 
@@ -74,7 +54,7 @@ The simplest way to use SacredGrid Canvas2D is to import the component and add i
 
 import React from 'react';
 
-import SacredGrid from 'sacredgrid-canvas2d';
+import SacredGrid from './SacredGrid';
 
 
 
@@ -108,53 +88,53 @@ This will create a full-screen visualization with the default settings.
 
 
 
-You can customize the visualization by passing an `initialSettings` prop:
+You can customize the visualization through the component's ref:
+`getSettings()` returns the live settings object, and `updateSettings()`
+applies your changes to it:
 
 
 
 ```jsx
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import SacredGrid from 'sacredgrid-canvas2d';
+import SacredGrid from './SacredGrid';
 
-import { ShapeType } from 'sacredgrid-canvas2d/constants';
+import { ShapeType } from './constants/ShapeTypes';
 
 
 
 function App() {
 
-  const settings = {
+  const gridRef = useRef(null);
 
-    grid: {
 
-      size: 8,
 
-      spacing: 100,
+  useEffect(() => {
 
-    },
+    const grid = gridRef.current;
 
-    colors: {
+    if (!grid) return;
 
-      background: '#001122',
 
-      lineColor: '#00ff88',
 
-    },
+    const settings = grid.getSettings();
 
-    shapes: {
+    settings.grid.size = 8;
 
-      primary: {
+    settings.grid.spacing = 100;
 
-        type: ShapeType.FLOWER_OF_LIFE,
+    settings.colors.background = '#001122';
 
-        size: 300,
+    settings.colors.lineColor = '#00ff88';
 
-      }
+    settings.shapes.primary.type = ShapeType.FLOWER_OF_LIFE;
 
-    }
+    settings.shapes.primary.size = 300;
 
-  };
+    grid.updateSettings(settings);
+
+  }, []);
 
 
 
@@ -162,7 +142,7 @@ function App() {
 
     <div style={{ width: '100%', height: '100vh' }}>
 
-      <SacredGrid initialSettings={settings} />
+      <SacredGrid ref={gridRef} />
 
     </div>
 
