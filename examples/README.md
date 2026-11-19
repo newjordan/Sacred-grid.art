@@ -36,18 +36,26 @@ Showcases a fractal star pattern with multiple levels of recursion and color ani
 You can use these examples as a starting point for your own creations. The basic structure is:
 
 ```jsx
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import SacredGrid from '../src/SacredGrid';
 import { ShapeType } from '../src/constants/ShapeTypes';
 
 const MyExample = () => {
-  const settings = {
-    // Your custom settings here
-  };
+  const gridRef = useRef(null);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    // Start from the live settings, apply the overrides, then push them back.
+    const settings = grid.getSettings();
+    settings.shapes.primary.type = ShapeType.MANDALA;
+    grid.updateSettings(settings);
+  }, []);
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
-      <SacredGrid initialSettings={settings} />
+      <SacredGrid ref={gridRef} />
     </div>
   );
 };
