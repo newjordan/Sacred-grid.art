@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { ParticleSystem, ParticleSystemConfig } from '../animation/ParticleSystem';
-import { EmitterManager, BaseEmitter } from '../animation/Emitters';
+import { EmitterManager, BaseEmitter, BurstEmitter } from '../animation/Emitters';
 import { Vector2D } from '../types';
 
 /**
@@ -351,9 +351,6 @@ export function useExplosionEffect(canvas: HTMLCanvasElement | null) {
   const explode = useCallback((center: Vector2D, intensity: number = 1) => {
     if (!particleSystem.particleSystem) return;
 
-    // Create burst emitter for explosion
-    const { BurstEmitter } = require('../animation/Emitters');
-    
     const emitter = new BurstEmitter(particleSystem.particleSystem, {
       position: center,
       emissionRate: 0,

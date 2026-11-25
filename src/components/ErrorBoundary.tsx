@@ -44,7 +44,7 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.MODE === 'development') {
       console.error('Sacred Grid Error Boundary caught an error:', error, errorInfo);
     }
   }
@@ -114,7 +114,7 @@ class ErrorBoundary extends Component<Props, State> {
               overflow: 'auto'
             }}>
               <strong>Error:</strong> {this.state.error?.message}
-              {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+              {import.meta.env.MODE === 'development' && this.state.errorInfo && (
                 <>
                   <br /><br />
                   <strong>Stack Trace:</strong>

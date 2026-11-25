@@ -460,7 +460,9 @@ export class MilkDropPostProcessor {
       // Limit cache size
       if (this.warpCache.size > 10) {
         const firstKey = this.warpCache.keys().next().value;
-        this.warpCache.delete(firstKey);
+        if (firstKey !== undefined) {
+          this.warpCache.delete(firstKey);
+        }
       }
     }
 

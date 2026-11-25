@@ -4,6 +4,7 @@
   "description": "A Canvas2D implementation of Sacred Geometry patterns with interactive visualization",
   "author": "SacredGrid Contributors",
   "license": "MIT",
+  "type": "module",
   "homepage": "https://sacred-grid.art",
   "repository": {
     "type": "git",
@@ -22,45 +23,42 @@
     "creative-coding"
   ],
   "dependencies": {
-    "@react-spring/web": "^9.7.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^3.5.2"
+    "@react-spring/web": "^10.1.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "@testing-library/user-event": "^14.5.2",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.0",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
+    "@testing-library/jest-dom": "^8.0.0",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.3.1",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "gh-pages": "^6.3.0",
-    "typescript": "^4.9.5"
+    "jsdom": "^31.0.1",
+    "oxlint": "^1.95.0",
+    "prettier": "^3.10.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject",
-    "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "oxlint src",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx,css}",
     "typecheck": "tsc --noEmit",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "deploy": "gh-pages -d dist",
     "prepublishOnly": "npm run build"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "settings": {
-      "testing-library/custom-renders": "off"
-    }
   },
   "browserslist": {
     "production": [
@@ -75,7 +73,7 @@
     ]
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=22.12.0",
+    "npm": ">=10.0.0"
   }
 }

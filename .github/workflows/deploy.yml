@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - master  # Set this to your default branch
+      - master
 
 permissions:
   contents: read
@@ -17,154 +17,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          # Temporarily disable cache to troubleshoot the issue
-          # cache: 'npm'
-      
-      - name: Cache npm packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
+          node-version: 22
+          cache: npm
+
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-        
-      - name: Debug npm cache
-        run: |
-          echo "NPM cache directory:"
-          npm config get cache
-          echo "Creating npm cache directory if it doesn't exist"
-          mkdir -p $(npm config get cache)
-        
-      - name: Check Node version
-        run: node --version
-        
-      - name: List installed packages
-        run: npm list --depth=0
-      
-      - name: Build with enhanced error logging
-        run: |
-          echo "Starting build process..."
-          # Clean any leftover files that might cause issues
-          echo "Cleaning up existing artifacts..."
-          rm -rf build
-          
-          # Ensure build directory exists
-          echo "Creating fresh build directory..."
-          mkdir -p build
-          
-          # Check node_modules health
-          echo "Checking node_modules..."
-          if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
-            echo "node_modules is missing or empty, reinstalling dependencies..."
-            rm -rf node_modules
-            npm ci --legacy-peer-deps
-          fi
-          
-          # Try running build in development environment first to get better error logs
-          echo "Running dev build for better error messages..."
-          REACT_APP_DEBUG=true NODE_ENV=development NODE_OPTIONS="--max_old_space_size=4096" npm run build 2>&1 | tee build_log.txt || true
-          
-          # Check if build_log.txt contains errors
-          if grep -i "error" build_log.txt; then
-            echo "Found errors in build log (see above)"
-          fi
-          
-          # Now try the production build
-          echo "Running production build with increased memory limit..."
-          NODE_OPTIONS="--max_old_space_size=4096" CI=false npm run build
-          
-          # Check build status
-          BUILD_EXIT_CODE=$?
-          if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "Build failed with exit code $BUILD_EXIT_CODE"
-            echo "Examining build logs..."
-            cat build_log.txt || echo "No build log found"
-            find . -name "npm-debug.log*" -exec cat {} \; 2>/dev/null || echo "No npm-debug.log found"
-            find $(npm config get cache) -name "*.log" -exec cat {} \; 2>/dev/null || echo "No error logs found in npm cache"
-            
-            # Try a minimal build with CI=false and ignoring errors
-            echo "Attempting fallback build with CI=false..."
-            CI=false npm run build || echo "Fallback build also failed!"
-          else
-            echo "Build completed successfully!"
-          fi
-      
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+
       - name: Verify build output
         run: |
-          echo "Verifying build directory contents..."
-          ls -la build || echo "Build directory not found or empty"
-          
-          if [ ! -d "build" ] || [ -z "$(ls -A build 2>/dev/null)" ]; then
-            echo "Build directory is missing or empty, creating minimal content for debugging"
-            mkdir -p build
-            echo "<html><head><title>Sacred Grid - Maintenance</title></head><body><h1>Site Maintenance</h1><p>Sacred Grid is temporarily under maintenance. Please check back soon.</p></body></html>" > build/index.html
-          fi
-      
+          test -f dist/index.html
+          test -f dist/CNAME
+          test -f dist/donate/index.html
+          echo "dist/ is ready for GitHub Pages"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./build
-        id: upload-artifact
-        continue-on-error: true
-        
-      - name: Check Upload Status
-        if: steps.upload-artifact.outcome == 'failure'
-        run: |
-          echo "Upload failed. Checking build directory contents again..."
-          ls -la build/
-          echo "Checking build directory permissions..."
-          stat -c "%A %a %n" build/
-          
-          echo "Trying to fix permissions and retry upload..."
-          chmod -R 755 build/
-          find build -type f -exec chmod 644 {} \;
-          
-      - name: Retry Upload Artifact (if previous upload failed)
-        if: steps.upload-artifact.outcome == 'failure'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./build
-        id: retry-upload
-        continue-on-error: true
-        
-      - name: Emergency Fallback - Create and Upload Artifact as ZIP
-        if: steps.retry-upload.outcome == 'failure' || steps.upload-artifact.outcome == 'failure'
-        run: |
-          echo "Both standard upload methods failed. Creating ZIP archive as fallback..."
-          cd build
-          zip -r ../build.zip .
-          cd ..
-          
-      - name: Upload ZIP as artifact
-        if: steps.retry-upload.outcome == 'failure' || steps.upload-artifact.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifact
-          path: build.zip
-      
-      - name: Final Diagnostics
-        run: |
-          echo "=== Final Build Diagnostics ==="
-          echo "Disk space:"
-          df -h
-          
-          echo "Memory usage:"
-          free -h
-          
-          echo "GitHub Actions Runner Environment:"
-          env | grep GITHUB_ || echo "No GitHub environment variables found"
-          
-          echo "Node and NPM versions:"
-          node -v
-          npm -v
+          path: ./dist
 
   deploy:
     environment:
@@ -174,27 +58,6 @@ jobs:
     needs: build
     if: needs.build.result == 'success'
     steps:
-      - name: Download ZIP Artifact (if pages artifact failed)
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifact
-          path: ./
-        id: download-zip
-        continue-on-error: true
-        
-      - name: Extract Fallback Artifact if Needed
-        if: steps.download-zip.outputs.download-path != ''
-        run: |
-          if [ -f "build.zip" ]; then
-            echo "Using fallback ZIP artifact..."
-            mkdir -p ./_site
-            unzip -q build.zip -d ./_site
-            ls -la ./_site
-          else
-            echo "No fallback artifact found. Proceeding with normal deployment."
-          fi
-        continue-on-error: true
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
