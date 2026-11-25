@@ -43,8 +43,8 @@ View the live demo at: [https://sacred-grid.art](https://sacred-grid.art)
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- npm 9 or higher
+- Node.js 22.12 or higher
+- npm 10 or higher
 
 ### Setup
 
@@ -62,12 +62,18 @@ npm install
 npm start
 ```
 
+Client environment variables use Vite's `VITE_` prefix and are read with
+`import.meta.env.VITE_*`. `import.meta.env.MODE` is `development` in the dev
+server, `production` in `npm run build`, and `test` under Vitest.
+
 Other useful commands:
 
 ```bash
-npm test -- --watchAll=false  # run the test suite once
-npm run build                 # production build into build/
-npm run lint                  # ESLint over src/
+npm test                      # run the test suite once
+npm run test:watch            # re-run tests while editing
+npm run build                 # production build into dist/
+npm run preview               # serve the production build locally
+npm run lint                  # Oxlint over src/
 npm run typecheck             # TypeScript check over src/
 ```
 

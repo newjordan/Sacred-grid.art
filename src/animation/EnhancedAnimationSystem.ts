@@ -175,7 +175,9 @@ export class EnhancedAnimationSystem {
       // Limit cache size
       if (this.colorCache.size > 1000) {
         const firstKey = this.colorCache.keys().next().value;
-        this.colorCache.delete(firstKey);
+        if (firstKey !== undefined) {
+          this.colorCache.delete(firstKey);
+        }
       }
     }
     

@@ -20,7 +20,9 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+// Vite inlines MODE the same way CRA inlined NODE_ENV: "development" in the
+// dev server, "production" in `vite build`, and "test" under Vitest.
+const isDevelopment = import.meta.env.MODE === 'development';
 
 const defaultConfig: LoggerConfig = {
   enabled: isDevelopment,
